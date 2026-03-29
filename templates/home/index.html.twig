@@ -1,0 +1,10 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Home{% endblock %}
+
+{% block app_content %}
+    <h1 style="margin-top:0; font-size:1.75rem;">Welcome{% if app.user %} back{% endif %}</h1>
+    <p style="color:#475569; line-height:1.6; max-width:52ch;">
+        Use the sidebar to open <strong>Quiz</strong> or <strong>Questions</strong>.
+    </p>
+{% endblock %}

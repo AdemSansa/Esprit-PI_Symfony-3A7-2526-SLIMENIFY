@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --app-sidebar-bg: #1a2332;
+            --app-sidebar-text: #e8edf4;
+            --app-sidebar-muted: #94a3b8;
+            --app-accent: #3b82f6;
+            --app-accent-hover: #2563eb;
+            --app-main-bg: #f1f5f9;
+        }
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        }
+        .app-sidebar {
+            width: 240px;
+            flex-shrink: 0;
+            background: var(--app-sidebar-bg);
+            color: var(--app-sidebar-text);
+            padding: 1.25rem 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .app-sidebar__brand {
+            padding: 0 1.25rem 1.25rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: -0.02em;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            margin-bottom: 0.75rem;
+        }
+        .app-sidebar__nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            padding: 0 0.75rem;
+        }
+        .app-sidebar__nav a {
+            display: block;
+            padding: 0.65rem 0.85rem;
+            border-radius: 8px;
+            color: var(--app-sidebar-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: background .15s, color .15s;
+        }
+        .app-sidebar__nav a:hover {
+            color: var(--app-sidebar-text);
+            background: rgba(255,255,255,.06);
+        }
+        .app-sidebar__nav a.is-active {
+            color: #fff;
+            background: rgba(59, 130, 246, .25);
+        }
+        .app-sidebar__footer {
+            margin-top: auto;
+            padding: 1rem 1.25rem 0;
+            border-top: 1px solid rgba(255,255,255,.08);
+            font-size: 0.8rem;
+            color: var(--app-sidebar-muted);
+        }
+        .app-sidebar__footer a {
+            color: var(--app-accent);
+            text-decoration: none;
+        }
+        .app-sidebar__footer a:hover {
+            text-decoration: underline;
+        }
+        .app-main {
+            flex: 1;
+            background: var(--app-main-bg);
+            padding: 1.75rem 2rem;
+            overflow: auto;
+        }
+        .app-main__inner {
+            max-width: 960px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% set route = app.request.attributes.get('_route') %}
+    <div class="app-layout">
+        <aside class="app-sidebar" aria-label="Main navigation">
+            <div class="app-sidebar__brand">Slimenify</div>
+            <nav class="app-sidebar__nav">
+                <a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'is-active' : '' }}">Home</a>
+                <a href="{{ path('app_quiz') }}" class="{{ route == 'app_quiz' ? 'is-active' : '' }}">Quiz</a>
+                <a href="{{ path('app_questions') }}" class="{{ route == 'app_questions' ? 'is-active' : '' }}">Questions</a>
+            </nav>
+            <div class="app-sidebar__footer">
+                {% if app.user %}
+                    <div>{{ app.user.userIdentifier }}</div>
+                {% endif %}
+                <a href="{{ path('app_logout') }}">Log out</a>
+            </div>
+        </aside>
+        <main class="app-main">
+            <div class="app-main__inner">
+                {% block app_content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+{% endblock %}

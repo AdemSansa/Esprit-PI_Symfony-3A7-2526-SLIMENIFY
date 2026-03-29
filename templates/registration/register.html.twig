@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register{% endblock %}
+
+{% block body %}
+    <main class="auth-page">
+        <div class="auth-card">
+            {% for flash_error in app.flashes('verify_email_error') %}
+                <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+            {% endfor %}
+
+            {{ form_start(registrationForm) }}
+
+                {{ form_errors(registrationForm) }}
+
+                <h1 class="auth-title">Create your account</h1>
+                <p class="auth-subtitle">Join Slimenify and start your wellness journey.</p>
+
+                <div class="auth-field">
+                    {{ form_label(registrationForm.firstName, 'First name', {'label_attr': {'class': 'auth-label'}}) }}
+                    {{ form_widget(registrationForm.firstName, {'attr': {'class': 'auth-input', 'autocomplete': 'given-name'}}) }}
+                    {{ form_errors(registrationForm.firstName) }}
+                </div>
+
+                <div class="auth-field">
+                    {{ form_label(registrationForm.lastName, 'Last name', {'label_attr': {'class': 'auth-label'}}) }}
+                    {{ form_widget(registrationForm.lastName, {'attr': {'class': 'auth-input', 'autocomplete': 'family-name'}}) }}
+                    {{ form_errors(registrationForm.lastName) }}
+                </div>
+
+                <div class="auth-field">
+                    {{ form_label(registrationForm.phone, 'Phone', {'label_attr': {'class': 'auth-label'}}) }}
+                    {{ form_widget(registrationForm.phone, {'attr': {'class': 'auth-input', 'autocomplete': 'tel'}}) }}
+                    {{ form_errors(registrationForm.phone) }}
+                </div>
+
+                <div class="auth-field">
+                    {{ form_label(registrationForm.dateNaissance, 'Date of birth', {'label_attr': {'class': 'auth-label'}}) }}
+                    {{ form_widget(registrationForm.dateNaissance, {'attr': {'class': 'auth-input'}}) }}
+                    {{ form_errors(registrationForm.dateNaissance) }}
+                </div>
+
+                <div class="auth-field">
+                    {{ form_label(registrationForm.gender, 'Gender', {'label_attr': {'class': 'auth-label'}}) }}
+                    {{ form_widget(registrationForm.gender, {'attr': {'class': 'auth-input'}}) }}
+                    {{ form_errors(registrationForm.gender) }}
+                </div>
+
+                <div class="auth-field">
+                    {{ form_label(registrationForm.photoUrl, 'Photo URL', {'label_attr': {'class': 'auth-label'}}) }}
+                    {{ form_widget(registrationForm.photoUrl, {'attr': {'class': 'auth-input', 'placeholder': 'https://example.com/photo.jpg'}}) }}
+                    {{ form_errors(registrationForm.photoUrl) }}
+                </div>
+
+                <div class="auth-field">
+                    {{ form_label(registrationForm.email, 'Email', {'label_attr': {'class': 'auth-label'}}) }}
+                    {{ form_widget(registrationForm.email, {'attr': {'class': 'auth-input', 'autocomplete': 'email'}}) }}
+                    {{ form_errors(registrationForm.email) }}
+                </div>
+
+                <div class="auth-field">
+                    {{ form_label(registrationForm.plainPassword, 'Password', {'label_attr': {'class': 'auth-label'}}) }}
+                    {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'auth-input', 'autocomplete': 'new-password'}}) }}
+                    {{ form_errors(registrationForm.plainPassword) }}
+                </div>
+                
+
+                <div class="auth-checkbox-wrap">
+                    {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'auth-checkbox'}}) }}
+                    {{ form_label(registrationForm.agreeTerms, 'I agree to the terms and conditions', {'label_attr': {'class': 'auth-checkbox-label'}}) }}
+                </div>
+                {{ form_errors(registrationForm.agreeTerms) }}
+
+                {{ form_row(registrationForm._token) }}
+
+                <button type="submit" class="auth-submit">Create account</button>
+
+                <p class="auth-subtitle auth-footer-text">
+                    Already have an account? <a class="auth-link" href="{{ path('app_login') }}">Sign in</a>
+                </p>
+
+            {{ form_end(registrationForm, { render_rest: false }) }}
+        </div>
+    </main>
+{% endblock %}

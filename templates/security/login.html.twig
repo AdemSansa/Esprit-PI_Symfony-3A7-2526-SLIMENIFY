@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Log in!{% endblock %}
+
+{% block body %}
+<main class="auth-page">
+    <form class="auth-card" method="post">
+        {% if error %}
+            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
+
+        {% if app.user %}
+            <div class="auth-state">
+                You are logged in as {{ app.user.userIdentifier }}, <a href="{{ logout_path() }}">Logout</a>
+            </div>
+        {% endif %}
+
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-subtitle">Sign in to continue to your account.</p>
+
+        <div class="auth-field">
+            <label class="auth-label" for="inputEmail">Email</label>
+            <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="auth-input" autocomplete="email" required autofocus>
+        </div>
+
+        <div class="auth-field">
+            <label class="auth-label" for="inputPassword">Password</label>
+            <input type="password" name="password" id="inputPassword" class="auth-input" autocomplete="current-password" required>
+        </div>
+
+        <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+
+        <button class="auth-submit" type="submit">
+            Sign in
+        </button>
+    </form>
+</main>
+{% endblock %}
