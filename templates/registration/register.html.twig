@@ -3,6 +3,69 @@
 {% block title %}Register{% endblock %}
 
 {% block body %}
+    <style>
+        .gender-cards-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+        .gender-card {
+            flex: 1;
+            cursor: pointer;
+            position: relative;
+        }
+        .gender-radio-input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .gender-card-content {
+            border: 2px solid currentColor;
+            opacity: 0.4;
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: inherit;
+        }
+        .gender-icon {
+            width: 32px;
+            height: 32px;
+            margin: 0 auto 8px auto;
+            display: block;
+            stroke: currentColor;
+            transition: all 0.3s ease;
+        }
+        .gender-label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .gender-card:hover .gender-card-content {
+            opacity: 0.7;
+            transform: translateY(-2px);
+        }
+        
+        .gender-radio-input:checked + .gender-card-content {
+            border-color: #2563eb;
+            color: #2563eb;
+            opacity: 1;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+            background: rgba(37, 99, 235, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .gender-radio-input:focus-visible + .gender-card-content {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+
+        .gender-card-content:active {
+            transform: scale(0.97);
+        }
+    </style>
     <main class="auth-page">
         <div class="auth-card">
             {% for flash_error in app.flashes('verify_email_error') %}
@@ -42,7 +105,23 @@
 
                 <div class="auth-field">
                     {{ form_label(registrationForm.gender, 'Gender', {'label_attr': {'class': 'auth-label'}}) }}
-                    {{ form_widget(registrationForm.gender, {'attr': {'class': 'auth-input'}}) }}
+                    
+                    <div class="gender-cards-container">
+                        {% for child in registrationForm.gender %}
+                            <label class="gender-card">
+                                {{ form_widget(child, {'attr': {'class': 'gender-radio-input'}}) }}
+                                <div class="gender-card-content">
+                                    {% if child.vars.value == 'Male' %}
+                                        <svg class="gender-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="14" r="5"></circle><line x1="13.5" y1="10.5" x2="21" y2="3"></line><line x1="16" y1="3" x2="21" y2="3"></line><line x1="21" y1="3" x2="21" y2="8"></line></svg>
+                                    {% else %}
+                                        <svg class="gender-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="5"></circle><line x1="12" y1="15" x2="12" y2="22"></line><line x1="9" y1="19" x2="15" y2="19"></line></svg>
+                                    {% endif %}
+                                    <span class="gender-label">{{ child.vars.label }}</span>
+                                </div>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    
                     {{ form_errors(registrationForm.gender) }}
                 </div>
 

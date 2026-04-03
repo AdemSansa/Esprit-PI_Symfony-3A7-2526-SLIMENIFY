@@ -47,7 +47,14 @@ class RegistrationFormType extends AbstractType
             ->add('lastName')
             ->add('phone')
             ->add('dateNaissance')
-            ->add('gender')
+            ->add('gender', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
+                'choices'  => [
+                    'Male' => 'Male',
+                    'Female' => 'Female',
+                ],
+                'expanded' => true,
+                'multiple' => false,
+            ])
             ->add('photoUrl')
             ->add('isVerified')
             

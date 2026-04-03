@@ -1,0 +1,276 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Taking {{ quiz.title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .likert-scale {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .likert-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            position: relative;
+            flex: 1;
+        }
+
+        .likert-item span {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            text-align: center;
+            transition: color 0.15s;
+        }
+
+        .likert-radio {
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            border: 2px solid #cbd5e1;
+            border-radius: 50%;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 0;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .likert-radio:checked {
+            border-color: #3b82f6;
+            border-width: 8px;
+            transform: scale(1.1);
+        }
+
+        .likert-radio:checked + span {
+            color: #3b82f6;
+        }
+
+        .question-card {
+            display: none; /* Hidden by default via JS wizard logic */
+            animation: fadeInRight 0.4s ease-out forwards;
+        }
+
+        .question-card.active {
+            display: block;
+        }
+
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .progress-bar-container {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.4s ease-out;
+            width: 0%;
+        }
+
+        .wizard-btn {
+            padding: 0.85rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .wizard-btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .wizard-btn-primary:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        .wizard-btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .wizard-btn-secondary:hover:not(:disabled) {
+            background: #e2e8f0;
+        }
+
+        .wizard-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+{% endblock %}
+
+{% block app_content %}
+    <div style="max-width: 800px; margin: 0 auto; padding-top: 2rem;">
+        
+        <div style="margin-bottom: 2rem; text-align: center;">
+            <p style="color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em; margin: 0 0 0.5rem;">Assessment</p>
+            <h1 style="margin: 0 0 0.5rem; font-size: 2.25rem; color: #0f172a; letter-spacing: -0.02em;">{{ quiz.title }}</h1>
+            
+            <div class="progress-bar-container" style="margin-top: 2rem;">
+                <div class="progress-bar-fill" id="progressFill"></div>
+            </div>
+            
+            <p style="color: #64748b; font-size: 0.95rem; font-weight: 500;" id="progressText">
+                Question 1 of {{ quiz.questions|length }}
+            </p>
+        </div>
+
+        <form id="assessmentForm" method="post" action="{{ path('app_assessment_take', {'id': quiz.id}) }}" style="background: white; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); padding: 3rem; min-height: 400px; display: flex; flex-direction: column;">
+            
+            <div id="questionsContainer" style="flex-grow: 1;">
+                {% for question in quiz.questions %}
+                    <div class="question-card {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}">
+                        
+                        <div style="text-align: center; margin-bottom: 2.5rem;">
+                            <h3 style="margin: 0; font-size: 1.5rem; color: #1e293b; line-height: 1.4; font-weight: 600;">
+                                {{ question.questionText }}
+                            </h3>
+                            
+                            {% if question.imagePath %}
+                                <div style="margin-top: 1.5rem;">
+                                    <img src="{{ question.imagePath }}" alt="Question Image" style="max-height: 250px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="likert-scale">
+                            <label class="likert-item">
+                                <input type="radio" name="question_{{ question.id }}" value="1" class="likert-radio" required onchange="checkAnswered()">
+                                <span>Strongly<br>Disagree</span>
+                            </label>
+                            <label class="likert-item">
+                                <input type="radio" name="question_{{ question.id }}" value="2" class="likert-radio" required onchange="checkAnswered()">
+                                <span>Disagree</span>
+                            </label>
+                            <label class="likert-item">
+                                <input type="radio" name="question_{{ question.id }}" value="3" class="likert-radio" required onchange="checkAnswered()">
+                                <span>Neutral</span>
+                            </label>
+                            <label class="likert-item">
+                                <input type="radio" name="question_{{ question.id }}" value="4" class="likert-radio" required onchange="checkAnswered()">
+                                <span>Agree</span>
+                            </label>
+                            <label class="likert-item">
+                                <input type="radio" name="question_{{ question.id }}" value="5" class="likert-radio" required onchange="checkAnswered()">
+                                <span>Strongly<br>Agree</span>
+                            </label>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if quiz.questions|length > 0 %}
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 2rem; margin-top: 2rem;">
+                <button type="button" id="btnBack" class="wizard-btn wizard-btn-secondary" style="visibility: hidden;" onclick="prevQuestion()">
+                    &larr; Back
+                </button>
+                
+                <button type="button" id="btnNext" class="wizard-btn wizard-btn-primary" onclick="nextQuestion()" disabled>
+                    Next Question &rarr;
+                </button>
+
+                <button type="submit" id="btnSubmit" class="wizard-btn wizard-btn-primary" style="display: none;">
+                    Complete Assessment
+                </button>
+            </div>
+            {% else %}
+                <div style="text-align: center; color: #64748b;">This quiz currently has no questions.</div>
+            {% endif %}
+
+        </form>
+    </div>
+
+    <script>
+        const totalQuestions = {{ quiz.questions|length }};
+        let currentIndex = 0;
+
+        function updateUI() {
+            // Update cards
+            document.querySelectorAll('.question-card').forEach((card, index) => {
+                if (index === currentIndex) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+
+            // Update Progress Bar & Text
+            const progressPercent = totalQuestions > 0 ? ((currentIndex) / totalQuestions) * 100 : 0;
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+            document.getElementById('progressText').innerText = `Question ${currentIndex + 1} of ${totalQuestions}`;
+
+            // Update Buttons
+            document.getElementById('btnBack').style.visibility = currentIndex > 0 ? 'visible' : 'hidden';
+            
+            if (currentIndex === totalQuestions - 1) {
+                document.getElementById('btnNext').style.display = 'none';
+                document.getElementById('btnSubmit').style.display = 'block';
+            } else {
+                document.getElementById('btnNext').style.display = 'block';
+                document.getElementById('btnSubmit').style.display = 'none';
+            }
+
+            checkAnswered();
+        }
+
+        function checkAnswered() {
+            // Validate if current active question has a checked radio
+            const currentCard = document.querySelector(`.question-card[data-index="${currentIndex}"]`);
+            const radios = currentCard.querySelectorAll('input[type="radio"]');
+            let answered = Array.from(radios).some(radio => radio.checked);
+            
+            document.getElementById('btnNext').disabled = !answered;
+            // Also enable/disable Submit if it's the last step
+            if(currentIndex === totalQuestions - 1) {
+                document.getElementById('btnSubmit').disabled = !answered;
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < totalQuestions - 1) {
+                // Ensure answered before moving
+                const currentCard = document.querySelector(`.question-card[data-index="${currentIndex}"]`);
+                if(Array.from(currentCard.querySelectorAll('input[type="radio"]')).some(r => r.checked)) {
+                    currentIndex++;
+                    updateUI();
+                }
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateUI();
+            }
+        }
+
+        // Initialize UI
+        if(totalQuestions > 0) {
+            updateUI();
+        }
+    </script>
+{% endblock %}

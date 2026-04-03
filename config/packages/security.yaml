@@ -38,9 +38,10 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        - { path: ^/home, roles: ROLE_USER }
-        - { path: ^/quiz, roles: ROLE_USER }
-        - { path: ^/questions, roles: ROLE_USER }
+        - { path: ^/home, roles: [ROLE_PATIENT, ROLE_THERAPIST, ROLE_ADMIN] }
+        - { path: ^/assessment, roles: [ROLE_PATIENT, ROLE_ADMIN] }
+        - { path: ^/quiz, roles: [ROLE_THERAPIST, ROLE_ADMIN] }
+        - { path: ^/questions, roles: [ROLE_THERAPIST, ROLE_ADMIN] }
 
 when@test:
     security:

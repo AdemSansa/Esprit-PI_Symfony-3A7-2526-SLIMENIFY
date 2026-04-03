@@ -112,7 +112,7 @@ class User implements UserInterface,PasswordAuthenticatedUserInterface
     {
         $roles = [];
         if ($this->role) {
-            $roles[] = str_starts_with(strtoupper($this->role), 'ROLE_') ? strtoupper($this->role) : 'ROLE_' . strtoupper($this->role);
+            $roles[] = 'ROLE_' . strtoupper($this->role);
         }
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';

@@ -1,0 +1,113 @@
+{{ form_start(form, {'attr': {'class': 'auth-card', 'style': 'margin-top: 1rem; max-width: 800px; width: 100%;'}}) }}
+    {{ form_errors(form) }}
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="auth-field" style="grid-column: span 2;">
+            {{ form_label(form.title, null, {'label_attr': {'class': 'auth-label'}}) }}
+            {{ form_widget(form.title) }}
+            {{ form_errors(form.title) }}
+        </div>
+
+        <div class="auth-field" style="grid-column: span 2;">
+            {{ form_label(form.description, null, {'label_attr': {'class': 'auth-label'}}) }}
+            {{ form_widget(form.description) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        <div class="auth-field" style="grid-column: span 2;">
+            {{ form_label(form.category, null, {'label_attr': {'class': 'auth-label'}}) }}
+            {{ form_widget(form.category) }}
+            {{ form_errors(form.category) }}
+        </div>
+
+
+    </div>
+    
+    <div class="auth-field" style="margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            {{ form_label(form.questions, 'Select Questions', {'label_attr': {'class': 'auth-label', 'style': 'margin: 0;'}}) }}
+            <input type="text" id="questionSearch" placeholder="Search questions..." style="padding: 0.4rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; width: 220px; outline: none;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#cbd5e1'">
+        </div>
+        
+        <div class="questions-list-container" style="max-height: 350px; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            {% for child in form.questions %}
+                <label class="question-item-card" style="display: flex; align-items: center; padding: 0.8rem 1rem; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
+                    <div style="margin-right: 1rem; display: flex; align-items: center;">
+                        {{ form_widget(child, {'attr': {'class': 'custom-checkbox'}}) }}
+                    </div>
+                    <div style="flex-grow: 1; font-size: 0.95rem; color: #334155; line-height: 1.4;" class="question-text">
+                        {{ child.vars.label }}
+                    </div>
+                </label>
+            {% else %}
+                <div style="text-align: center; color: #64748b; padding: 1.5rem;">No questions available. Try creating some first!</div>
+            {% endfor %}
+            <div id="noResults" style="display: none; text-align: center; color: #64748b; padding: 1.5rem;">No questions match your search.</div>
+        </div>
+        {{ form_errors(form.questions) }}
+    </div>
+
+    <style>
+        .questions-list-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .questions-list-container::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+        .question-item-card:hover {
+            border-color: #cbd5e1;
+            background: #f1f5f9 !important;
+            transform: translateY(-1px);
+        }
+        .question-item-card:has(input:checked) {
+            border-color: #3b82f6;
+            background: #eff6ff !important;
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+        .custom-checkbox {
+            width: 1.25rem;
+            height: 1.25rem;
+            accent-color: #3b82f6;
+            cursor: pointer;
+            margin: 0;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('questionSearch');
+            const questionCards = document.querySelectorAll('.question-item-card');
+            const noResults = document.getElementById('noResults');
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const text = e.target.value.toLowerCase();
+                    let hasVisible = false;
+
+                    questionCards.forEach(card => {
+                        const questionText = card.querySelector('.question-text').textContent.toLowerCase();
+                        if (questionText.includes(text)) {
+                            card.style.display = 'flex';
+                            hasVisible = true;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    if (noResults) {
+                        noResults.style.display = hasVisible ? 'none' : 'block';
+                    }
+                });
+            }
+        });
+    </script>
+
+    <div class="auth-checkbox-wrap" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+        {{ form_widget(form.active) }}
+        {{ form_label(form.active, null, {'label_attr': {'class': 'auth-checkbox-label'}}) }}
+        {{ form_errors(form.active) }}
+    </div>
+
+    <button class="auth-submit" style="width: auto; padding: 0.75rem 1.5rem;">{{ button_label|default('Save') }}</button>
+{{ form_end(form) }}
