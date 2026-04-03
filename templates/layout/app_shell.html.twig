@@ -90,8 +90,19 @@
             <div class="app-sidebar__brand">Slimenify</div>
             <nav class="app-sidebar__nav">
                 <a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'is-active' : '' }}">Home</a>
-                <a href="{{ path('app_quiz') }}" class="{{ route == 'app_quiz' ? 'is-active' : '' }}">Quiz</a>
-                <a href="{{ path('app_questions') }}" class="{{ route == 'app_questions' ? 'is-active' : '' }}">Questions</a>
+                
+                {% if is_granted('ROLE_PATIENT') or is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_assessment_index') }}" class="{{ route starts with 'app_assessment' ? 'is-active' : '' }}">Assessments</a>
+                {% endif %}
+                
+                {% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_quiz_index') }}" class="{{ route starts with 'app_quiz' ? 'is-active' : '' }}">Quizzes</a>
+                    <a href="{{ path('app_question_index') }}" class="{{ route starts with 'app_question' ? 'is-active' : '' }}">Questions</a>
+                {% endif %}
+                
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="#" style="margin-top: 1.5rem; opacity: 0.8;">Admin Panel (Locked)</a>
+                {% endif %}
             </nav>
             <div class="app-sidebar__footer">
                 {% if app.user %}

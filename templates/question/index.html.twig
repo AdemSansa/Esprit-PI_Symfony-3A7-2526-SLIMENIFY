@@ -3,17 +3,37 @@
 {% block title %}Questions{% endblock %}
 
 {% block app_content %}
-    <h1 style="margin-top:0; font-size:1.75rem;">Questions</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h1 style="margin:0; font-size:1.75rem;">Questions Management</h1>
+        <a href="{{ path('app_question_new') }}" style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);">
+            + Create New Question
+        </a>
+    </div>
+
     {% if questions is empty %}
-        <p style="color:#64748b;">No questions yet.</p>
+        <div style="background: #fff; padding: 3rem; text-align: center; border-radius: 12px; border: 1px dashed #cbd5e1;">
+            <p style="color:#64748b; font-size: 1.1rem; margin-bottom: 1rem;">No questions have been created yet.</p>
+            <a href="{{ path('app_question_new') }}" class="auth-link">Create your first question</a>
+        </div>
     {% else %}
-        <ul style="list-style:none; padding:0; margin:1rem 0 0;">
+        <ul style="list-style:none; padding:0; margin:0;">
             {% for q in questions %}
-                <li style="background:#fff; border-radius:10px; padding:1rem 1.25rem; margin-bottom:0.75rem; box-shadow:0 1px 3px rgba(0,0,0,.08);">
-                    {{ q.questionText }}
-                    {% if q.required %}
-                        <span style="color:#64748b; font-size:0.85rem;"> (required)</span>
-                    {% endif %}
+                <li style="background:#fff; border-radius:12px; padding:1.25rem 1.5rem; margin-bottom:1rem; box-shadow:0 1px 3px rgba(0,0,0,.05); border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s ease;">
+                    <div style="padding-right: 1.5rem;">
+                        <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem; color: #1e293b;">{{ q.questionText }}</div>
+                        <div style="color: #64748b; font-size: 0.85rem; display: flex; gap: 1rem;">
+                            <span style="background: {{ q.required ? '#eff6ff' : '#f1f5f9' }}; color: {{ q.required ? '#2563eb' : '#64748b' }}; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 500;">
+                                {{ q.required ? 'Required' : 'Optional' }}
+                            </span>
+                            {% if q.imagePath %}
+                                <span><a href="{{ q.imagePath }}" target="_blank" style="color: #3b82f6; text-decoration: none; display: flex; align-items: center; gap: 0.25rem;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Image Link</a></span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+                        <a href="{{ path('app_question_edit', {'id': q.id}) }}" style="color: #475569; text-decoration: none; font-size: 0.85rem; padding: 0.4rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 6px; font-weight: 500; transition: all 0.2s;">Edit</a>
+                        {{ include('question/_delete_form.html.twig', {'question': q}) }}
+                    </div>
                 </li>
             {% endfor %}
         </ul>

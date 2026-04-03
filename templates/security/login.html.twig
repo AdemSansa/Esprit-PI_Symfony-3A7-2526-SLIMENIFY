@@ -4,7 +4,7 @@
 
 {% block body %}
 <main class="auth-page">
-    <form class="auth-card" method="post">
+    <form class="auth-card" method="post" action="{{ path('app_login') }}">
         {% if error %}
             <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
         {% endif %}
@@ -33,6 +33,10 @@
         <button class="auth-submit" type="submit">
             Sign in
         </button>
+
+        <p class="auth-subtitle auth-footer-text" style="margin-top: 1rem; text-align: center;">
+            Don't have an account? <a class="auth-link" href="{{ path('app_register') }}">Register here</a>
+        </p>
     </form>
 </main>
 {% endblock %}
