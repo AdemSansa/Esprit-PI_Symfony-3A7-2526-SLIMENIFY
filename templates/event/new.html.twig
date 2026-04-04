@@ -1,0 +1,140 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}New Event{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .form-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .page-title {
+            margin-top: 0;
+            margin-bottom: 2rem;
+            font-size: 1.75rem;
+            color: #0f172a;
+        }
+        
+        /* Modern form styling */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.95rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+            padding-right: 2.5rem;
+        }
+        
+        .row {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .col {
+            flex: 1;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+        .btn-secondary { background: #f1f5f9; color: #475569; }
+        .btn-secondary:hover { background: #e2e8f0; }
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        
+        /* AI Generator Button */
+        .ai-generate-wrapper {
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .btn-ai {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border-radius: 6px;
+        }
+        .ai-loader {
+            display: none;
+            font-size: 0.875rem;
+            color: #6366f1;
+            font-weight: 600;
+        }
+        
+        /* Map Container */
+        #map {
+            height: 300px;
+            border-radius: 8px;
+            margin-top: 0.75rem;
+            border: 1px solid #cbd5e1;
+            z-index: 10;
+        }
+        .location-hint {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+    </style>
+{% endblock %}
+
+{% block app_content %}
+    <div class="form-container">
+        <h1 class="page-title">{% block form_title %}Create New Event{% endblock %}</h1>
+        
+        {{ include('event/_form.html.twig') }}
+        
+        <div style="margin-top: 1rem;">
+            <a href="{{ path('app_event_index') }}" style="color: #64748b; text-decoration: none;">&larr; Back to list</a>
+        </div>
+    </div>
+{% endblock %}

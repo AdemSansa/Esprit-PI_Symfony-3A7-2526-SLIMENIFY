@@ -1,0 +1,284 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Events{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary {
+            background: var(--app-accent, #3b82f6);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--app-accent-hover, #2563eb);
+            transform: translateY(-1px);
+        }
+        .event-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+        .event-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .event-img-container {
+            height: 180px;
+            background: #e2e8f0;
+            overflow: hidden;
+            position: relative;
+        }
+        .event-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .event-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+        .event-content {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .event-badges {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .badge-type { background: #e0f2fe; color: #0284c7; }
+        .badge-status { background: #f1f5f9; color: #475569; }
+        .badge-draft { background: #fef3c7; color: #d97706; }
+        .badge-published { background: #dcfce7; color: #16a34a; }
+        
+        .event-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 0.5rem 0;
+            line-height: 1.4;
+        }
+        .event-meta {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .event-desc {
+            font-size: 0.875rem;
+            color: #475569;
+            margin-bottom: 1.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .event-actions {
+            margin-top: auto;
+            display: flex;
+            gap: 0.75rem;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+        }
+        .btn-outline:hover {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            flex: 1;
+        }
+        
+        .event-map-container {
+            height: 200px;
+            width: 100%;
+            border-top: 1px solid #f1f5f9;
+            background: #f8fafc;
+            display: none; /* Hidden by default */
+        }
+        .event-map-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .map-toggle-btn {
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-top: 0.5rem;
+            transition: all 0.2s;
+        }
+        .map-toggle-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        .map-toggle-btn.active {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+    </style>
+{% endblock %}
+
+{% block app_content %}
+    <div class="page-header">
+        <h1 class="page-title">Events</h1>
+        {% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_event_new') }}" class="btn btn-primary">+ Add New Event</a>
+        {% endif %}
+    </div>
+
+    <form method="get" class="search-form">
+        <input type="text" name="q" placeholder="Search events..." value="{{ searchQuery }}" class="search-input">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <div class="event-grid">
+        {% for event in events %}
+            <div class="event-card">
+                <div class="event-img-container">
+                    {% if event.imageUrl %}
+                        <img src="{{ asset(event.imageUrl) }}" alt="{{ event.title }}" class="event-img">
+                    {% else %}
+                        <div class="event-placeholder">No Image</div>
+                    {% endif %}
+                </div>
+                
+                <div class="event-content">
+                    <div class="event-badges">
+                        <span class="badge badge-type">{{ event.type }}</span>
+                        <span class="badge badge-status badge-{{ event.status }}">{{ event.status }}</span>
+                    </div>
+                    
+                    <h3 class="event-title">{{ event.title }}</h3>
+                    
+                    <div class="event-meta">
+                        <span>📅 {{ event.dateStart|date('M d, Y H:i') }} {% if event.dateEnd %} - {{ event.dateEnd|date('H:i') }}{% endif %}</span>
+                        <span>📍 {{ event.location ?: 'TBA' }}</span>
+                        {% if event.location %}
+                            <button type="button" class="map-toggle-btn" onclick="toggleMap(this, 'map-{{ event.id }}')">
+                                🗺️ View Map
+                            </button>
+                            
+                            <div id="map-{{ event.id }}" class="event-map-container">
+                                <iframe 
+                                    class="event-map-iframe"
+                                    frameborder="0" 
+                                    scrolling="no" 
+                                    marginheight="0" 
+                                    marginwidth="0" 
+                                    src="https://maps.google.com/maps?q={{ event.location|url_encode }}&amp;t=&amp;z=13&amp;ie=UTF8&amp;iwloc=&amp;output=embed">
+                                </iframe>
+                            </div>
+                        {% endif %}
+                        <span>👥 {{ event.registrations|length }} / {{ event.maxParticipants ?: '∞' }} participants</span>
+                    </div>
+                    
+                    <div class="event-desc">
+                        {{ event.description }}
+                    </div>
+                    
+                    <div class="event-actions">
+                        <a href="{{ path('app_event_register', {'id': event.id}) }}" class="btn btn-primary btn-sm">Register</a>
+                        
+                        {% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('app_event_edit', {'id': event.id}) }}" class="btn btn-outline btn-sm">Edit</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: white; border-radius: 16px;">
+                <h3 style="color: #64748b; margin-bottom: 1rem;">No events found</h3>
+                {% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_event_new') }}" class="btn btn-primary">Create the first one</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function toggleMap(btn, mapId) {
+            const mapContainer = document.getElementById(mapId);
+            // If display is empty (from CSS) or 'none', it's hidden
+            const isHidden = !mapContainer.style.display || mapContainer.style.display === 'none';
+            
+            mapContainer.style.display = isHidden ? 'block' : 'none';
+            btn.classList.toggle('active');
+            btn.innerHTML = isHidden ? '❌ Hide Map' : '🗺️ View Map';
+        }
+    </script>
+{% endblock %}

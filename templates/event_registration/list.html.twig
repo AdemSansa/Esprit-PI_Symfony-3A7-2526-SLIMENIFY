@@ -1,0 +1,147 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Manage Registrations{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .table-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        .row-hover:hover {
+            background: #f8fafc;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-registered { background: #dbeafe; color: #1e3a8a; }
+        .status-attended { background: #dcfce7; color: #166534; }
+        .status-cancelled { background: #fee2e2; color: #991b1b; }
+        
+        .actions-form {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn-action {
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .btn-action:hover { background: #e2e8f0; }
+        .btn-checkin { background: #10b981; color: white; }
+        .btn-checkin:hover { background: #059669; }
+        .btn-cancel { background: #ef4444; color: white; }
+        .btn-cancel:hover { background: #dc2626; }
+    </style>
+{% endblock %}
+
+{% block app_content %}
+    <div class="page-header">
+        <h1 style="margin:0; font-size: 1.75rem; color: #0f172a;">Event Registrations</h1>
+    </div>
+
+    <div class="table-card">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Participant</th>
+                        <th>Contact</th>
+                        <th>Event</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in registrations %}
+                        <tr class="row-hover">
+                            <td>#{{ reg.id }}</td>
+                            <td>
+                                <div style="font-weight: 600; color: #0f172a;">{{ reg.participantName }}</div>
+                            </td>
+                            <td>
+                                <div>{{ reg.participantEmail }}</div>
+                                <div style="font-size: 0.8rem; color: #64748b;">{{ reg.participantPhone }}</div>
+                            </td>
+                            <td>
+                                <a href="{{ path('app_event_edit', {'id': reg.event.id}) }}" style="color: #3b82f6; text-decoration: none; font-weight: 500;">
+                                    {{ reg.event.title }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="status-badge status-{{ reg.status }}">{{ reg.status }}</span>
+                            </td>
+                            <td>
+                                <div class="actions-form">
+                                    {% if reg.status != 'attended' %}
+                                    <form method="post" action="{{ path('app_event_registration_status', {'id': reg.id, 'status': 'attended'}) }}" onsubmit="return confirm('Mark as attended?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('status' ~ reg.id) }}">
+                                        <button class="btn-action btn-checkin">Check-in</button>
+                                    </form>
+                                    {% endif %}
+                                    
+                                    {% if reg.status != 'cancelled' %}
+                                    <form method="post" action="{{ path('app_event_registration_status', {'id': reg.id, 'status': 'cancelled'}) }}" onsubmit="return confirm('Cancel this registration?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('status' ~ reg.id) }}">
+                                        <button class="btn-action btn-cancel">Cancel</button>
+                                    </form>
+                                    {% endif %}
+                                    
+                                    <form method="post" action="{{ path('app_event_registration_delete', {'id': reg.id}) }}" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reg.id) }}">
+                                        <button class="btn-action">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #64748b; padding: 2rem;">No registrations found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

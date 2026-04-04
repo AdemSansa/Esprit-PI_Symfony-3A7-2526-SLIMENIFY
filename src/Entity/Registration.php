@@ -26,6 +26,15 @@ class Registration
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $participantName = null;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $participantEmail = null;
+
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $participantPhone = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $participantNotes = null;
+
     #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'registrations')]
     #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'id_event', nullable: false)]
     private Event $event;
@@ -44,6 +53,12 @@ class Registration
     public function setQrCode(?string $v): static { $this->qrCode = $v; return $this; }
     public function getParticipantName(): ?string { return $this->participantName; }
     public function setParticipantName(?string $v): static { $this->participantName = $v; return $this; }
+    public function getParticipantEmail(): ?string { return $this->participantEmail; }
+    public function setParticipantEmail(?string $v): static { $this->participantEmail = $v; return $this; }
+    public function getParticipantPhone(): ?string { return $this->participantPhone; }
+    public function setParticipantPhone(?string $v): static { $this->participantPhone = $v; return $this; }
+    public function getParticipantNotes(): ?string { return $this->participantNotes; }
+    public function setParticipantNotes(?string $v): static { $this->participantNotes = $v; return $this; }
     public function getEvent(): Event { return $this->event; }
     public function setEvent(Event $v): static { $this->event = $v; return $this; }
 }

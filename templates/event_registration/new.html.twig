@@ -1,0 +1,139 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Register for {{ event.title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .page-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .register-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .event-info {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .event-info img {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .event-meta h3 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.1rem;
+            color: #0f172a;
+        }
+        .event-meta p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.95rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .btn-submit {
+            width: 100%;
+            background: #3b82f6;
+            color: white;
+            font-weight: 600;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 1rem;
+        }
+        .btn-submit:hover {
+            background: #2563eb;
+        }
+    </style>
+{% endblock %}
+
+{% block app_content %}
+<div class="page-container">
+    <div class="register-card">
+        <h1 style="margin-top: 0; color: #0f172a; text-align: center; margin-bottom: 2rem;">Event Registration</h1>
+        
+        <div class="event-info">
+            {% if event.imageUrl %}
+                <img src="{{ asset(event.imageUrl) }}" alt="Event">
+            {% else %}
+                <div style="width:80px;height:80px;background:#e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:#94a3b8;">No img</div>
+            {% endif %}
+            <div class="event-meta">
+                <h3>{{ event.title }}</h3>
+                <p>📅 {{ event.dateStart|date('M d, Y H:i') }}</p>
+                <p>📍 {{ event.location ?: 'Online' }}</p>
+            </div>
+        </div>
+
+        {{ form_start(form) }}
+            <div class="form-group">
+                {{ form_label(form.participantName, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.participantName, {'attr': {'class': 'form-control', 'placeholder': 'e.g. John Doe'}}) }}
+                {{ form_errors(form.participantName) }}
+            </div>
+            
+            <div class="form-group">
+                {{ form_label(form.participantEmail, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.participantEmail, {'attr': {'class': 'form-control', 'placeholder': 'e.g. john@example.com'}}) }}
+                {{ form_errors(form.participantEmail) }}
+            </div>
+            
+            <div class="form-group">
+                {{ form_label(form.participantPhone, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.participantPhone, {'attr': {'class': 'form-control', 'placeholder': 'Optional'}}) }}
+                {{ form_errors(form.participantPhone) }}
+            </div>
+            
+            <div class="form-group">
+                {{ form_label(form.participantNotes, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.participantNotes, {'attr': {'class': 'form-control', 'placeholder': 'Any dietary requirements or accessibility needs?'}}) }}
+                {{ form_errors(form.participantNotes) }}
+            </div>
+
+            <button type="submit" class="btn-submit">Confirm Registration</button>
+        {{ form_end(form) }}
+        
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <a href="{{ path('app_event_index') }}" style="color: #64748b; text-decoration: none; font-size: 0.9rem;">Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

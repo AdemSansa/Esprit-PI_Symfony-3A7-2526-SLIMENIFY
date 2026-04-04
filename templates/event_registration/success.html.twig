@@ -1,0 +1,122 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Registration Success{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .page-container {
+            max-width: 500px;
+            margin: 2rem auto;
+        }
+        .success-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            text-align: center;
+        }
+        .card-header {
+            background: #10b981;
+            padding: 2.5rem 2rem 1.5rem;
+            color: white;
+        }
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+        .card-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .card-body {
+            padding: 2.5rem 2rem;
+            position: relative;
+        }
+        .ticket-info {
+            margin-bottom: 2rem;
+        }
+        .ticket-info h3 {
+            margin: 0 0 0.5rem 0;
+            color: #0f172a;
+        }
+        .ticket-info p {
+            margin: 0;
+            color: #64748b;
+        }
+        .qr-container {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: inline-block;
+            margin-bottom: 1rem;
+            background: #f8fafc;
+        }
+        .qr-code {
+            width: 200px;
+            height: 200px;
+        }
+        .btn-home {
+            display: inline-block;
+            background: #f1f5f9;
+            color: #475569;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s;
+            margin-top: 1rem;
+        }
+        .btn-home:hover {
+            background: #e2e8f0;
+        }
+        /* Ticket Cutout effect */
+        .success-card::before, .success-card::after {
+            content: '';
+            position: absolute;
+            top: 150px; /* Header height estimation */
+            width: 30px;
+            height: 30px;
+            background: var(--app-main-bg);
+            border-radius: 50%;
+            z-index: 10;
+        }
+        .success-card::before { left: -15px; }
+        .success-card::after { right: -15px; }
+    </style>
+{% endblock %}
+
+{% block app_content %}
+<div class="page-container">
+    <div class="success-card">
+        <div class="card-header">
+            <div class="success-icon">✓</div>
+            <h1>Registration Confirmed!</h1>
+        </div>
+        <div class="card-body">
+            <div class="ticket-info">
+                <h3>{{ registration.event.title }}</h3>
+                <p>Hello {{ registration.participantName }}</p>
+                <p>Registration ID: #{{ registration.id }}</p>
+            </div>
+            
+            <div class="qr-container">
+                <!-- Direct load from external API -->
+                <img src="{{ qrCodeUrl }}" alt="QR Code" class="qr-code">
+            </div>
+            
+            <p style="font-size: 0.85rem; color: #94a3b8;">Please show this QR code at the entrance.</p>
+            
+            <a href="{{ path('app_event_index') }}" class="btn-home">Return to Events</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

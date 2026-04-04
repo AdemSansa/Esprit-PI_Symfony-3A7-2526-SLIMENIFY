@@ -95,7 +95,10 @@
                     <a href="{{ path('app_assessment_index') }}" class="{{ route starts with 'app_assessment' ? 'is-active' : '' }}">Assessments</a>
                 {% endif %}
                 
+                <a href="{{ path('app_event_index') }}" class="{{ route starts with 'app_event_' and not route starts with 'app_event_registration' ? 'is-active' : '' }}">Events</a>
+                
                 {% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_event_registration_list') }}" class="{{ route starts with 'app_event_registration' ? 'is-active' : '' }}">Registrations</a>
                     <a href="{{ path('app_quiz_index') }}" class="{{ route starts with 'app_quiz' ? 'is-active' : '' }}">Quizzes</a>
                     <a href="{{ path('app_question_index') }}" class="{{ route starts with 'app_question' ? 'is-active' : '' }}">Questions</a>
                 {% endif %}
