@@ -30,36 +30,52 @@
         </div>
 
         <script>
-            // Hide loader when page is fully loaded
-            window.addEventListener('load', function() {
-                var loader = document.getElementById('page-loader');
-                if(loader) {
-                    loader.classList.add('hidden');
-                    setTimeout(function() {
-                        loader.style.display = 'none';
-                    }, 500);
-                }
-            });
-
-            // Show loader on page leave
-            window.addEventListener('beforeunload', function() {
-                var loader = document.getElementById('page-loader');
-                if(loader) {
-                    loader.style.display = 'flex';
-                    loader.classList.remove('hidden');
-                }
-            });
-            
-            // Handle bfcache (back/forward navigation)
-            window.addEventListener('pageshow', function(event) {
-                if (event.persisted) {
+            (function() {
+                function hideLoader() {
                     var loader = document.getElementById('page-loader');
                     if(loader) {
                         loader.classList.add('hidden');
-                        setTimeout(function() { loader.style.display = 'none'; }, 500);
+                        setTimeout(function() {
+                            if (loader) {
+                                loader.style.display = 'none';
+                            }
+                        }, 500);
                     }
                 }
-            });
+
+                function showLoader() {
+                    var loader = document.getElementById('page-loader');
+                    if(loader) {
+                        loader.style.display = 'flex';
+                        loader.classList.remove('hidden');
+                    }
+                }
+
+                if (!window.loaderEventsAttached) {
+                    // Standard page load/unload
+                    window.addEventListener('load', hideLoader);
+                    window.addEventListener('beforeunload', showLoader);
+                    
+                    // Turbo events
+                    document.addEventListener('turbo:load', hideLoader);
+                    document.addEventListener('turbo:before-visit', showLoader);
+                    
+                    // Handle bfcache (back/forward navigation)
+                    window.addEventListener('pageshow', function(event) {
+                        if (event.persisted) {
+                            hideLoader();
+                        }
+                    });
+                    
+                    window.loaderEventsAttached = true;
+                }
+                
+                // Ensure loader is hidden on subsequent Turbo visits because
+                // turbo:load could fire before script execution on some setups.
+                if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                    hideLoader();
+                }
+            })();
         </script>
 
         {% block body %}
