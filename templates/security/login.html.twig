@@ -37,6 +37,15 @@
         <p class="auth-subtitle auth-footer-text" style="margin-top: 1rem; text-align: center;">
             Don't have an account? <a class="auth-link" href="{{ path('app_register') }}">Register here</a>
         </p>
+
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+            <p class="auth-subtitle" style="text-align: center; margin-bottom: 0.5rem; font-size: 0.8rem;">Dev Tools (Auto-fill)</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button type="button" style="padding: 5px 10px; font-size: 0.85rem; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; color: #475569; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'" onclick="document.getElementById('inputEmail').value='patient@gmail.com'; document.getElementById('inputPassword').value='123456';">Patient</button>
+                <button type="button" style="padding: 5px 10px; font-size: 0.85rem; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; color: #475569; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'" onclick="document.getElementById('inputEmail').value='therapist@gmail.com'; document.getElementById('inputPassword').value='123456';">Therapist</button>
+                <button type="button" style="padding: 5px 10px; font-size: 0.85rem; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; color: #475569; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'" onclick="document.getElementById('inputEmail').value='admin@gmail.com'; document.getElementById('inputPassword').value='123456';">Admin</button>
+            </div>
+        </div>
     </form>
 </main>
 {% endblock %}
