@@ -1,120 +1,135 @@
 {% extends 'base.html.twig' %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    <style>
-        :root {
-            --app-sidebar-bg: #1a2332;
-            --app-sidebar-text: #e8edf4;
-            --app-sidebar-muted: #94a3b8;
-            --app-accent: #3b82f6;
-            --app-accent-hover: #2563eb;
-            --app-main-bg: #f1f5f9;
-        }
-        .app-layout {
-            display: flex;
-            min-height: 100vh;
-            margin: 0;
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        }
-        .app-sidebar {
-            width: 240px;
-            flex-shrink: 0;
-            background: var(--app-sidebar-bg);
-            color: var(--app-sidebar-text);
-            padding: 1.25rem 0;
-            display: flex;
-            flex-direction: column;
-        }
-        .app-sidebar__brand {
-            padding: 0 1.25rem 1.25rem;
-            font-weight: 700;
-            font-size: 1.1rem;
-            letter-spacing: -0.02em;
-            border-bottom: 1px solid rgba(255,255,255,.08);
-            margin-bottom: 0.75rem;
-        }
-        .app-sidebar__nav {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            padding: 0 0.75rem;
-        }
-        .app-sidebar__nav a {
-            display: block;
-            padding: 0.65rem 0.85rem;
-            border-radius: 8px;
-            color: var(--app-sidebar-muted);
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: background .15s, color .15s;
-        }
-        .app-sidebar__nav a:hover {
-            color: var(--app-sidebar-text);
-            background: rgba(255,255,255,.06);
-        }
-        .app-sidebar__nav a.is-active {
-            color: #fff;
-            background: rgba(59, 130, 246, .25);
-        }
-        .app-sidebar__footer {
-            margin-top: auto;
-            padding: 1rem 1.25rem 0;
-            border-top: 1px solid rgba(255,255,255,.08);
-            font-size: 0.8rem;
-            color: var(--app-sidebar-muted);
-        }
-        .app-sidebar__footer a {
-            color: var(--app-accent);
-            text-decoration: none;
-        }
-        .app-sidebar__footer a:hover {
-            text-decoration: underline;
-        }
-        .app-main {
-            flex: 1;
-            background: var(--app-main-bg);
-            padding: 1.75rem 2rem;
-            overflow: auto;
-        }
-        .app-main__inner {
-            max-width: 960px;
-        }
-    </style>
-{% endblock %}
+	{{ parent() }}
+	<style>:root
+	{
+		--app-sidebar-bg: #808c75;
+		--app-sidebar-text: #ffffff;
+		--app-sidebar-muted: #d5d9d1;
+		--app-accent: #627255;
+		--app-accent-hover: #4f5d44;
+		--app-main-bg: #f6f5ed;
+	}
+	@keyframes fadeInSlideUp {
+		0% { opacity: 0; transform: translateY(15px); }
+		100% { opacity: 1; transform: translateY(0); }
+	}
+	@keyframes pulseGlow {
+		0% { box-shadow: 0 0 0 0 rgba(128, 140, 117, 0.4); }
+		70% { box-shadow: 0 0 0 10px rgba(128, 140, 117, 0); }
+		100% { box-shadow: 0 0 0 0 rgba(128, 140, 117, 0); }
+	}
+	.app-layout {
+		display: flex;
+		min-height: 100vh;
+		margin: 0;
+		font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+	}
+	.app-sidebar {
+		width: 240px;
+		flex-shrink: 0;
+		background: linear-gradient(180deg, var(--app-sidebar-bg) 0%, #687560 100%);
+		color: var(--app-sidebar-text);
+		padding: 1.25rem 0;
+		display: flex;
+		flex-direction: column;
+	}
+	.app-sidebar__brand {
+		padding: 0 1.25rem 1.25rem;
+		font-weight: 800;
+		font-size: 1.3rem;
+		letter-spacing: -0.02em;
+		border-bottom: 1px solid rgba(255, 255, 255, .15);
+		margin-bottom: 0.75rem;
+		background: linear-gradient(90deg, #ffffff, #d5d9d1);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+	.app-sidebar__nav {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		padding: 0 0.75rem;
+	}
+	.app-sidebar__nav a {
+		display: block;
+		padding: 0.65rem 0.85rem;
+		border-radius: 8px;
+		color: var(--app-sidebar-muted);
+		text-decoration: none;
+		font-size: 0.95rem;
+		transition: background 0.15s, color 0.15s;
+	}
+	.app-sidebar__nav a:hover {
+		color: var(--app-sidebar-text);
+		background: rgba(255, 255, 255, .1);
+	}
+	.app-sidebar__nav a.is-active {
+		color: #fff;
+		background: rgba(255, 255, 255, 0.2);
+	}
+	.app-sidebar__footer {
+		margin-top: auto;
+		padding: 1rem 1.25rem 0;
+		border-top: 1px solid rgba(255, 255, 255, .08);
+		font-size: 0.8rem;
+		color: var(--app-sidebar-muted);
+	}
+	.app-sidebar__footer a {
+		color: var(--app-accent);
+		text-decoration: none;
+	}
+	.app-sidebar__footer a:hover {
+		text-decoration: underline;
+	}
+	.app-main {
+		flex: 1;
+		background: var(--app-main-bg);
+		padding: 1.75rem 2rem;
+		overflow: auto;
+	}
+	.app-main__inner {
+		max-width: 960px;
+		animation: fadeInSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+</style>{% endblock %}{% block body %}
+{% set route = app.request.attributes.get('_route') %}
+<div class="app-layout">
+	<aside class="app-sidebar" aria-label="Main navigation">
+		<div class="app-sidebar__brand">Slimenify</div>
+		<nav class="app-sidebar__nav">
+			<a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'is-active' : '' }}">Home</a>
 
-{% block body %}
-    {% set route = app.request.attributes.get('_route') %}
-    <div class="app-layout">
-        <aside class="app-sidebar" aria-label="Main navigation">
-            <div class="app-sidebar__brand">Slimenify</div>
-            <nav class="app-sidebar__nav">
-                <a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'is-active' : '' }}">Home</a>
-                
-                {% if is_granted('ROLE_PATIENT') or is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('app_assessment_index') }}" class="{{ route starts with 'app_assessment' ? 'is-active' : '' }}">Assessments</a>
-                {% endif %}
-                
-                {% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('app_quiz_index') }}" class="{{ route starts with 'app_quiz' ? 'is-active' : '' }}">Quizzes</a>
-                    <a href="{{ path('app_question_index') }}" class="{{ route starts with 'app_question' ? 'is-active' : '' }}">Questions</a>
-                {% endif %}
-                
-                {% if is_granted('ROLE_ADMIN') %}
-                    <a href="#" style="margin-top: 1.5rem; opacity: 0.8;">Admin Panel (Locked)</a>
-                {% endif %}
-            </nav>
-            <div class="app-sidebar__footer">
-                {% if app.user %}
-                    <div>{{ app.user.userIdentifier }}</div>
-                {% endif %}
-                <a href="{{ path('app_logout') }}">Log out</a>
-            </div>
-        </aside>
-        <main class="app-main">
-            <div class="app-main__inner">
-                {% block app_content %}{% endblock %}
-            </div>
-        </main>
-    </div>
-{% endblock %}
+			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_assessment_index') }}" class="{{ route starts with 'app_assessment' ? 'is-active' : '' }}">Assessments</a>
+			{% endif %}
+
+			{% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_quiz_index') }}" class="{{ route starts with 'app_quiz' ? 'is-active' : '' }}">Quizzes</a>
+				<a href="{{ path('app_question_index') }}" class="{{ route starts with 'app_question' ? 'is-active' : '' }}">Questions</a>
+			{% endif %}
+
+			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_product_index') }}" class="{{ route starts with 'app_product' ? 'is-active' : '' }}">Products</a>
+			{% endif %}
+
+			{% if is_granted('ROLE_ADMIN') %}
+				<div style="margin-top: 1.5rem; margin-bottom: 0.25rem; padding: 0 0.85rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-sidebar-muted);">Admin Area</div>
+				<a href="{{ path('app_supplier_index') }}" class="{{ route starts with 'app_supplier' ? 'is-active' : '' }}">Suppliers</a>
+			{% endif %}
+		</nav>
+		<div class="app-sidebar__footer">
+			{% if app.user %}
+				<div>{{ app.user.userIdentifier }}</div>
+			{% endif %}
+			<a href="{{ path('app_logout') }}">Log out</a>
+		</div>
+	</aside>
+	<main class="app-main">
+		<div class="app-main__inner">
+			{% block app_content %}{% endblock %}
+		</div>
+	</main>
+</div>{% endblock %}

@@ -1,0 +1,16 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Edit Supplier{% endblock %}
+
+{% block app_content %}
+    <div style="background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); max-width: 800px; margin: 0 auto;">
+        <h1 style="margin: 0 0 1.5rem 0; font-size: 1.5rem; color: #0f172a;">Edit Supplier</h1>
+
+        {{ include('supplier/_form.html.twig', {'button_label': 'Update'}) }}
+
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;">
+            <a href="{{ path('app_supplier_index') }}" style="color: #64748b; text-decoration: none; font-size: 0.95rem;">&larr; Back to list</a>
+            {{ include('supplier/_delete_form.html.twig') }}
+        </div>
+    </div>
+{% endblock %}
