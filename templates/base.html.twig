@@ -19,6 +19,49 @@
         {% endif %}
     </head>
     <body>
+        <!-- Page Loader -->
+        <div id="page-loader" class="page-loader">
+            <div class="loader-content">
+                <div class="loader-logo">
+                    <img src="{{ asset('logo.jpg') }}" alt="Slimenify Logo" class="loader-logo-img">
+                </div>
+                <div class="loader-spinner"></div>
+            </div>
+        </div>
+
+        <script>
+            // Hide loader when page is fully loaded
+            window.addEventListener('load', function() {
+                var loader = document.getElementById('page-loader');
+                if(loader) {
+                    loader.classList.add('hidden');
+                    setTimeout(function() {
+                        loader.style.display = 'none';
+                    }, 500);
+                }
+            });
+
+            // Show loader on page leave
+            window.addEventListener('beforeunload', function() {
+                var loader = document.getElementById('page-loader');
+                if(loader) {
+                    loader.style.display = 'flex';
+                    loader.classList.remove('hidden');
+                }
+            });
+            
+            // Handle bfcache (back/forward navigation)
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted) {
+                    var loader = document.getElementById('page-loader');
+                    if(loader) {
+                        loader.classList.add('hidden');
+                        setTimeout(function() { loader.style.display = 'none'; }, 500);
+                    }
+                }
+            });
+        </script>
+
         {% block body %}
         <a href="{{ path('app_home') }}">Home</a>
         <a href="{{ path('app_login') }}">Login</a>
