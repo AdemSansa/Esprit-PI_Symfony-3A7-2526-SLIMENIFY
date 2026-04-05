@@ -1,0 +1,15 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}New Product{% endblock %}
+
+{% block app_content %}
+    <div style="background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); max-width: 800px; margin: 0 auto;">
+        <h1 style="margin: 0 0 1.5rem 0; font-size: 1.5rem; color: #0f172a;">Create New Product</h1>
+
+        {{ include('product/_form.html.twig') }}
+
+        <div style="margin-top: 1.5rem;">
+            <a href="{{ path('app_product_index') }}" style="color: #64748b; text-decoration: none; font-size: 0.95rem;">&larr; Back to list</a>
+        </div>
+    </div>
+{% endblock %}
