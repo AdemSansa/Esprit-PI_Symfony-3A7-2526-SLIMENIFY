@@ -1,0 +1,384 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block app_content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+.reviews-wrapper {
+    display: flex;
+    gap: 30px;
+    padding: 10px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.box-panel {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    padding: 25px;
+}
+
+.left-box { flex: 1; min-width: 300px; height: fit-content; position: sticky; top: 20px; }
+.right-box { flex: 2; display: flex; flex-direction: column; gap: 20px; }
+
+.section-title { font-size: 1.4rem; font-weight: 600; margin-bottom: 20px; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+
+.form-group { margin-bottom: 15px; }
+.form-control { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; resize: vertical; min-height: 100px; }
+.form-control:focus { border-color: #3b82f6; outline: none; }
+.rating-select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; }
+
+.btn { padding: 8px 14px; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.btn-submit { background: #10b981; color: white; width: 100%; justify-content: center; padding: 12px; font-size: 1.05rem; }
+.btn-submit:hover { background: #059669; }
+
+.btn-like { background: #e0f2fe; color: #0284c7; }
+.btn-dislike { background: #ffe4e6; color: #e11d48; }
+.btn-edit { background: #fef08a; color: #854d0e; }
+.btn-delete { background: #fee2e2; color: #b91c1c; }
+
+.review-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; transition: transform 0.2s; }
+.review-card:hover { border-color: #cbd5e1; }
+.review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.review-author { font-weight: 600; color: #0f172a; font-size: 1.1rem; }
+.review-rating { color: #eab308; letter-spacing: 2px; }
+.review-date { font-size: 0.85rem; color: #64748b; }
+.review-content { color: #334155; line-height: 1.6; margin-bottom: 15px; font-size: 1.05rem; }
+
+.replies-section { margin-top: 20px; border-left: 3px solid #e2e8f0; padding-left: 20px; display: flex; flex-direction: column; gap: 15px; }
+.reply-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; }
+.reply-author { font-weight: 600; color: #3b82f6; margin-bottom: 8px; display: block; }
+
+.action-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+.author-actions { margin-left: auto; display: flex; gap: 10px; }
+
+.reply-form { margin-top: 15px; display: flex; gap: 10px; }
+.reply-input { flex: 1; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; resize: none; height: 45px; }
+.btn-reply-submit { background: #3b82f6; color: white; white-space: nowrap; }
+
+</style>
+
+<div class="reviews-wrapper">
+
+    {# --- Left Box: Add Review (User Only) --- #}
+    {% if is_granted('ROLE_PATIENT') %}
+    <div class="box-panel left-box">
+        <h2 class="section-title">✨ Share your experience</h2>
+        <form id="add-review-form" action="{{ path('app_reviews_add') }}" method="POST">
+            <div class="form-group">
+                <textarea name="content" class="form-control" placeholder="Write your review here... (min 11 characters)" required minlength="11"></textarea>
+            </div>
+            <div class="form-group">
+                <label style="font-weight: 500; font-size: 0.95rem; margin-bottom: 8px; display: block; color: #475569;">Your rating</label>
+                <select name="rating" class="rating-select">
+                    <option value="5">⭐⭐⭐⭐⭐ Excellent (5)</option>
+                    <option value="4">⭐⭐⭐⭐ Very Good (4)</option>
+                    <option value="3">⭐⭐⭐ Good (3)</option>
+                    <option value="2">⭐⭐ Fair (2)</option>
+                    <option value="1">⭐ Poor (1)</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-submit">🚀 Submit Review</button>
+        </form>
+    </div>
+    {% endif %}
+
+    {# --- Right Box: Reviews List --- #}
+    <div class="right-box" {% if not is_granted('ROLE_PATIENT') %}style="flex:1"{% endif %}>
+
+        {# --- Admin Dashboard --- #}
+        {% if is_granted('ROLE_ADMIN') %}
+        <div class="box-panel admin-dashboard" style="margin-bottom: 25px; display: flex; gap: 30px; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #f8fafc, #f1f5f9);">
+            <div style="flex: 1;">
+                <h2 class="section-title">📊 Admin Dashboard</h2>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button id="adminSortBtn" class="btn btn-submit" style="width: auto; background: #64748b;">⏳ Sort: Newest First</button>
+                    <div style="font-size: 0.9rem; color: #475569; display: flex; align-items: center; background: white; padding: 0 10px; border-radius: 8px; border: 1px solid #cbd5e1;">Real-time active</div>
+                </div>
+            </div>
+            
+            <div style="width: 220px; height: 220px; display: flex; align-items: center; justify-content: center;">
+                <canvas id="statsChart"></canvas>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        {% endif %}
+
+        <div class="box-panel" id="reviewsContainer" style="background: transparent; box-shadow: none; padding: 0;">
+            <h2 class="section-title">💬 Patient Reviews</h2>
+            
+            {% if reviews is empty %}
+                <div class="box-panel" style="text-align: center; color: #64748b; padding: 40px;">
+                    No reviews published yet.
+                </div>
+            {% endif %}
+
+            {% for review in reviews %}
+            <div class="review-card" data-id="{{ review.id }}" data-timestamp="{{ review.createdAt|date('U') }}">
+                <div class="review-header">
+                    <div>
+                        <span class="review-author">👤 {{ review.user.username|default('Anonymous') }}</span>
+                        <div class="review-rating">
+                            {% for i in 1..5 %}
+                                {% if loop.index <= review.rating %}⭐{% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <span class="review-date">🕒 {{ review.createdAt|date('d/m/Y H:i') }}</span>
+                </div>
+                
+                <div class="review-content">{{ review.content }}</div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-like btn-action" onclick="callLikeAction('review', {{ review.id }}, 'like', this)">
+                        👍 <span class="like-count">{{ review.likes }}</span>
+                    </button>
+                    <button class="btn btn-dislike btn-action" onclick="callLikeAction('review', {{ review.id }}, 'dislike', this)">
+                        👎 <span class="dislike-count">{{ review.dislikes }}</span>
+                    </button>
+
+                    {% if app.user and is_granted('ROLE_PATIENT') and app.user.id == review.user.id %}
+                    <div class="author-actions">
+                        <button class="btn btn-edit" onclick="callEditAction('review', {{ review.id }}, '{{ review.content|escape('js') }}')">✏️ Edit</button>
+                        <button class="btn btn-delete" onclick="callDeleteAction('review', {{ review.id }})">🗑️ Delete</button>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# --- Replies --- #}
+                <div class="replies-section">
+                    {% for reply in review.replies %}
+                    <div class="reply-card" data-id="{{ reply.id }}">
+                        <span class="reply-author">🩺 {{ reply.therapist.username|default('Therapist') }}</span>
+                        <div class="review-content" style="font-size: 0.95rem; margin-bottom: 10px;">{{ reply.content }}</div>
+                        
+                        <div class="action-buttons" style="margin-top: 5px;">
+                            <button class="btn btn-like btn-action" onclick="callLikeAction('reply', {{ reply.id }}, 'like', this)">
+                                👍 <span class="like-count">{{ reply.likes|default(0) }}</span>
+                            </button>
+                            <button class="btn btn-dislike btn-action" onclick="callLikeAction('reply', {{ reply.id }}, 'dislike', this)">
+                                👎 <span class="dislike-count">{{ reply.dislikes|default(0) }}</span>
+                            </button>
+
+                            {% if app.user and is_granted('ROLE_THERAPIST') %}
+                            <div class="author-actions">
+                                <button class="btn btn-edit" onclick="callEditAction('reply', {{ reply.id }}, '{{ reply.content|escape('js') }}')">✏️ Edit</button>
+                                <button class="btn btn-delete" onclick="callDeleteAction('reply', {{ reply.id }})">🗑️ Delete</button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {# --- Therapist add reply box --- #}
+                    {% if is_granted('ROLE_THERAPIST') %}
+                    <form class="add-reply-form" action="/reviews/{{ review.id }}/reply" method="POST">
+                        <div class="reply-form">
+                            <textarea name="content" class="reply-input" placeholder="Write a reply... (min 11 characters)" required minlength="11"></textarea>
+                            <button type="submit" class="btn btn-reply-submit">✅ Reply</button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+window.callDeleteAction = function(type, id) {
+    const isReview = (type === 'review');
+    const typeText = isReview ? 'this review' : 'this reply';
+    const url = (isReview ? '/api/reviews/' : '/api/review-replies/') + id;
+    
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you really want to delete ${typeText}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: '🗑️ Yes, delete it',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            processAjax(url, 'DELETE').then(data => {
+                Swal.fire('Deleted!', data.message, 'success').then(() => location.reload());
+            });
+        }
+    });
+};
+
+window.callEditAction = async function(type, id, oldContent) {
+    const isReview = (type === 'review');
+    const typeText = isReview ? 'this review' : 'this reply';
+    const url = (isReview ? '/api/reviews/' : '/api/review-replies/') + id;
+
+    // Step 1: Confirmation
+    const confirmResult = await Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you really want to edit ${typeText}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, edit it',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (!confirmResult.isConfirmed) {
+        return;
+    }
+
+    // Step 2: Edit Input
+    const { value: newContent } = await Swal.fire({
+        title: `Edit ${typeText}`,
+        input: 'textarea',
+        inputLabel: 'Content',
+        inputValue: oldContent,
+        showCancelButton: true,
+        confirmButtonText: '💾 Save changes',
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+            if (!value) return 'Content cannot be empty!';
+            if (value.trim().length <= 10) return 'Content must be more than 10 characters!';
+        }
+    });
+
+    if (newContent) {
+        processAjax(url, 'PUT', { content: newContent }).then(data => {
+            Swal.fire('Edited successfully!', data.message, 'success').then(() => location.reload());
+        }).catch(err => {
+            // Error is handled inside processAjax, so do nothing here to avoid double alert
+        });
+    }
+};
+
+window.callLikeAction = function(type, id, action, btnElem) {
+    const url = type === 'review' ? `/api/reviews/${id}/${action}` : `/api/review-replies/${id}/${action}`;
+
+    processAjax(url, 'POST').then(data => {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            icon: 'success',
+            title: data.message
+        });
+        
+        const counterSpan = btnElem.querySelector(action === 'like' ? '.like-count' : '.dislike-count');
+        if(action === 'like') { counterSpan.textContent = data.likes; }
+        else { counterSpan.textContent = data.dislikes; }
+    });
+};
+
+function processAjax(url, method, bodyJSON = null) {
+    let options = { method: method };
+    if(bodyJSON) {
+        options.headers = { 'Content-Type': 'application/json' };
+        options.body = JSON.stringify(bodyJSON);
+    }
+    return fetch(url, options).then(async res => {
+        if (!res.ok) {
+            let errorMsg = "A server error occurred. Please try again.";
+            try {
+                const errorData = await res.json();
+                if(errorData.message) errorMsg = errorData.message;
+            } catch(e) {}
+            throw new Error(errorMsg);
+        }
+        return res.json();
+    }).catch(err => {
+        Swal.fire('Error', err.message, 'error');
+        console.error(err);
+        throw err;
+    });
+}
+
+// Display symfony flash messages via SweetAlert automatically
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        Swal.fire({
+            title: '{{ label == "success" ? "Success!" : "Notice" }}',
+            text: '{{ message }}',
+            icon: '{{ label == "error" ? "error" : "success" }}',
+            confirmButtonText: 'OK'
+        });
+    {% endfor %}
+{% endfor %}
+
+{% if is_granted('ROLE_ADMIN') %}
+// Admin Dashboard Logic
+(function() {
+    const container = document.getElementById('reviewsContainer');
+    if (!container) return;
+    
+    // Convert NodeList to genuine Array for flexible sorting and manipulation
+    const cards = Array.from(container.querySelectorAll('.review-card'));
+    let answered = 0;
+    
+    cards.forEach(card => {
+        const replies = card.querySelectorAll('.reply-card');
+        if (replies.length > 0) {
+            answered++;
+        }
+    });
+    
+    const unanswered = cards.length - answered;
+    
+    // Draw Beautiful Pie Chart
+    const ctx = document.getElementById('statsChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Answered', 'Unanswered'],
+                datasets: [{
+                    data: [answered, unanswered],
+                    backgroundColor: ['#10b981', '#f43f5e'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { family: 'Segoe UI' } } },
+                    title: { display: true, text: 'Review Response Rate', font: { size: 14 } }
+                }
+            }
+        });
+    }
+
+    // Dynamic DOM Sorting
+    const sortBtn = document.getElementById('adminSortBtn');
+    let defaultAsceding = true; // Reviews typically load oldest-to-newest originally
+    let currentAscending = defaultAsceding;
+    
+    if (sortBtn) {
+        sortBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentAscending = !currentAscending;
+            sortBtn.innerHTML = currentAscending ? '⏳ Sort: Oldest First' : '⏳ Sort: Newest First';
+            
+            // Re-order DOM elements completely in browser engine (0 server calls)
+            cards.sort((a, b) => {
+                const timeA = parseInt(a.dataset.timestamp || 0);
+                const timeB = parseInt(b.dataset.timestamp || 0);
+                return currentAscending ? (timeA - timeB) : (timeB - timeA);
+            });
+            
+            cards.forEach(card => container.appendChild(card));
+        });
+    }
+})();
+{% endif %}
+
+</script>
+{% endblock %}
