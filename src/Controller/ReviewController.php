@@ -129,7 +129,7 @@ class ReviewController extends AbstractController
             if (method_exists($review, 'setUpdatedAt')) {
                 $review->setUpdatedAt(new \DateTime());
             }
-            $reviewRepo->save($review);
+            $reviewRepo->save($review, true);
         }
         return $this->json(['message' => 'Review edited successfully']);
     }
@@ -138,7 +138,7 @@ class ReviewController extends AbstractController
     #[Route('/api/reviews/{id}', name: 'api_reviews_delete', methods: ['DELETE'])]
     public function deleteReview(Review $review, ReviewRepository $reviewRepo): Response
     {
-        $reviewRepo->remove($review);
+        $reviewRepo->remove($review, true);
         return $this->json(['message' => 'Review deleted successfully']);
     }
 
@@ -179,7 +179,7 @@ class ReviewController extends AbstractController
             }
 
             $reply->setContent($content);
-            $replyRepo->save($reply);
+            $replyRepo->save($reply, true);
         }
         return $this->json(['message' => 'Reply edited successfully']);
     }
@@ -188,7 +188,7 @@ class ReviewController extends AbstractController
     #[Route('/api/review-replies/{id}', name: 'api_replies_delete', methods: ['DELETE'])]
     public function deleteReply(ReviewReply $reply, ReviewReplyRepository $replyRepo): Response
     {
-        $replyRepo->remove($reply);
+        $replyRepo->remove($reply, true);
         return $this->json(['message' => 'Reply deleted successfully']);
     }
 
