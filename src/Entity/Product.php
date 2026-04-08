@@ -33,8 +33,10 @@ class Product
     #[Assert\PositiveOrZero(message: "Le stock ne peut pas être négatif.")]
     private ?int $stockQuantity = 0;
 
-    #[ORM\Column(type: 'string', columnDefinition: "ENUM('Antidepressants', 'Anxiolytics', 'Stimulants', 'Antipsychotics', 'Mood Stabilizers')", nullable: true)]
-    #[Assert\Choice(choices: ['Antidepressants', 'Anxiolytics', 'Stimulants', 'Antipsychotics', 'Mood Stabilizers'], message: "Veuillez choisir une catégorie valide.")]
+    #[ORM\Column(type: 'string', columnDefinition: "ENUM('Authorized Vitamins', 'Psychology Books', 'Relaxing Products', 'Therapeutic Games & Activities')", nullable: true)]
+    #[Assert\Choice(choices: [
+        'Authorized Vitamins', 'Psychology Books', 'Relaxing Products', 'Therapeutic Games & Activities'
+    ], message: "Veuillez choisir une catégorie valide.")]
     private ?string $category = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]

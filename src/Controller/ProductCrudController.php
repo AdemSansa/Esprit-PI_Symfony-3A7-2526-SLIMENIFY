@@ -23,6 +23,26 @@ class ProductCrudController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/show', name: 'app_product_show', methods: ['GET'])]
+    public function show(Product $product, ProductRepository $productRepository): Response
+    {
+        $relatedProducts = $productRepository->findBy(
+            ['category' => $product->getCategory()],
+            ['name' => 'ASC'],
+            6
+        );
+
+        // Filter out the current product
+        $relatedProducts = array_filter($relatedProducts, function($p) use ($product) {
+            return $p->getId() !== $product->getId();
+        });
+
+        return $this->render('product/show.html.twig', [
+            'product' => $product,
+            'relatedProducts' => $relatedProducts,
+        ]);
+    }
+
     #[Route('/new', name: 'app_product_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_ADMIN')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
