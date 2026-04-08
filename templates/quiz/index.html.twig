@@ -3,9 +3,18 @@
 {% block title %}Quiz{% endblock %}
 
 {% block app_content %}
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;">
         <h1 style="margin:0; font-size:1.75rem;">Quizzes Management</h1>
-        <a href="{{ path('app_quiz_new') }}" style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);">
+        
+        <form method="get" action="{{ path('app_quiz_index') }}" style="display: flex; flex: 1; max-width: 400px; gap: 0.5rem; margin-left: auto;">
+            <input type="text" name="q" value="{{ searchQuery ?? '' }}" placeholder="Search quizzes..." style="flex: 1; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-size: 0.95rem;">
+            <button type="submit" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">Search</button>
+            {% if searchQuery %}
+                <a href="{{ path('app_quiz_index') }}" style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #fee2e2; color: #ef4444; border-radius: 8px; text-decoration: none; font-weight: bold;" title="Clear search">×</a>
+            {% endif %}
+        </form>
+
+        <a href="{{ path('app_quiz_new') }}" style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); white-space: nowrap;">
             + Create New Quiz
         </a>
     </div>
@@ -43,12 +52,12 @@
                             <div style="font-weight: 600; color: #334155;">{{ quiz.totalQuestions }}</div>
                         </div>
                         <div>
-                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Min</div>
-                            <div style="font-weight: 600; color: #334155;">{{ quiz.minScore }}</div>
+                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Est. Time</div>
+                            <div style="font-weight: 600; color: #334155;">{{ quiz.estimatedTimeFormatted }}</div>
                         </div>
                         <div>
-                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Max</div>
-                            <div style="font-weight: 600; color: #334155;">{{ quiz.maxScore }}</div>
+                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Taken By</div>
+                            <div style="font-weight: 600; color: #334155;">{{ quiz.participantCount }}</div>
                         </div>
                     </div>
 
