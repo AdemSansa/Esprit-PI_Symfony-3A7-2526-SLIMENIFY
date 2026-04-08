@@ -44,11 +44,10 @@ class ProductType extends AbstractType
                 'required' => false,
                 'placeholder' => 'Select category',
                 'choices' => [
-                    'Antidepressants' => 'Antidepressants',
-                    'Anxiolytics' => 'Anxiolytics',
-                    'Stimulants' => 'Stimulants',
-                    'Antipsychotics' => 'Antipsychotics',
-                    'Mood Stabilizers' => 'Mood Stabilizers',
+                    'Authorized Vitamins' => 'Authorized Vitamins',
+                    'Psychology Books' => 'Psychology Books',
+                    'Relaxing Products' => 'Relaxing Products',
+                    'Therapeutic Games & Activities' => 'Therapeutic Games & Activities',
                 ],
                 'attr' => ['class' => 'auth-input']
             ])
