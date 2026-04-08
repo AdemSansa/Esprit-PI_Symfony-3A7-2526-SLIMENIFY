@@ -2,21 +2,130 @@
 
 {% block title %}Available Assessments{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        #smile-lock-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(15px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        #smile-lock-overlay.unlocked {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .smile-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.02);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .video-container {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #0f172a;
+            margin: 1.5rem 0;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            aspect-ratio: 4/3;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror camera */
+            display: block;
+        }
+
+        .scanning-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #3b82f6;
+            box-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6;
+            animation: scanLine 2s infinite ease-in-out;
+            opacity: 0.8;
+            display: none;
+            z-index: 10;
+        }
+
+        .is-scanning .scanning-line {
+            display: block;
+        }
+
+        @keyframes scanLine {
+            0% { top: 0; }
+            50% { top: calc(100% - 4px); }
+            100% { top: 0; }
+        }
+
+        #status-msg {
+            font-size: 1.1rem;
+            color: #475569;
+            font-weight: 500;
+            margin-bottom: 0;
+            min-height: 1.5em;
+        }
+    </style>
+{% endblock %}
+
 {% block app_content %}
+    <!-- Smile to Unlock Overlay -->
+    <div id="smile-lock-overlay">
+        <div class="smile-card">
+            <h2 style="margin: 0 0 0.5rem; color: #0f172a; font-size: 1.8rem; letter-spacing: -0.02em;">Interface Locked</h2>
+            <p style="color: #64748b; margin: 0; line-height: 1.5;">Let's boost your mood! Please smile brightly at the camera to unlock your assessments. 😊</p>
+            
+            <div class="video-container" id="video-wrapper">
+                <div class="scanning-line"></div>
+                <video id="video" autoplay muted playsinline></video>
+            </div>
+            
+            <p id="status-msg">Initializing AI models...</p>
+        </div>
+    </div>
+
+    <!-- Main Content underneath -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
         <div>
             <h1 style="margin: 0; font-size: 1.8rem; color: #0f172a; letter-spacing: -0.02em;">Take an Assessment</h1>
             <p style="margin: 0.5rem 0 0; color: #64748b; font-size: 0.95rem;">Select an active quiz to complete your evaluation.</p>
         </div>
+        <div>
+            <a href="{{ path('app_assessment_history') }}" style="background: white; color: #3b82f6; border: 1px solid #bfdbfe; padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem; transition: background 0.2s;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='white'">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                Quiz History
+            </a>
+        </div>
     </div>
 
-    <!-- Reusing same beautiful grid from Therapist Quiz Dashboard -->
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
         {% for quiz in quizzes %}
             <div style="background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05)'">
                 
                 <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                    <div style="background: #eff6ff; color: #3b82f6; padding: 0.35rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <div style="background: #eff6ff; color: #3b82f6; padding: 0.35rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
                         {{ quiz.category ?? 'General' }}
                     </div>
                 </div>
@@ -33,16 +142,87 @@
                     </div>
                     
                     <div style="display: flex; gap: 0.5rem;">
-                        <a href="{{ path('app_assessment_take', {'id': quiz.id}) }}" style="background: #3b82f6; color: white; text-decoration: none; font-size: 0.85rem; padding: 0.4rem 0.75rem; border-radius: 6px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">Take Quiz</a>
+                        <a href="{{ path('app_assessment_take', {'id': quiz.id}) }}" style="background: #3b82f6; color: white; text-decoration: none; font-size: 0.85rem; padding: 0.4rem 0.75rem; border-radius: 6px; font-weight: 500;">Take Quiz</a>
                     </div>
                 </div>
             </div>
         {% else %}
             <div style="grid-column: 1 / -1; background: white; border-radius: 16px; padding: 3rem; text-align: center; border: 2px dashed #cbd5e1;">
-                <svg style="width: 48px; height: 48px; color: #94a3b8; margin: 0 auto 1rem;" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 <h3 style="margin: 0 0 0.5rem; color: #334155; font-size: 1.1rem;">No quizzes available</h3>
-                <p style="margin: 0; color: #64748b; font-size: 0.95rem;">There are no active diagnostic quizzes for you to take right now.</p>
             </div>
         {% endfor %}
     </div>
+
+    <!-- Load AI Models -->
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script>
+        (function() {
+            const overlay = document.getElementById('smile-lock-overlay');
+            if (!overlay) return;
+
+            const video = document.getElementById('video');
+            const statusMsg = document.getElementById('status-msg');
+            const videoWrapper = document.getElementById('video-wrapper');
+            let detectionInterval;
+            let streamRef = null;
+
+            async function initFaceAPI() {
+                try {
+                    // Models provided by justadudewhohacks hosted strictly via jsdelivr github proxy
+                    const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+                    
+                    await Promise.all([
+                        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                        faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+                    ]);
+
+                    statusMsg.textContent = 'Requesting camera access...';
+                    
+                    streamRef = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    video.srcObject = streamRef;
+                } catch (error) {
+                    console.error('FaceAPI Init Error:', error);
+                    statusMsg.textContent = 'Camera blocked or unsupported. Unlocking interface as fallback...';
+                    setTimeout(unlockUI, 2000);
+                }
+            }
+
+            function unlockUI() {
+                if (streamRef) {
+                    streamRef.getTracks().forEach(track => track.stop());
+                }
+                clearInterval(detectionInterval);
+                overlay.classList.add('unlocked');
+                setTimeout(() => { overlay.style.display = 'none'; }, 500);
+            }
+
+            video.addEventListener('play', () => {
+                videoWrapper.classList.add('is-scanning');
+                statusMsg.textContent = 'Scanning face... waiting for a smile! 😄';
+
+                detectionInterval = setInterval(async () => {
+                    const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+                    
+                    if (detections) {
+                        const happyScore = detections.expressions.happy;
+                        
+                        // User smiled! -> Threshold > 80% confidence
+                        if (happyScore > 0.8) {
+                            statusMsg.innerHTML = '<span style="color:#10b981; font-weight:700;">Smile detected! Unlocking! 🎉</span>';
+                            clearInterval(detectionInterval);
+                            setTimeout(unlockUI, 800);
+                        }
+                    }
+                }, 250); 
+            });
+
+            // Wait for CDN script to mount faceapi globally
+            const scriptWatcher = setInterval(() => {
+                if (typeof faceapi !== 'undefined') {
+                    clearInterval(scriptWatcher);
+                    initFaceAPI();
+                }
+            }, 100);
+        })();
+    </script>
 {% endblock %}

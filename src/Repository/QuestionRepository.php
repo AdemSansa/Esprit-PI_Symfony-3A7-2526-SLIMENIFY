@@ -28,4 +28,13 @@ class QuestionRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    public function findBySearchQuery(string $query): array
+    {
+        return $this->createQueryBuilder('q')
+            ->where('q.questionText LIKE :query')
+            ->setParameter('query', '%' . $query . '%')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -5,106 +5,279 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
+
+        .result-container {
+            font-family: 'Outfit', sans-serif;
+            max-width: 700px;
+            margin: 2rem auto;
+            border-radius: 30px;
+            padding: 3.5rem 3rem;
+            position: relative;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.02);
+            text-align: center;
+        }
+
+        .result-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 8px;
+            background: var(--theme-color);
+        }
+
+        .ambient-glow {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            background: var(--theme-glow);
+            filter: blur(80px);
+            opacity: 0.5;
+            z-index: 0;
+            animation: pulseGlow 4s infinite alternate ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: translate(-50%, 0) scale(1); opacity: 0.4; }
+            100% { transform: translate(-50%, -10px) scale(1.1); opacity: 0.7; }
+        }
+
         .circular-chart {
             display: block;
-            margin: 3rem auto;
-            max-width: 80%;
+            margin: 2rem auto;
+            max-width: 250px;
             max-height: 250px;
+            position: relative;
+            z-index: 10;
         }
 
         .circle-bg {
             fill: none;
             stroke: #f1f5f9;
-            stroke-width: 3.8;
+            stroke-width: 2.5;
         }
 
         .circle {
             fill: none;
-            stroke-width: 2.8;
+            stroke-width: 3.5;
             stroke-linecap: round;
-            animation: progress 1.5s ease-out forwards;
+            stroke: var(--theme-color);
+            transform-origin: center;
+            transform: rotate(-90deg);
+            animation: fillProgress 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            filter: drop-shadow(0 0 10px var(--theme-glow));
         }
 
-
-            0% {
-                stroke-dasharray: 0 100;
-            }
+        @keyframes fillProgress {
+            0% { stroke-dasharray: 0, 100; }
         }
 
-        .percentage {
-            fill: #1e293b;
+        .percentage-text {
+            fill: #0f172a;
             font-family: inherit;
-            font-weight: 700;
-            font-size: 0.5em;
+            font-weight: 800;
+            font-size: 0.6em;
             text-anchor: middle;
+            dominant-baseline: central;
+        }
+
+        .percentage-symbol {
+            fill: #64748b;
+            font-size: 0.25em;
+            font-weight: 600;
         }
 
         .result-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
-            margin-top: 2rem;
+            margin-top: 3rem;
+            position: relative;
+            z-index: 10;
         }
 
         .detail-box {
-            background: #f8fafc;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             padding: 1.5rem;
-            border-radius: 12px;
+            border-radius: 20px;
             text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .detail-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08);
+        }
+
+        .action-btn {
+            display: inline-block;
+            background: #0f172a;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 3rem;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-top: 3rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.4);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.5);
+            color: white;
+        }
+
+        .severity-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--theme-bg);
+            color: var(--theme-color);
+            padding: 0.5rem 1.25rem;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 10;
+            animation: badgePulse 2s infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { box-shadow: 0 0 0 0 var(--theme-bg); }
+            50% { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
+        }
+
+        .danger-pulse {
+            animation: criticalPulse 1s infinite alternate;
+        }
+
+        @keyframes criticalPulse {
+            0% { transform: scale(1); box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.2); }
+            100% { transform: scale(1.02); box-shadow: 0 35px 60px -15px rgba(239, 68, 68, 0.5); }
         }
     </style>
 {% endblock %}
 
 {% block app_content %}
     {% set percentage = result.result %}
-    {% set strokeColor = percentage > 75 ? '#10b981' : (percentage > 40 ? '#f59e0b' : '#ef4444') %}
+    
+    {% if percentage > 70 %}
+        {% set themeColor = '#ef4444' %}
+        {% set themeBg = 'rgba(239, 68, 68, 0.15)' %}
+        {% set themeGlow = 'rgba(239, 68, 68, 0.5)' %}
+        {% set icon = '🚨' %}
+        {% set severityText = 'High Risk Detected' %}
+        {% set isCritical = true %}
+    {% elseif percentage > 35 %}
+        {% set themeColor = '#f59e0b' %}
+        {% set themeBg = 'rgba(245, 158, 11, 0.15)' %}
+        {% set themeGlow = 'rgba(245, 158, 11, 0.5)' %}
+        {% set icon = '⚠️' %}
+        {% set severityText = 'Action Recommended' %}
+        {% set isCritical = false %}
+    {% else %}
+        {% set themeColor = '#10b981' %}
+        {% set themeBg = 'rgba(16, 185, 129, 0.15)' %}
+        {% set themeGlow = 'rgba(16, 185, 129, 0.5)' %}
+        {% set icon = '✨' %}
+        {% set severityText = 'Healthy Profile' %}
+        {% set isCritical = false %}
+    {% endif %}
 
-    <div style="max-width: 600px; margin: 3rem auto; background: white; border-radius: 24px; padding: 3rem 2.5rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01); text-align: center;">
+    <div class="result-container {{ isCritical ? 'danger-pulse' : '' }}" style="--theme-color: {{ themeColor }}; --theme-bg: {{ themeBg }}; --theme-glow: {{ themeGlow }};">
         
-        <p style="color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.05em; margin: 0 0 0.5rem;">Assessment Complete</p>
-        <h1 style="margin: 0 0 0.5rem; font-size: 2rem; color: #0f172a; letter-spacing: -0.02em;">{{ quiz.title }} Results</h1>
+        <div class="ambient-glow"></div>
+
+        <div class="severity-badge">
+            <span style="font-size: 1.2rem;">{{ icon }}</span>
+            {{ severityText }}
+        </div>
+        
+        <h1 style="margin: 0 0 0.5rem; font-size: 2.5rem; color: #0f172a; letter-spacing: -0.03em; position: relative; z-index: 10;">
+            {{ quiz.title }} Results
+        </h1>
 
         <svg viewBox="0 0 36 36" class="circular-chart">
             <path class="circle-bg"
-                d="M18 2.0845
-                a 15.9155 15.9155 0 0 1 0 31.831
-                a 15.9155 15.9155 0 0 1 0 -31.831"
+                d="M18 18
+                   m 0, -15.9155
+                   a 15.9155 15.9155 0 0 1 0 31.831
+                   a 15.9155 15.9155 0 0 1 0 -31.831"
             />
             <path class="circle"
-                stroke="{{ strokeColor }}"
                 stroke-dasharray="{{ percentage }}, 100"
-                d="M18 2.0845
-                a 15.9155 15.9155 0 0 1 0 31.831
-                a 15.9155 15.9155 0 0 1 0 -31.831"
+                d="M18 18
+                   m 0, -15.9155
+                   a 15.9155 15.9155 0 0 1 0 31.831
+                   a 15.9155 15.9155 0 0 1 0 -31.831"
             />
-            <text x="18" y="20.35" class="percentage">{{ percentage }}%</text>
+            <text x="18" y="18" class="percentage-text" dy=".1em">
+                <tspan id="counter">0</tspan><tspan class="percentage-symbol" dy="-1.5em">%</tspan>
+            </text>
         </svg>
 
-        <p style="color: #475569; font-size: 1.1rem; max-width: 400px; margin: 0 auto; line-height: 1.6;">
-            {% if percentage > 75 %}
-                Fantastic work! You have a very strong tendency towards the factors identified in this assessment.
-            {% elseif percentage > 40 %}
-                You received a balanced score, indicating moderate alignment with the key identifiers of this assessment.
+        <p style="color: #334155; font-size: 1.2rem; max-width: 480px; margin: 0 auto 2rem; line-height: 1.7; position: relative; z-index: 10; font-weight: 500;">
+            {% if percentage > 70 %}
+                This assessment indicates a <strong style="color:var(--theme-color);">high level of risk</strong>. We strongly advise that you contact a healthcare professional or specialist immediately for an in-depth evaluation and support.
+            {% elseif percentage > 35 %}
+                Your results show <strong style="color:var(--theme-color);">moderate signs</strong> or symptoms. It's important to monitor your well-being. Consider discussing these results with a doctor if you feel concerned.
             {% else %}
-                Your score indicates lower alignment with the evaluated criteria.
+                Excellent! Your score points to a <strong style="color:var(--theme-color);">very healthy profile</strong> with low risk. Keep maintaining your healthy habits and lifestyle routines!
             {% endif %}
         </p>
 
         <div class="result-details">
             <div class="detail-box">
-                <span style="display: block; color: #64748b; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5rem;">Raw Score</span>
-                <strong style="color: #0f172a; font-size: 1.5rem;">{{ result.score }} <span style="font-size: 1rem; color: #94a3b8;">/ {{ quiz.questions|length * 5 }}</span></strong>
+                <span style="display: block; color: #64748b; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.05em;">Calculated Score</span>
+                <strong style="color: #0f172a; font-size: 1.8rem; font-weight: 800;">{{ result.score }} <span style="font-size: 1rem; color: #94a3b8; font-weight: 600;">/ {{ quiz.questions|length * 5 }}</span></strong>
             </div>
             <div class="detail-box">
-                <span style="display: block; color: #64748b; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5rem;">Completed On</span>
-                <strong style="color: #0f172a; font-size: 1.15rem;">{{ result.takenAt|date('M j, Y') }}</strong>
+                <span style="display: block; color: #64748b; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.05em;">Evaluation Date</span>
+                <strong style="color: #0f172a; font-size: 1.3rem; font-weight: 700;">{{ result.takenAt|date('F j, Y') }}</strong>
             </div>
         </div>
 
-        <div style="margin-top: 3rem;">
-            <a href="{{ path('app_assessment_index') }}" style="display: inline-block; background: #3b82f6; color: white; text-decoration: none; padding: 0.85rem 2.5rem; border-radius: 8px; font-weight: 600; font-size: 1rem; transition: background 0.2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
-                Back to Dashboard
-            </a>
-        </div>
+        <a href="{{ path('app_assessment_history') }}" class="action-btn">
+            View My History
+        </a>
     </div>
+
+    <script>
+        (function() {
+            const counter = document.getElementById('counter');
+            if (!counter) return;
+            const target = {{ percentage }};
+            const duration = 1500;
+            const frames = 60;
+            const increment = target / (duration / (1000 / frames));
+            let current = 0;
+
+            if (target > 0) {
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    counter.textContent = Math.round(current);
+                }, 1000 / frames);
+            }
+        })();
+    </script>
 {% endblock %}

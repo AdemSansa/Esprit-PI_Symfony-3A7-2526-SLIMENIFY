@@ -26,6 +26,22 @@ class AssessmentController extends AbstractController
         ]);
     }
 
+    #[Route('/history', name: 'app_assessment_history', methods: ['GET'])]
+    public function history(EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $results = $entityManager->getRepository(QuizResult::class)
+            ->findBy(['user' => $user], ['takenAt' => 'DESC']);
+
+        return $this->render('assessment/history.html.twig', [
+            'results' => $results,
+        ]);
+    }
+
     #[Route('/quiz/{id}', name: 'app_assessment_take', methods: ['GET', 'POST'])]
     public function take(Request $request, Quiz $quiz, EntityManagerInterface $entityManager): Response
     {
