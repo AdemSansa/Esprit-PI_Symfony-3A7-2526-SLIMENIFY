@@ -1,210 +1,423 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-    #map { height: 400px; width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 0.75rem; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05); }
-    .btn-ai { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: white; border: none; padding: 0.6rem 1.25rem; border-radius: 10px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-    .btn-ai:hover { transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); filter: brightness(1.05); }
-    .btn-ai:active { transform: translateY(0); }
-    .ai-generate-wrapper { margin-top: 1rem; display: flex; align-items: center; gap: 1rem; }
-    .ai-loader { display: none; font-size: 0.9rem; color: #6366f1; font-weight: 500; align-items: center; gap: 0.5rem; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-    
-    /* Validation Errors */
-    .form-group ul { list-style: none; padding: 0; margin: 0.25rem 0 0; color: #ef4444; font-size: 0.85rem; font-weight: 500; }
-    .form-control.is-invalid { border-color: #ef4444; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23ef4444'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23ef4444' stroke='none'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right calc(0.375em + 0.1875rem) center; background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem); }
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary: #64748b;
+        --success: #10b981;
+        --danger: #ef4444;
+        --bg-card: #ffffff;
+        --border-color: #e2e8f0;
+        --input-bg: #f8fafc;
+    }
+
+    #event-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .form-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .form-section:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.75rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        font-size: 0.95rem;
+        color: #1e293b;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .grid-cols-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    @media (max-width: 640px) {
+        .grid-cols-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* AI Button Enhancement */
+    .ai-generate-wrapper {
+        margin-top: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .btn-ai {
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.25rem;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+    }
+
+    .btn-ai:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+        filter: brightness(1.1);
+    }
+
+    .ai-loader {
+        display: none;
+        font-size: 0.85rem;
+        color: var(--primary);
+        font-weight: 500;
+        animation: pulse 2s infinite;
+    }
+
+    /* Map Enhancement */
+    #map {
+        height: 350px;
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        margin-top: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .location-hint {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding: 1.5rem 0;
+        border-top: 1px solid var(--border-color);
+        margin-top: 1rem;
+    }
+
+    .btn-submit {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.85rem 2.5rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-submit:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Image Preview */
+    .image-preview-container {
+        margin-top: 1rem;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px dashed var(--border-color);
+        padding: 0.5rem;
+        background: var(--input-bg);
+    }
+
+    .image-preview {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .form-error {
+        color: var(--danger);
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+        font-weight: 500;
+    }
 </style>
 
 {{ form_start(form, {'attr': {'id': 'event-form'}}) }}
-    <div class="form-group">
-        {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.title) }}
-    </div>
+    <!-- Basic Info -->
+    <div class="form-section">
+        <h2 class="section-title">📝 Basic Information</h2>
+        <div class="form-group">
+            {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'Enter event title...'}}) }}
+            <div class="form-error">{{ form_errors(form.title) }}</div>
+        </div>
 
-    <div class="form-group">
-        {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.description) }}
-        
-        <div class="ai-generate-wrapper">
-            <button type="button" class="btn btn-ai" id="generate-ai-btn">✨ Generate AI Description</button>
-            <span class="ai-loader" id="ai-loader">Generating wow-effect description...</span>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col form-group">
-            {{ form_label(form.type, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.type) }}
-        </div>
-        <div class="col form-group">
-            {{ form_label(form.status, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.status, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.status) }}
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col form-group">
-            {{ form_label(form.dateStart, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.dateStart, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.dateStart) }}
-        </div>
-        <div class="col form-group">
-            {{ form_label(form.dateEnd, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.dateEnd, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.dateEnd) }}
-        </div>
-    </div>
-
-    <div class="row" style="align-items: flex-start;">
-        <div class="col form-group" style="flex: 2;">
-            {{ form_label(form.location, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.location, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.location) }}
-            <p class="location-hint">Click on the map to set the exact address automatically.</p>
-            <div id="map"></div>
-        </div>
-        <div class="col form-group" style="flex: 1;">
-            {{ form_label(form.maxParticipants, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.maxParticipants, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.maxParticipants) }}
+        <div class="form-group">
+            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '6', 'placeholder': 'Tell us about the event...'}}) }}
+            <div class="form-error">{{ form_errors(form.description) }}</div>
             
-            <div style="margin-top: 1.5rem;">
-                {{ form_label(form.imageFile, null, {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.imageFile) }}
-                
-                {% if event.imageUrl %}
-                    <div style="margin-top: 1rem;">
-                        <img src="{{ asset(event.imageUrl) }}" style="width: 100%; border-radius: 8px;" alt="Current Image">
-                    </div>
-                {% endif %}
+            <div class="ai-generate-wrapper">
+                <button type="button" class="btn btn-ai" id="generate-ai-btn">
+                    <span>✨</span> Generate AI Description
+                </button>
+                <span class="ai-loader" id="ai-loader">Creating magic...</span>
             </div>
         </div>
     </div>
 
-    <div class="actions">
-        <button class="btn btn-primary">{{ button_label|default('Save Event') }}</button>
+    <!-- Date and Logistics -->
+    <div class="form-section">
+        <h2 class="section-title">⏰ Schedule & Capacity</h2>
+        <div class="grid-cols-2">
+            <div class="form-group">
+                {{ form_label(form.dateStart, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.dateStart, {'attr': {'class': 'form-control'}}) }}
+                <div class="form-error">{{ form_errors(form.dateStart) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(form.dateEnd, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.dateEnd, {'attr': {'class': 'form-control'}}) }}
+                <div class="form-error">{{ form_errors(form.dateEnd) }}</div>
+            </div>
+        </div>
+
+        <div class="grid-cols-2">
+            <div class="form-group">
+                {{ form_label(form.type, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
+                <div class="form-error">{{ form_errors(form.type) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(form.maxParticipants, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.maxParticipants, {'attr': {'class': 'form-control', 'placeholder': 'e.g. 50'}}) }}
+                <div class="form-error">{{ form_errors(form.maxParticipants) }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location & Media -->
+    <div class="form-section">
+        <h2 class="section-title">📍 Location & Cover Image</h2>
+        <div class="form-group">
+            {{ form_label(form.location, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.location, {'attr': {'class': 'form-control', 'placeholder': 'Select address on map or type here...'}}) }}
+            
+            {# 📍 Rendering Hidden Coordinate Fields #}
+            {{ form_widget(form.latitude) }}
+            {{ form_widget(form.longitude) }}
+            
+            <div class="form-error">{{ form_errors(form.location) }}</div>
+            <p class="location-hint"><span>🗺️</span> Click anywhere on the map to set the exact location.</p>
+            <div id="map"></div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.imageFile, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
+            <div class="form-error">{{ form_errors(form.imageFile) }}</div>
+            
+            {% if event.imageUrl %}
+                <div class="image-preview-container">
+                    <img src="{{ asset(event.imageUrl) }}" class="image-preview" alt="Current Cover">
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-submit">
+            {{ button_label|default('Publish Event') }}
+        </button>
     </div>
 {{ form_end(form) }}
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- AI Description Logic ---
-        const generateBtn = document.getElementById('generate-ai-btn');
-        const aiLoader = document.getElementById('ai-loader');
-        const titleInput = document.getElementById('{{ form.title.vars.id }}');
-        const descInput = document.getElementById('{{ form.description.vars.id }}');
-        
-        if(generateBtn) {
-            generateBtn.addEventListener('click', async () => {
-                const title = titleInput.value.trim();
-                if(!title) {
-                    alert('Please enter a title first to generate an AI description.');
-                    return;
-                }
-                
-                generateBtn.disabled = true;
-                generateBtn.style.opacity = '0.7';
-                aiLoader.style.display = 'flex';
-                
-                console.log('Generating for title:', title);
-                try {
-                    const response = await fetch('{{ path('app_event_generate_ai') }}', {
-                        method: 'POST',
-                        headers:{ 'Content-Type': 'application/json' },
-                        body: JSON.stringify({title: title})
-                    });
-                    
-                    console.log('Response status:', response.status);
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        throw new Error(errorData.error || `Server returned ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    console.log('Data received:', data);
-                    if(data.description) {
-                        descInput.value = data.description;
-                        descInput.dispatchEvent(new Event('change'));
-                    } else if(data.error) {
-                        alert('AI Error: ' + data.error);
-                    }
-                } catch(e) {
-                    console.error('Fetch error:', e);
-                    alert('Error: ' + e.message);
-                } finally {
-                    generateBtn.disabled = false;
-                    generateBtn.style.opacity = '1';
-                    aiLoader.style.display = 'none';
-                }
-            });
+    (function() {
+        console.log('Event Form Initializing...');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initFormFeatures();
+        });
+
+        // Re-init if using Turbo or dynamic loading
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            initFormFeatures();
         }
-        
-        // --- Map Logic ---
-        const mapEl = document.getElementById('map');
-        const locInput = document.getElementById('{{ form.location.vars.id }}');
-        if(mapEl && locInput) {
-            let map;
-            try {
-                map = L.map('map').setView([36.8, 10.2], 6);
-                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+        function initFormFeatures() {
+            const generateBtn = document.getElementById('generate-ai-btn');
+            const aiLoader = document.getElementById('ai-loader');
+            const titleInput = document.getElementById('{{ form.title.vars.id }}');
+            const descInput = document.getElementById('{{ form.description.vars.id }}');
+            
+            console.log('Title Input Found:', !!titleInput);
+            console.log('Desc Input Found:', !!descInput);
+
+            if(generateBtn && titleInput && descInput) {
+                // Remove existing to avoid double binding
+                generateBtn.onclick = null; 
+                generateBtn.addEventListener('click', async () => {
+                    const title = titleInput.value.trim();
+                    console.log('Generating AI description for:', title);
+                    if(!title) {
+                        alert('Veuillez saisir un titre d\'abord.');
+                        return;
+                    }
+                    
+                    generateBtn.disabled = true;
+                    aiLoader.style.display = 'inline';
+                    
+                    try {
+                        const response = await fetch('{{ path('app_event_generate_ai') }}', {
+                            method: 'POST',
+                            headers:{ 'Content-Type': 'application/json' },
+                            body: JSON.stringify({title: title})
+                        });
+                        
+                        console.log('AI Response Status:', response.status);
+                        if (!response.ok) throw new Error('API Error: ' + response.status);
+                        
+                        const data = await response.json();
+                        console.log('AI Data Received:', data);
+                        if(data.description) {
+                            descInput.value = data.description;
+                        } else if (data.error) {
+                            alert('Erreur: ' + data.error);
+                        }
+                    } catch(e) {
+                        console.error('AI Generation Error:', e);
+                        alert('Échec de la génération AI. Détails: ' + e.message);
+                    } finally {
+                        generateBtn.disabled = false;
+                        aiLoader.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Map logic
+            const mapEl = document.getElementById('map');
+            const locInput = document.getElementById('{{ form.location.vars.id }}');
+            const latInput = document.getElementById('{{ form.latitude.vars.id }}');
+            const lonInput = document.getElementById('{{ form.longitude.vars.id }}');
+            
+            if(mapEl && locInput) {
+                console.log('Initializing Map...');
+                // Avoid double init
+                if (mapEl._leaflet_id) return;
+
+                let initialLat = latInput.value || 36.8;
+                let initialLon = lonInput.value || 10.2;
+                let map = L.map('map').setView([initialLat, initialLon], 6);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 }).addTo(map);
                 
-                // CRITICAL: Ensure Leaflet detects container size correctly after page load
-                setTimeout(() => { if(map) map.invalidateSize(); }, 200);
-            } catch (e) {
-                console.error("Leaflet Error:", e);
-                mapEl.innerHTML = "<p style='padding: 20px; color: #ef4444;'>Leaflet map failed to load.</p>";
-            }
-            
-            let marker = null;
-            
-            // Function to update marker and view
-            function setLocation(lat, lon, addr) {
-                if(marker) map.removeLayer(marker);
-                marker = L.marker([lat, lon]).addTo(map);
-                marker.bindPopup(`<b>${addr}</b>`).openPopup();
-                locInput.value = addr;
-            }
-            
-            // If already has location
-            if(locInput.value.length > 3) {
-                fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(locInput.value), {
-                    headers: { 'User-Agent': 'PsychologySymfonyApp/1.0' }
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if(data && data.length > 0) {
-                        map.setView([data[0].lat, data[0].lon], 13);
-                        setLocation(data[0].lat, data[0].lon, locInput.value);
-                    }
-                });
-            }
-            
-            // Map click
-            map.on('click', function(e) {
-                const lat = e.latlng.lat;
-                const lon = e.latlng.lng;
+                let marker = null;
                 
-                if(marker) map.removeLayer(marker);
-                marker = L.marker([lat, lon]).addTo(map);
-                marker.bindPopup('Fetching address...').openPopup();
-                
-                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`, {
-                    headers: { 'User-Agent': 'PsychologySymfonyApp/1.0' }
-                })
-                .then(r => r.json())
-                .then(data => {
-                    const addr = data.display_name || (lat.toFixed(5) + ', ' + lon.toFixed(5));
-                    setLocation(lat, lon, addr);
-                }).catch(() => {
-                    setLocation(lat, lon, lat.toFixed(5) + ', ' + lon.toFixed(5));
+                function updateLocation(lat, lon, addr) {
+                    console.log('Updating Location:', addr, 'LAT:', lat, 'LON:', lon);
+                    if(marker) map.removeLayer(marker);
+                    marker = L.marker([lat, lon]).addTo(map);
+                    locInput.value = addr;
+                    
+                    // 📍 Save Coordinates
+                    if(latInput) latInput.value = lat;
+                    if(lonInput) lonInput.value = lon;
+                }
+
+                // Initial Load
+                if(locInput.value && latInput.value && lonInput.value) {
+                    map.setView([latInput.value, lonInput.value], 13);
+                    updateLocation(latInput.value, lonInput.value, locInput.value);
+                } else if(locInput.value) {
+                    console.log('Geocoding existing location string...');
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locInput.value)}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            if(data.length > 0) {
+                                map.setView([data[0].lat, data[0].lon], 13);
+                                updateLocation(data[0].lat, data[0].lon, locInput.value);
+                            }
+                        }).catch(e => console.error('Geocoding error:', e));
+                }
+
+                map.on('click', function(e) {
+                    const {lat, lng} = e.latlng;
+                    console.log('Map Clicked:', lat, lng);
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            const addr = data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                            updateLocation(lat, lng, addr);
+                        }).catch(e => console.error('Reverse Geocoding error:', e));
                 });
-            });
+                
+                // Force redraw after container is sure to be ready
+                setTimeout(() => {
+                    map.invalidateSize();
+                    console.log('Map Redrawn.');
+                }, 800);
+            }
         }
-    });
+    })();
 </script>

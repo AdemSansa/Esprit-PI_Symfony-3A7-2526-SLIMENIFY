@@ -1,284 +1,434 @@
 {% extends 'layout/app_shell.html.twig' %}
 
-{% block title %}Events{% endblock %}
+{% block title %}Events Marketplace | Psychology Platform{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .page-header {
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --bg-body: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        .events-page {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            padding-bottom: 4rem;
+        }
+
+        h1, h2, h3, .featured-label { font-family: 'Outfit', sans-serif; }
+
+        /* ✨ FEATURED HERO SECTION */
+        .featured-hero {
+            position: relative;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 32px;
+            padding: 4rem 3rem;
+            margin-bottom: 3rem;
+            overflow: hidden;
+            color: white;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            justify-content: space-between;
+            min-height: 400px;
         }
-        .page-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin: 0;
+
+        .hero-pattern {
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 24px 24px;
+            pointer-events: none;
         }
-        .search-form {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
+
+        .hero-glow {
+            position: absolute;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%);
+            top: -100px; right: -100px;
+            pointer-events: none;
         }
-        .search-input {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-        .btn {
+
+        .hero-content { position: relative; z-index: 2; max-width: 600px; }
+
+        .featured-tag {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            padding: 0.75rem 1.25rem;
-            border-radius: 8px;
+            gap: 0.5rem;
+            background: rgba(99,102,241,0.2);
+            color: #818cf8;
+            padding: 0.5rem 1rem;
+            border-radius: 99px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(99,102,241,0.3);
+        }
+
+        .hero-title { font-size: 3.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -0.04em; }
+        .hero-desc { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; margin-bottom: 2.5rem; }
+        
+        .hero-actions { display: flex; gap: 1rem; align-items: center; }
+        
+        /* 🔍 CONTROL BAR */
+        .control-bar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 1rem;
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            position: sticky;
+            top: 1rem;
+            z-index: 100;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .format-filters { display: flex; gap: 0.5rem; }
+        .filter-tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 14px;
             font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-muted);
             text-decoration: none;
-            transition: all 0.2s;
-            cursor: pointer;
-            border: none;
+            transition: all 0.3s;
+            border: 1px solid transparent;
         }
-        .btn-primary {
-            background: var(--app-accent, #3b82f6);
-            color: white;
+        .filter-tab:hover { background: #f1f5f9; color: var(--text-main); }
+        .filter-tab.active { background: #fff; color: var(--primary); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-color: #e2e8f0; }
+
+        .search-form { flex: 1; position: relative; }
+        .search-input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 3rem;
+            border-radius: 14px;
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            font-family: inherit;
+            transition: all 0.3s;
         }
-        .btn-primary:hover {
-            background: var(--app-accent-hover, #2563eb);
-            transform: translateY(-1px);
-        }
+        .search-input:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(99,102,241,0.1); }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+
+        /* 📦 ENHANCED EVENT GRID */
         .event-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2.5rem;
         }
+
         .event-card {
-            background: white;
-            border-radius: 16px;
+            background: var(--card-bg);
+            border-radius: 28px;
             overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            flex-direction: column;
-        }
-        .event-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-        .event-img-container {
-            height: 180px;
-            background: #e2e8f0;
-            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
         }
-        .event-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .event-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #94a3b8;
-            font-weight: 600;
-        }
-        .event-content {
-            padding: 1.5rem;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .event-badges {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .badge-type { background: #e0f2fe; color: #0284c7; }
-        .badge-status { background: #f1f5f9; color: #475569; }
-        .badge-draft { background: #fef3c7; color: #d97706; }
-        .badge-published { background: #dcfce7; color: #16a34a; }
+        .event-card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.1); border-color: transparent; }
+
+        .card-image-box { height: 220px; position: relative; overflow: hidden; background: #e2e8f0; }
+        .card-image-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+        .event-card:hover .card-image-box img { transform: scale(1.1); }
         
-        .event-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #0f172a;
-            margin: 0 0 0.5rem 0;
-            line-height: 1.4;
+        .type-badge {
+            position: absolute; top: 1rem; left: 1rem;
+            padding: 0.5rem 1rem; border-radius: 12px;
+            font-size: 0.75rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            backdrop-filter: blur(8px);
+            color: white;
+            z-index: 10;
         }
-        .event-meta {
-            font-size: 0.875rem;
-            color: #64748b;
-            margin-bottom: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
+        .type-online   { background: rgba(99, 102, 241, 0.85); }
+        .type-physique { background: rgba(236, 72, 153, 0.85); }
+        .type-hybride  { background: rgba(14, 165, 233, 0.85); }
+
+        .card-content { padding: 2rem; }
+        
+        .card-date { color: var(--primary); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
+        .card-title { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 1rem; line-height: 1.25; letter-spacing: -0.02em; }
+        
+        .meta-row { display: flex; align-items: flex-start; gap: 0.75rem; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem; }
+
+        /* 📊 PROGRESS BAR FOR CAPACITY */
+        .capacity-section { margin: 1.5rem 0; }
+        .capacity-header { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .progress-container { height: 8px; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light)); width: 0; transition: width 1.5s cubic-bezier(0.1, 0.5, 0.1, 1); }
+        .progress-full { background: #ef4444; }
+
+        .card-footer { border-top: 1px solid #f1f5f9; padding: 1.5rem 2rem; background: #fafafa; display: flex; gap: 0.75rem; }
+
+        /* BUTTONS */
+        .btn-premium {
+            flex: 1; padding: 0.85rem 1.25rem; border-radius: 16px; 
+            font-weight: 700; font-size: 0.9rem; text-align: center;
+            text-decoration: none; transition: all 0.3s; cursor: pointer; border: none; font-family: inherit;
         }
-        .event-desc {
-            font-size: 0.875rem;
-            color: #475569;
-            margin-bottom: 1.5rem;
+        .btn-main { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+        .btn-main:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 15px rgba(99,102,241,0.4); }
+        
+        .btn-outline { background: white; color: var(--text-main); border: 1.5px solid #e2e8f0; }
+        .btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+        .btn-delete { color: #ef4444; border-color: #fecaca; }
+        .btn-delete:hover { background: #fef2f2; }
+
+        .empty-state {
+            grid-column: 1 / -1; text-align: center; padding: 5rem 2rem;
+            background: white; border-radius: 32px; border: 2px dashed #e2e8f0;
+        }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            margin-bottom: 0.5rem;
         }
-        .event-actions {
-            margin-top: auto;
-            display: flex;
-            gap: 0.75rem;
+        /* 🎪 CAROUSEL WRAPPER */
+        #hero-carousel { position: relative; margin-bottom: 3rem; border-radius: 32px; overflow: hidden; height: 400px; }
+        .carousel-track { display: flex; height: 100%; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hero-slide { flex: 0 0 100%; height: 100%; }
+
+        .featured-hero { height: 100%; margin-bottom: 0; border-radius: 0; padding: 4rem 3rem; }
+
+        .carousel-dots {
+            position: absolute; bottom: 1.5rem; left: 3rem; display: flex; gap: 0.75rem; z-index: 10;
         }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid #cbd5e1;
-            color: #475569;
-        }
-        .btn-outline:hover {
-            background: #f8fafc;
-            color: #0f172a;
-        }
-        .btn-sm {
-            padding: 0.5rem 1rem;
-            font-size: 0.875rem;
-            flex: 1;
-        }
-        
-        .event-map-container {
-            height: 200px;
-            width: 100%;
-            border-top: 1px solid #f1f5f9;
-            background: #f8fafc;
-            display: none; /* Hidden by default */
-        }
-        .event-map-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        .map-toggle-btn {
-            background: #f1f5f9;
-            color: #475569;
-            border: none;
-            padding: 0.4rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            margin-top: 0.5rem;
-            transition: all 0.2s;
-        }
-        .map-toggle-btn:hover {
-            background: #e2e8f0;
-            color: #0f172a;
-        }
-        .map-toggle-btn.active {
-            background: #e0f2fe;
-            color: #0369a1;
-        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); cursor: pointer; transition: all 0.3s; }
+        .dot.active { background: white; transform: scale(1.3); box-shadow: 0 0 10px rgba(255,255,255,0.5); }
     </style>
 {% endblock %}
 
 {% block app_content %}
-    <div class="page-header">
-        <h1 class="page-title">Events</h1>
-        {% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
-            <a href="{{ path('app_event_new') }}" class="btn btn-primary">+ Add New Event</a>
+<div class="events-page">
+
+    {# 🚀 HERO SECTION: Anticipated Carousel #}
+    {% if anticipatedEvents|length > 0 and searchQuery == '' and currentFormat == 'all' %}
+        <div id="hero-carousel">
+            <div class="carousel-track" id="carouselTrack">
+                {% for event in anticipatedEvents %}
+                    <div class="hero-slide">
+                        <section class="featured-hero">
+                            <div class="hero-pattern"></div>
+                            <div class="hero-glow"></div>
+                            <div class="hero-content">
+                                <div class="featured-tag">✨ Most Anticipated</div>
+                                <a href="{{ path('app_event_show', {id: event.id}) }}" style="text-decoration: none; color: inherit;">
+                                    <h1 class="hero-title">{{ event.title }}</h1>
+                                </a>
+                                <p class="hero-desc">{{ event.description|slice(0, 160) }}...</p>
+                                <div class="hero-actions">
+                                    <a href="{{ path('app_event_register', {'id': event.id}) }}" class="btn-premium btn-main" style="flex:none; padding: 1.2rem 2.5rem; font-size: 1.1rem;">Secure My Spot</a>
+                                    <div style="color: #94a3b8; font-size: 0.9rem;">
+                                        📅 {{ event.dateStart|date('M d, Y') }} at {{ event.dateStart|date('H:i') }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% if event.imageUrl %}
+                                <a href="{{ path('app_event_show', {id: event.id}) }}" style="display: block; position: relative; z-index: 2; width: 400px; height: 300px; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.3); transition: transform 0.3s;">
+                                    <img src="{{ asset(event.imageUrl) }}" alt="Featured" style="width:100%; height:100%; object-fit:cover;">
+                                </a>
+                            {% endif %}
+                        </section>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="carousel-dots" id="carouselDots">
+                {% for event in anticipatedEvents %}
+                    <div class="dot {{ loop.first ? 'active' : '' }}" data-index="{{ loop.index0 }}"></div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {# 🔍 CONTROL BAR: Filters & Search #}
+    <div class="control-bar">
+        <div class="format-filters">
+            <a href="{{ path('app_event_index', {format: 'all', q: searchQuery}) }}" class="filter-tab {{ currentFormat == 'all' ? 'active' : '' }}">All Events</a>
+            <a href="{{ path('app_event_index', {format: 'online', q: searchQuery}) }}" class="filter-tab {{ currentFormat == 'online' ? 'active' : '' }}">Online</a>
+            <a href="{{ path('app_event_index', {format: 'physique', q: searchQuery}) }}" class="filter-tab {{ currentFormat == 'physique' ? 'active' : '' }}">In-Person</a>
+            <a href="{{ path('app_event_index', {format: 'hybride', q: searchQuery}) }}" class="filter-tab {{ currentFormat == 'hybride' ? 'active' : '' }}">Hybrid</a>
+        </div>
+
+        <form class="search-form" method="get" action="{{ path('app_event_index') }}">
+            <input type="hidden" name="format" value="{{ currentFormat }}">
+            <span class="search-icon">🔍</span>
+            <input type="text" name="q" value="{{ searchQuery }}" placeholder="Search by event name..." class="search-input">
+        </form>
+
+        {% if is_granted('ROLE_THERAPIST') %}
+            <a href="{{ path('app_event_new') }}" class="btn-premium btn-main" style="flex:none;">+ Create Event</a>
         {% endif %}
     </div>
 
-    <form method="get" class="search-form">
-        <input type="text" name="q" placeholder="Search events..." value="{{ searchQuery }}" class="search-input">
-        <button type="submit" class="btn btn-primary">Search</button>
-    </form>
-
+    {# 📦 EVENT GRID #}
     <div class="event-grid">
         {% for event in events %}
-            <div class="event-card">
-                <div class="event-img-container">
+            {# Calculate Capacity Percentage #}
+            {% set booked = event.registrations|length %}
+            {% set capacity = event.maxParticipants ?: 100 %}
+            {% set percent = (booked / capacity * 100)|round %}
+            
+            <article class="event-card" style="animation-delay: {{ loop.index0 * 0.1 }}s;">
+                <a href="{{ path('app_event_show', {id: event.id}) }}" class="card-image-box" style="display: block;">
                     {% if event.imageUrl %}
-                        <img src="{{ asset(event.imageUrl) }}" alt="{{ event.title }}" class="event-img">
+                        <img src="{{ asset(event.imageUrl) }}" alt="{{ event.title }}">
                     {% else %}
-                        <div class="event-placeholder">No Image</div>
+                        <div style="width:100%; height:100%; background:linear-gradient(135deg, #eee, #ddd); display:flex; align-items:center; justify-content:center; font-size:3rem;">📅</div>
+                    {% endif %}
+                    <span class="type-badge type-{{ event.type }}">{{ event.type|replace({'physique': 'In-Person', 'hybride': 'Hybrid'})|upper }}</span>
+                </a >
+
+                <div class="card-content">
+                    <span class="card-date">{{ event.dateStart|date('M d, Y') }} • {{ event.dateStart|date('H:i') }}</span>
+                    <a href="{{ path('app_event_show', {id: event.id}) }}" style="text-decoration: none; color: inherit;">
+                        <h3 class="card-title">{{ event.title }}</h3>
+                    </a>
+                    
+                    <div class="meta-row">
+                        <span>📍</span>
+                        <span>{{ event.location ?: 'Virtual Presence' }}</span>
+                    </div>
+
+                    <div class="capacity-section">
+                        <div class="capacity-header">
+                            <span>Availability</span>
+                            <span>{{ booked }} / {{ event.maxParticipants ?: '∞' }} booked</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar {{ percent >= 90 ? 'progress-full' : '' }}" data-progress="{{ percent > 100 ? 100 : percent }}"></div>
+                        </div>
+                    </div>
+
+                    <p class="card-desc">
+                        {{ event.description }}
+                    </p>
+                </div>
+
+                <div class="card-footer">
+                    {% if userRegistrations[event.id] is defined %}
+                        <a href="{{ path('app_event_registration_ticket', {id: userRegistrations[event.id].id}) }}" class="btn-premium btn-main">
+                            {% if userRegistrations[event.id].status == 'attended' %}
+                                ✨ Attended
+                            {% else %}
+                                🎫 View Ticket
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        {% if not is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+                            {% if percent < 100 %}
+                                <a href="{{ path('app_event_register', {id: event.id}) }}" class="btn-premium btn-main">Register Now</a>
+                            {% else %}
+                                <button class="btn-premium btn-outline" disabled style="opacity:0.6;">Fully Booked</button>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+
+                    {% if is_granted('ROLE_ADMIN') or (is_granted('ROLE_THERAPIST') and event.organizerId == app.user.id) %}
+                        <a href="{{ path('app_event_edit', {id: event.id}) }}" class="btn-premium btn-outline" title="Edit">Edit</a>
+                        <form method="post" action="{{ path('app_event_delete', {id: event.id}) }}" onsubmit="return confirm('Delete this event?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
+                            <button type="submit" class="btn-premium btn-outline btn-delete" title="Delete">🗑️</button>
+                        </form>
                     {% endif %}
                 </div>
-                
-                <div class="event-content">
-                    <div class="event-badges">
-                        <span class="badge badge-type">{{ event.type }}</span>
-                        <span class="badge badge-status badge-{{ event.status }}">{{ event.status }}</span>
-                    </div>
-                    
-                    <h3 class="event-title">{{ event.title }}</h3>
-                    
-                    <div class="event-meta">
-                        <span>📅 {{ event.dateStart|date('M d, Y H:i') }} {% if event.dateEnd %} - {{ event.dateEnd|date('H:i') }}{% endif %}</span>
-                        <span>📍 {{ event.location ?: 'TBA' }}</span>
-                        {% if event.location %}
-                            <button type="button" class="map-toggle-btn" onclick="toggleMap(this, 'map-{{ event.id }}')">
-                                🗺️ View Map
-                            </button>
-                            
-                            <div id="map-{{ event.id }}" class="event-map-container">
-                                <iframe 
-                                    class="event-map-iframe"
-                                    frameborder="0" 
-                                    scrolling="no" 
-                                    marginheight="0" 
-                                    marginwidth="0" 
-                                    src="https://maps.google.com/maps?q={{ event.location|url_encode }}&amp;t=&amp;z=13&amp;ie=UTF8&amp;iwloc=&amp;output=embed">
-                                </iframe>
-                            </div>
-                        {% endif %}
-                        <span>👥 {{ event.registrations|length }} / {{ event.maxParticipants ?: '∞' }} participants</span>
-                    </div>
-                    
-                    <div class="event-desc">
-                        {{ event.description }}
-                    </div>
-                    
-                    <div class="event-actions">
-                        <a href="{{ path('app_event_register', {'id': event.id}) }}" class="btn btn-primary btn-sm">Register</a>
-                        
-                        {% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
-                            <a href="{{ path('app_event_edit', {'id': event.id}) }}" class="btn btn-outline btn-sm">Edit</a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+            </article>
         {% else %}
-            <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: white; border-radius: 16px;">
-                <h3 style="color: #64748b; margin-bottom: 1rem;">No events found</h3>
-                {% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('app_event_new') }}" class="btn btn-primary">Create the first one</a>
-                {% endif %}
+            <div class="empty-state">
+                <div style="font-size: 4rem; margin-bottom: 1.5rem;">🏖️</div>
+                <h3 style="font-size: 1.5rem; font-weight: 800;">No events found</h3>
+                <p>Try adjusting your filters or search keywords.</p>
+                <a href="{{ path('app_event_index') }}" class="btn-premium btn-main" style="display:inline-block; flex:none;">Clear all filters</a>
             </div>
         {% endfor %}
     </div>
 
     <script>
-        function toggleMap(btn, mapId) {
-            const mapContainer = document.getElementById(mapId);
-            // If display is empty (from CSS) or 'none', it's hidden
-            const isHidden = !mapContainer.style.display || mapContainer.style.display === 'none';
-            
-            mapContainer.style.display = isHidden ? 'block' : 'none';
-            btn.classList.toggle('active');
-            btn.innerHTML = isHidden ? '❌ Hide Map' : '🗺️ View Map';
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const track = document.getElementById('carouselTrack');
+            if (!track) return;
+
+            const dots = document.querySelectorAll('.dot');
+            const slides = document.querySelectorAll('.hero-slide');
+            let currentIndex = 0;
+            let slideInterval;
+
+            function updateCarousel(index) {
+                currentIndex = index;
+                track.style.transform = `translateX(-${currentIndex * 100}%)`;
+                
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === currentIndex);
+                });
+            }
+
+            function nextSlide() {
+                if (slides.length <= 1) return;
+                let next = (currentIndex + 1) % slides.length;
+                updateCarousel(next);
+            }
+
+            function startInterval() {
+                if (slides.length <= 1) return;
+                slideInterval = setInterval(nextSlide, 3000);
+            }
+
+            // Click on dots
+            dots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    clearInterval(slideInterval);
+                    updateCarousel(parseInt(dot.dataset.index));
+                    startInterval();
+                });
+            });
+
+            if (slides.length > 1) {
+                startInterval();
+            }
+
+            // 📊 PROGRESS BAR ANIMATION (Animated filling on scroll)
+            const progressBars = document.querySelectorAll('.progress-bar');
+            const progressObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const bar = entry.target;
+                        const target = bar.getAttribute('data-progress');
+                        if (target) {
+                            bar.style.width = target + '%';
+                            progressObserver.unobserve(bar);
+                        }
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            // Initialize observer
+            progressBars.forEach(bar => progressObserver.observe(bar));
+        });
     </script>
+</div>
 {% endblock %}
+

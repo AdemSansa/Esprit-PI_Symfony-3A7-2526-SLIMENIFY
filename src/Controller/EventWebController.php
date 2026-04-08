@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Event;
 use App\Form\EventType;
 use App\Repository\EventRepository;
+use App\Repository\RegistrationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -20,31 +21,71 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 class EventWebController extends AbstractController
 {
     #[Route('/', name: 'app_event_index', methods: ['GET'])]
-    public function index(Request $request, EventRepository $eventRepository): Response
+    public function index(Request $request, EventRepository $eventRepository, RegistrationRepository $registrationRepository): Response
     {
         $query = $request->query->get('q', '');
+        $format = $request->query->get('format', 'all');
+        $user = $this->getUser();
         
-        // Simple search
+        // Build query based on role
+        $qb = $eventRepository->createQueryBuilder('e');
+        
+        if ($this->isGranted('ROLE_THERAPIST') && !$this->isGranted('ROLE_ADMIN')) {
+            // Therapists only see their own events
+            $qb->andWhere('e.organizerId = :organizerId')
+               ->setParameter('organizerId', $user->getId());
+        }
+        
         if ($query) {
-            $events = $eventRepository->createQueryBuilder('e')
-                ->where('e.title LIKE :query OR e.description LIKE :query')
-                ->setParameter('query', '%' . $query . '%')
-                ->orderBy('e.dateStart', 'ASC')
-                ->getQuery()
-                ->getResult();
-        } else {
-            $events = $eventRepository->findBy([], ['dateStart' => 'ASC']);
+            $qb->andWhere('e.title LIKE :query')
+               ->setParameter('query', '%' . $query . '%');
+        }
+
+        if ($format !== 'all') {
+            $qb->andWhere('e.type = :format')
+               ->setParameter('format', $format);
+        }
+        
+        $events = $qb->orderBy('e.dateStart', 'ASC')
+                     ->getQuery()
+                     ->getResult();
+
+        // 🌟 ANTICIPATED EVENTS (Top 5 Imminent)
+        $anticipatedEvents = $eventRepository->createQueryBuilder('e')
+            ->andWhere('e.dateStart >= :now')
+            ->setParameter('now', new \DateTime())
+            ->orderBy('e.dateStart', 'ASC')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+        
+        // 🎫 PERSONALIZED REGISTRATION TRACKING
+        $userRegistrations = [];
+        if ($user) {
+            $registrations = $registrationRepository->findBy(['participantEmail' => $user->getEmail()]);
+            foreach ($registrations as $reg) {
+                $userRegistrations[$reg->getEvent()->getId()] = [
+                    'status' => $reg->getStatus(),
+                    'id' => $reg->getId()
+                ];
+            }
         }
 
         return $this->render('event/index.html.twig', [
             'events' => $events,
+            'anticipatedEvents' => $anticipatedEvents,
             'searchQuery' => $query,
+            'currentFormat' => $format,
+            'userRegistrations' => $userRegistrations,
         ]);
     }
 
     #[Route('/new', name: 'app_event_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        // Only therapists and admins can create events
+        $this->denyAccessUnlessGranted('ROLE_THERAPIST');
+
         $event = new Event();
         $form = $this->createForm(EventType::class, $event);
         $form->handleRequest($request);
@@ -69,10 +110,9 @@ class EventWebController extends AbstractController
                 }
             }
 
+            // Set organizer ID
             $user = $this->getUser();
-            if ($user && method_exists($user, 'getId')) {
-                $event->setOrganizerId($user->getId());
-            }
+            $event->setOrganizerId($user->getId());
 
             $entityManager->persist($event);
             $entityManager->flush();
@@ -87,9 +127,46 @@ class EventWebController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}', name: 'app_event_show', methods: ['GET'])]
+    public function show(Event $event, RegistrationRepository $registrationRepository, EventRepository $eventRepository): Response
+    {
+        $user = $this->getUser();
+        $userRegistration = null;
+
+        if ($user) {
+            // Check if the current user is already registered
+            $userRegistration = $registrationRepository->findOneBy([
+                'event' => $event,
+                'participantEmail' => $user->getEmail()
+            ]);
+        }
+
+        // 🌟 FETCH RELATED EVENTS (Exclude current, show upcoming)
+        $relatedEvents = $eventRepository->createQueryBuilder('e')
+            ->andWhere('e.id != :currentId')
+            ->andWhere('e.dateStart >= :now')
+            ->setParameter('currentId', $event->getId())
+            ->setParameter('now', new \DateTime())
+            ->setMaxResults(3)
+            ->orderBy('e.dateStart', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $this->render('event/show.html.twig', [
+            'event' => $event,
+            'userRegistration' => $userRegistration,
+            'relatedEvents' => $relatedEvents,
+        ]);
+    }
+
     #[Route('/{id}/edit', name: 'app_event_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Event $event, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        // Security: Must be owner or admin
+        if (!$this->isGranted('ROLE_ADMIN') && $event->getOrganizerId() !== $this->getUser()->getId()) {
+            throw $this->createAccessDeniedException('You can only edit your own events.');
+        }
+
         $form = $this->createForm(EventType::class, $event);
         $form->handleRequest($request);
 
@@ -127,6 +204,11 @@ class EventWebController extends AbstractController
     #[Route('/{id}', name: 'app_event_delete', methods: ['POST'])]
     public function delete(Request $request, Event $event, EntityManagerInterface $entityManager): Response
     {
+        // Security: Must be owner or admin
+        if (!$this->isGranted('ROLE_ADMIN') && $event->getOrganizerId() !== $this->getUser()->getId()) {
+            throw $this->createAccessDeniedException('You can only delete your own events.');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$event->getId(), $request->request->get('_token'))) {
             $entityManager->remove($event);
             $entityManager->flush();
@@ -143,37 +225,34 @@ class EventWebController extends AbstractController
         $title = $data['title'] ?? '';
 
         if (empty($title)) {
-            return new JsonResponse(['error' => 'Veuillez saisir un titre.'], 400);
+            return new JsonResponse(['error' => 'Title is required'], 400);
         }
 
         try {
-            // Simplest, most direct Pollinations call
-            $prompt = "Rédige une description captivante en français pour cet événement : " . $title;
-            // Shorter prompt to avoid URL length issues
+            $prompt = "Write a captivating 2-3 sentence event description in English for: " . $title . ". Focus on engagement and professionalism.";
             $url = 'https://text.pollinations.ai/' . urlencode($prompt);
             
             $response = $client->request('GET', $url, [
-                'timeout' => 15, // Faster timeout to trigger fallback on lag
+                'timeout' => 10,
             ]);
 
-            if ($response->getStatusCode() === 200 && !empty($text = trim($response->getContent()))) {
-                return new JsonResponse(['description' => $text]);
+            $content = $response->getContent();
+            if ($response->getStatusCode() === 200 && !empty($content)) {
+                return new JsonResponse(['description' => trim($content)]);
             }
-            
-            // If status is not 200 or content is empty, use fallback
+
             return new JsonResponse(['description' => $this->fallbackDescription($title)]);
         } catch (\Exception $e) {
-            // Failsafe: return a generated description even if API fails
-            return new JsonResponse(['description' => $this->fallbackDescription($title)]);
+            return new JsonResponse(['description' => $this->fallbackDescription($title), 'debug' => $e->getMessage()]);
         }
     }
 
     private function fallbackDescription(string $title): string
     {
         $templates = [
-            "Rejoignez-nous pour cet événement exceptionnel : '{title}'. Une occasion unique d'explorer de nouvelles perspectives et de partager des moments enrichissants.",
-            "Découvrez '{title}', un événement conçu pour vous apporter des solutions concrètes et un accompagnement de qualité. Ne manquez pas cette opportunité !",
-            "Nous vous invitons à '{title}', un moment de partage et d'apprentissage au cœur de notre programme. Un événement incontournable pour votre développement."
+            "Join us for this exceptional event: '{title}'. It's a unique opportunity to explore new perspectives and share enriching moments together.",
+            "Discover '{title}', an event designed to bring you concrete solutions and high-quality support. Don't miss this opportunity!",
+            "We invite you to '{title}', a moment of sharing and learning at the heart of our program. An essential event for your personal and professional growth."
         ];
         
         $desc = $templates[array_rand($templates)];

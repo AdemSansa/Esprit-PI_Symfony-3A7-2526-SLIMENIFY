@@ -24,9 +24,12 @@ class Registration
     private ?string $qrCode = null;
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    #[Assert\NotBlank(message: "Please enter your full name.")]
     private ?string $participantName = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Assert\NotBlank(message: "Email address is required.")]
+    #[Assert\Email(message: "Please enter a valid email address.")]
     private ?string $participantEmail = null;
 
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
@@ -36,7 +39,7 @@ class Registration
     private ?string $participantNotes = null;
 
     #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'registrations')]
-    #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'id_event', nullable: false)]
+    #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'id_event', nullable: false, onDelete: 'CASCADE')]
     private Event $event;
 
     public function __construct()

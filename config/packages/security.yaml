@@ -10,6 +10,11 @@ security:
                 class: App\Entity\User
                 property: email
 
+    # ROLE HIERARCHY: Admin automatically has Therapist and Patient permissions
+    role_hierarchy:
+        ROLE_ADMIN:       [ROLE_THERAPIST, ROLE_PATIENT]
+        ROLE_THERAPIST:   ROLE_PATIENT
+
     firewalls:
         dev:
             # Ensure dev tools and static assets are always allowed

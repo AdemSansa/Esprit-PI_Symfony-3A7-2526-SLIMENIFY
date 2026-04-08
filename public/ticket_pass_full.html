@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Ticket - INTERTECH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --tech-blue: #0d2c4b;
+            --tech-orange: #ffb433;
+            --tech-white: #ffffff;
+            --tech-dark: #07192b;
+        }
+
+        body {
+            background-color: var(--tech-dark);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+        }
+
+        /* --- Phantom Wrapper --- */
+        #phantom-wrap {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem 0;
+        }
+
+        /* --- Source Ticket (Dual Column Mockup) --- */
+        #capture-ticket {
+            width: 650px;
+            height: 650px; /* Square proportions matching the mockup */
+            background: var(--tech-white);
+            display: flex;
+            border-radius: 4px;
+            overflow: hidden;
+            position: absolute;
+            left: -9999px;
+            top: 0;
+        }
+
+        /* LEFT COLUMN */
+        .ticket-left {
+            width: 70%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .left-top {
+            background: var(--tech-blue);
+            height: 60%;
+            padding: 2.5rem;
+            text-align: center;
+            position: relative;
+            clip-path: polygon(0 0, 100% 0, 100% 88%, 50% 100%, 0 88%);
+        }
+
+        .tech-hexagon {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            opacity: 0.8;
+        }
+
+        .qr-area {
+            background: white;
+            padding: 12px;
+            display: inline-block;
+            border-radius: 8px;
+            margin-top: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .qr-area img { width: 150px; height: 150px; display: block; }
+
+        .e-ticket-tag {
+            font-family: 'Oswald', sans-serif;
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: -2px;
+            margin: 1.5rem 0 0.5rem;
+            color: white;
+            line-height: 1;
+        }
+        .day-pass-sub {
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.8;
+        }
+
+        .left-bottom {
+            background: var(--tech-orange);
+            height: 40%;
+            padding: 2.5rem;
+            color: var(--tech-blue);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .event-title-main {
+            font-family: 'Oswald', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1;
+            text-transform: uppercase;
+        }
+        .event-sub-desc {
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            opacity: 0.7;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            border-top: 1px solid rgba(13, 44, 75, 0.2);
+            padding-top: 1.5rem;
+        }
+        .detail-item { display: flex; flex-direction: column; }
+        .detail-label { font-size: 0.8rem; font-weight: 800; opacity: 0.5; text-transform: uppercase; }
+        .detail-value { font-size: 1.1rem; font-weight: 800; }
+
+        /* RIGHT COLUMN (VERTICAL SIDEBAR) */
+        .ticket-right {
+            width: 30%;
+            background: var(--tech-blue);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-left: 2px dashed rgba(255,255,255,0.1);
+        }
+
+        .vertical-sidebar-text {
+            color: white;
+            font-family: 'Oswald', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+            transform: rotate(-90deg);
+            letter-spacing: 5px;
+        }
+        .vertical-sub-text {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--tech-orange);
+            white-space: nowrap;
+        }
+
+        .bottom-right-hexagon {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            opacity: 0.9;
+        }
+
+        /* --- UI CONTROLS --- */
+        #img-target {
+            max-width: 90%;
+            border-radius: 8px;
+            box-shadow: 0 50px 100px -20px rgba(0,0,0,0.8);
+        }
+
+        #download-btn {
+            background: var(--tech-orange);
+            color: var(--tech-blue);
+            border: none;
+            padding: 1.25rem 3rem;
+            border-radius: 100px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 3rem;
+            letter-spacing: 1px;
+            box-shadow: 0 20px 40px rgba(255, 180, 51, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="phantom-wrap">
+        <!-- The Professional Source (Hidden) -->
+        <div id="capture-ticket">
+            <div class="ticket-left">
+                <div class="left-top">
+                    <!-- SVG Hexagon Logo Top -->
+                    <div class="tech-hexagon">
+                        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M50 5L93.3 30V80L50 105L6.7 80V30L50 5Z" stroke="#ffb433" stroke-width="8"/>
+                            <circle cx="50" cy="50" r="15" fill="#ffb433"/>
+                        </svg>
+                    </div>
+                    <div class="qr-area">
+                        <img id="ticket-qr" src="" alt="QR">
+                    </div>
+                    <h1 class="e-ticket-tag">E-TICKET</h1>
+                    <div class="day-pass-sub" id="ticket-date-head">DAY PASS - 10.12.2024</div>
+                </div>
+                <div class="left-bottom">
+                    <h2 class="event-title-main" id="ticket-title">INTERTECH</h2>
+                    <div class="event-sub-desc">INTERNATIONAL TECHNOLOGY SHOW</div>
+                    <div class="details-grid">
+                        <div class="detail-item"><span class="detail-label">Ticket ID:</span><span class="detail-value" id="ticket-id">#ID-256</span></div>
+                        <div class="detail-item"><span class="detail-label">Name:</span><span class="detail-value" id="ticket-name">GUEST PASS</span></div>
+                        <div class="detail-item"><span class="detail-label">Date:</span><span class="detail-value" id="ticket-date">10.12.2024</span></div>
+                        <div class="detail-item"><span class="detail-label">Time:</span><span class="detail-value" id="ticket-time">08 - 21.00</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ticket-right">
+                <div class="vertical-sidebar-text" id="ticket-side-main">INTERTECH</div>
+                <div class="vertical-sub-text">INTERNATIONAL TECHNOLOGY SHOW</div>
+                <!-- SVG Hexagon Logo Bottom -->
+                <div class="bottom-right-hexagon">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 5L93.3 30V80L50 105L6.7 80V30L50 5Z" fill="#ffb433" opacity="0.8"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- The Result View (Visible on phone) -->
+        <div id="phantom-result" style="text-align: center;">
+            <p style="opacity: 0.4; font-size: 0.8rem; font-weight: 800; margin-bottom: 2rem; letter-spacing: 2px;">☝️ LONG PRESS TO SAVE TO GALLERY</p>
+            <div id="img-target"></div>
+            <a id="download-btn" href="#">💾 Download Ticket</a>
+        </div>
+    </div>
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script>
+        // --- 1. Get Data from URL ---
+        const params = new URLSearchParams(window.location.search);
+        const name = params.get('name') || 'Valued Guest';
+        const event = params.get('event') || 'Psychology Show';
+        const id = params.get('id') || '001';
+        const date = params.get('date') || '16.04.2026';
+        const time = params.get('time') || '21:38';
+
+        // --- 2. Fill Data ---
+        document.getElementById('ticket-name').textContent = name;
+        document.getElementById('ticket-title').textContent = event.toUpperCase();
+        document.getElementById('ticket-side-main').textContent = event.toUpperCase().slice(0, 10);
+        document.getElementById('ticket-id').textContent = '#' + id;
+        document.getElementById('ticket-date').textContent = date;
+        document.getElementById('ticket-date-head').textContent = 'DAY PASS - ' + date;
+        document.getElementById('ticket-time').textContent = time;
+        document.getElementById('ticket-qr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + id;
+
+        // --- 3. Immediate Auto-Render ---
+        window.onload = function() {
+            const captureArea = document.getElementById('capture-ticket');
+            setTimeout(() => {
+                html2canvas(captureArea, {
+                    scale: 3, // Premium clarity
+                    useCORS: true,
+                    backgroundColor: '#07192b'
+                }).then(canvas => {
+                    const dataUrl = canvas.toDataURL("image/png");
+                    const img = new Image();
+                    img.src = dataUrl;
+                    img.id = 'image-result';
+                    img.style.maxWidth = '100%';
+                    
+                    document.getElementById('img-target').appendChild(img);
+                    document.getElementById('download-btn').href = dataUrl;
+                    document.getElementById('download-btn').download = 'Ticket-' + name.replace(/\s+/g, '-') + '.png';
+                });
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

@@ -19,10 +19,20 @@ class EventRegistrationController extends AbstractController
     #[Route('/list', name: 'app_event_registration_list', methods: ['GET'])]
     public function index(RegistrationRepository $registrationRepository): Response
     {
-        // Add auth check here if needed (e.g. ROLE_THERAPIST)
-        $this->denyAccessUnlessGranted('ROLE_USER'); // Default fallback
+        $this->denyAccessUnlessGranted('ROLE_THERAPIST');
+        $user = $this->getUser();
 
-        $registrations = $registrationRepository->findAll();
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $registrations = $registrationRepository->findAll();
+        } else {
+            // Filter registrations for events organized by the current therapist
+            $registrations = $registrationRepository->createQueryBuilder('r')
+                ->join('r.event', 'e')
+                ->where('e.organizerId = :organizerId')
+                ->setParameter('organizerId', $user->getId())
+                ->getQuery()
+                ->getResult();
+        }
 
         return $this->render('event_registration/list.html.twig', [
             'registrations' => $registrations,
@@ -30,8 +40,13 @@ class EventRegistrationController extends AbstractController
     }
 
     #[Route('/{id}/register', name: 'app_event_register', methods: ['GET', 'POST'])]
-    public function register(Event $event, Request $request, EntityManagerInterface $entityManager): Response
+    public function register(Event $event, Request $request, EntityManagerInterface $entityManager, RegistrationRepository $registrationRepository): Response
     {
+        // 🔐 Security: Pure Therapists cannot register for events, but Admins CAN!
+        if ($this->isGranted('ROLE_THERAPIST') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('As a Therapist, you cannot register as a participant. Please use a Patient account.');
+        }
+
         $registration = new Registration();
         $registration->setEvent($event);
         
@@ -56,6 +71,17 @@ class EventRegistrationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             
+            // 🛑 CHECK FOR DUPLICATE REGISTRATION (ONE PER EVENT PER EMAIL)
+            $existing = $registrationRepository->findOneBy([
+                'participantEmail' => $registration->getParticipantEmail(),
+                'event' => $event
+            ]);
+
+            if ($existing) {
+                $this->addFlash('error', 'You are already registered for this event!');
+                return $this->redirectToRoute('app_event_index');
+            }
+
             // Generate QR Code data
             $qrData = "EVENT:".$event->getId()."|NAME:".$registration->getParticipantName()."|EMAIL:".$registration->getParticipantEmail();
             $registration->setQrCode($qrData);
@@ -63,6 +89,7 @@ class EventRegistrationController extends AbstractController
             $entityManager->persist($registration);
             $entityManager->flush();
 
+            $this->addFlash('success', 'Registration successful! Here is your ticket.');
             return $this->redirectToRoute('app_event_register_success', ['id' => $registration->getId()], Response::HTTP_SEE_OTHER);
         }
 
@@ -73,9 +100,29 @@ class EventRegistrationController extends AbstractController
     }
 
     #[Route('/{id}/success', name: 'app_event_register_success', methods: ['GET'])]
-    public function success(Registration $registration): Response
+    public function success(Registration $registration, Request $request): Response
     {
-        $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode('For more Details Visit https://www.psychologies.com/ - Participant: ' . $registration->getParticipantName());
+        // --- UNIVERSAL DYNAMIC HOST DETECTION ---
+        // This will automatically detect if you are on localhost, your Wi-Fi IP, 
+        // or a public tunnel like serveo.net/localhost.run.
+        // It always uses the SAME host you are currently browsing on!
+        
+        $currentHost = $request->getSchemeAndHttpHost();
+        $publicBaseUrl = $currentHost . '/ticket_pass_full.html';
+        
+        $params = [
+            'name' => $registration->getParticipantName(),
+            'event' => $registration->getEvent()->getTitle(),
+            'id' => $registration->getId(),
+            'date' => $registration->getEvent()->getDateStart()->format('d.m.Y'),
+            'time' => $registration->getEvent()->getDateStart()->format('H:i')
+        ];
+        
+        // Final Dynamically-Detected URL
+        $ticketUrl = $publicBaseUrl . '?' . http_build_query($params);
+        
+        // Simple, clean QR code that works on whichever link you are using!
+        $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=' . urlencode($ticketUrl);
 
         return $this->render('event_registration/success.html.twig', [
             'registration' => $registration,
@@ -83,9 +130,23 @@ class EventRegistrationController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/ticket', name: 'app_event_registration_ticket', methods: ['GET'])]
+    public function ticket(Registration $registration): Response
+    {
+        // Publicly accessible digital ticket view
+        return $this->render('event_registration/ticket.html.twig', [
+            'registration' => $registration,
+        ]);
+    }
+
     #[Route('/{id}/status/{status}', name: 'app_event_registration_status', methods: ['POST'])]
     public function updateStatus(Request $request, Registration $registration, string $status, EntityManagerInterface $entityManager): Response
     {
+        // 🔐 Security: Only ROLE_ADMIN or the Event Organizer can modify status!
+        if (!$this->isGranted('ROLE_ADMIN') && $registration->getEvent()->getOrganizerId() !== $this->getUser()->getId()) {
+            throw $this->createAccessDeniedException('You can only manage registrations for your own events.');
+        }
+
         if ($this->isCsrfTokenValid('status'.$registration->getId(), $request->request->get('_token'))) {
             if (in_array($status, ['registered', 'attended', 'cancelled'])) {
                 $registration->setStatus($status);
@@ -100,6 +161,11 @@ class EventRegistrationController extends AbstractController
     #[Route('/{id}', name: 'app_event_registration_delete', methods: ['POST'])]
     public function delete(Request $request, Registration $registration, EntityManagerInterface $entityManager): Response
     {
+        // 🔐 Security: Only ROLE_ADMIN or the Event Organizer can delete registrations!
+        if (!$this->isGranted('ROLE_ADMIN') && $registration->getEvent()->getOrganizerId() !== $this->getUser()->getId()) {
+            throw $this->createAccessDeniedException('You can only delete registrations for your own events.');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$registration->getId(), $request->request->get('_token'))) {
             $entityManager->remove($registration);
             $entityManager->flush();

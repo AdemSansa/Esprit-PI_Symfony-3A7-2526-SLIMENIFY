@@ -1,0 +1,318 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}E-Ticket - {{ registration.participantName }}{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ticket-blue: #0f172a;
+            --ticket-orange: #fbbf24;
+            --ticket-white: #ffffff;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .ticket-page {
+            max-width: 800px;
+            width: 95%;
+            margin: 2rem auto;
+            background: var(--ticket-white);
+            display: flex;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.2);
+            animation: ticketIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes ticketIn {
+            from { opacity: 0; transform: translateY(50px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* --- Main Ticket --- */
+        .ticket-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ticket-header {
+            background: var(--ticket-blue);
+            padding: 2.5rem;
+            color: white;
+            text-align: center;
+            position: relative;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+        }
+
+        .ticket-logo {
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+        .qr-placeholder {
+            background: white;
+            padding: 10px;
+            display: inline-block;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .qr-placeholder img {
+            width: 150px;
+            height: 150px;
+            display: block;
+        }
+
+        .e-ticket-tag {
+            font-family: 'Oswald', sans-serif;
+            font-size: 4rem;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1;
+            letter-spacing: -2px;
+        }
+
+        .ticket-subtitle {
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+            opacity: 0.7;
+        }
+
+        /* Lower Part */
+        .ticket-body {
+            background: var(--ticket-orange);
+            padding: 3rem 2.5rem;
+            flex: 1;
+            position: relative;
+        }
+
+        .event-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--ticket-blue);
+            text-transform: uppercase;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .event-details {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: rgba(15, 23, 42, 0.6);
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            border-top: 2px solid rgba(15, 23, 42, 0.1);
+            padding-top: 1.5rem;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: rgba(15, 23, 42, 0.4);
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--ticket-blue);
+        }
+
+        /* --- Sidebar --- */
+        .ticket-sidebar {
+            width: 140px;
+            background: var(--ticket-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-left: 2.5px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-text {
+            color: white;
+            font-family: 'Oswald', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+            transform: rotate(-90deg);
+            opacity: 0.9;
+            letter-spacing: 4px;
+        }
+
+        /* Cutouts */
+        .ticket-sidebar::before,
+        .ticket-sidebar::after {
+            content: "";
+            position: absolute;
+            left: -15px;
+            width: 30px;
+            height: 30px;
+            background: #f1f5f9;
+            border-radius: 50%;
+        }
+
+        .ticket-sidebar::before { top: 70%; }
+        .ticket-sidebar::after { bottom: 90%; }
+
+        @media (max-width: 600px) {
+            .ticket-page { flex-direction: column; border-radius: 12px; }
+            .ticket-sidebar { width: 100%; height: 100px; border-left: none; border-top: 2px dashed rgba(255,255,255,0.2); }
+            .sidebar-text { transform: rotate(0); font-size: 1.5rem; }
+            .ticket-sidebar::before, .ticket-sidebar::after { display: none; }
+            .e-ticket-tag { font-size: 2.5rem; }
+            .event-title { font-size: 2.2rem; }
+        }
+
+        @media print {
+            body { background: white; }
+            .ticket-page { box-shadow: none; margin: 0; width: 100%; border: 1px solid #eee; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div id="phantom-wrap" style="
+        min-height: 100vh;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: #0f172a;
+        padding: 2rem 0;
+    ">
+        <!-- The Ticket (Directly Visible) -->
+        <div class="ticket-page" id="capture-ticket" style="margin-bottom: 2rem; box-shadow: 0 40px 100px -20px rgba(0,0,0,0.6);">
+            <div class="ticket-main">
+                <div class="ticket-header">
+                    <div class="ticket-logo">SLIMENIFY / EVENTS</div>
+                    <div class="qr-placeholder">
+                        <img id="ticket-qr" src="" alt="Ticket QR">
+                    </div>
+                    <h1 class="e-ticket-tag">E-TICKET</h1>
+                    <div class="ticket-subtitle" id="ticket-date-head">DATE - 01.01.2024</div>
+                </div>
+                <div class="ticket-body">
+                    <h2 class="event-title" id="ticket-title">EVENT NAME</h2>
+                    <div class="event-details" id="ticket-id-sub">Digital Pass #000</div>
+                    <div class="details-grid">
+                        <div class="detail-item"><span class="detail-label">Name :</span><span class="detail-value" id="ticket-name">GUEST PLAYER</span></div>
+                        <div class="detail-item"><span class="detail-label">Pass ID :</span><span class="detail-value" id="ticket-id">#ID-000</span></div>
+                        <div class="detail-item"><span class="detail-label">Date :</span><span class="detail-value" id="ticket-date">01.01.2024</span></div>
+                        <div class="detail-item"><span class="detail-label">Time :</span><span class="detail-value" id="ticket-time">10:00 - 18:00</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ticket-sidebar">
+                <div class="sidebar-text" id="ticket-side-text">EVENT-PASS</div>
+            </div>
+        </div>
+
+        <!-- Action Controls -->
+        <div style="text-align: center;">
+            <p style="color: rgba(255,255,255,0.4); font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem;">
+                ✨ YOUR PASS IS READY ✨
+            </p>
+            <button id="download-btn" style="
+                background: #10b981;
+                color: white;
+                border: none;
+                padding: 1.25rem 2.5rem;
+                border-radius: 100px;
+                font-weight: 800;
+                font-size: 1.1rem;
+                cursor: pointer;
+                box-shadow: 0 15px 30px -5px rgba(16, 185, 129, 0.4);
+            ">
+                💾 Save as Image to Gallery
+            </button>
+            <p style="color: #94a3b8; font-size: 0.7rem; margin-top: 1rem; opacity: 0.5;">
+                Generating photo... Please wait after clicking.
+            </p>
+        </div>
+        
+        <!-- Generated Image Target (Hidden) -->
+        <div id="img-target" style="margin-top: 2rem; display: none;"></div>
+    </div>
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script>
+        // --- 1. Get Data from URL ---
+        const params = new URLSearchParams(window.location.search);
+        const name = params.get('name') || 'Guest Name';
+        const event = params.get('event') || 'Psychology Event';
+        const id = params.get('id') || '26';
+        const date = params.get('date') || '16.04.2026';
+        const time = params.get('time') || '21:38';
+
+        // --- 2. Fill Ticket ---
+        document.getElementById('ticket-name').textContent = name;
+        document.getElementById('ticket-title').textContent = event;
+        document.getElementById('ticket-id').textContent = '#' + id;
+        document.getElementById('ticket-id-sub').textContent = 'Digital Pass ID: #' + id;
+        document.getElementById('ticket-date').textContent = date;
+        document.getElementById('ticket-date-head').textContent = 'DATE - ' + date;
+        document.getElementById('ticket-time').textContent = time;
+        document.getElementById('ticket-side-text').textContent = (event.slice(0, 10)).toUpperCase();
+        document.getElementById('ticket-qr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + id;
+
+        // --- 3. Save as Image Feature ---
+        document.getElementById('download-btn').addEventListener('click', function() {
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⚡ Processing...';
+            btn.disabled = true;
+
+            const ticketElement = document.getElementById('capture-ticket');
+            
+            html2canvas(ticketElement, {
+                scale: 3,
+                useCORS: true,
+                backgroundColor: '#0f172a'
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Ticket-' + name.replace(/\s+/g, '-') + '.png';
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }).catch(err => {
+                console.error('Render error:', err);
+                alert('Could not generate image. Please screenshot instead.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        });
+    </script>
+{% endblock %}

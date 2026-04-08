@@ -18,49 +18,49 @@ class Event
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 200, nullable: true)]
-    #[Assert\NotBlank(message: "Le titre de l'événement est obligatoire.")]
+    #[Assert\NotBlank(message: "The event title is required.")]
     #[Assert\Length(
         min: 5,
         max: 200,
-        minMessage: "Le titre doit faire au moins {{ limit }} caractères.",
-        maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères."
+        minMessage: "The title must be at least {{ limit }} characters long.",
+        maxMessage: "The title cannot exceed {{ limit }} characters."
     )]
     private ?string $title = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
-    #[Assert\NotBlank(message: "La description est obligatoire.")]
-    #[Assert\Length(min: 10, minMessage: "La description doit faire au moins {{ limit }} caractères.")]
+    #[Assert\NotBlank(message: "The description is required.")]
+    #[Assert\Length(min: 10, minMessage: "The description must be at least {{ limit }} characters long.")]
     private ?string $description = null;
 
     #[ORM\Column(type: 'string', length: 10, nullable: true)]
-    #[Assert\NotBlank(message: "Veuillez choisir un type d'événement (En ligne, Physique...).")]
+    #[Assert\NotBlank(message: "Please choose an event type (Online, In-Person...).")]
     private ?string $type = null; // online, physique, hybride
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    #[Assert\NotBlank(message: "La date de début est obligatoire.")]
+    #[Assert\NotBlank(message: "The start date is required.")]
     #[Assert\Type("\DateTimeInterface")]
-    #[Assert\GreaterThan("now", message: "L'événement ne peut pas commencer dans le passé.")]
+    #[Assert\GreaterThan("now", message: "The event cannot start in the past.")]
     private ?\DateTimeInterface $dateStart = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     #[Assert\Type("\DateTimeInterface")]
     #[Assert\GreaterThan(
         propertyPath: "dateStart", 
-        message: "La date de fin doit être après la date de début (ex: si vous commencez le 01/05/2026, vous ne pouvez pas finir le 10/01/2026)."
+        message: "The end date must be after the start date."
     )]
     private ?\DateTimeInterface $dateEnd = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Assert\NotBlank(message: "L'adresse ou le lien de l'événement est obligatoire.")]
+    #[Assert\NotBlank(message: "The event location or link is required.")]
     private ?string $location = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    #[Assert\NotBlank(message: "Veuillez spécifier le nombre maximum de participants.")]
-    #[Assert\Positive(message: "Le nombre de participants doit être supérieur à 0.")]
+    #[Assert\NotBlank(message: "Please specify the maximum number of participants.")]
+    #[Assert\Positive(message: "The number of participants must be greater than 0.")]
     private ?int $maxParticipants = null;
 
-    #[ORM\Column(type: 'string', length: 10, options: ['default' => 'draft'])]
-    private string $status = 'draft'; // draft, published, cancelled
+    #[ORM\Column(type: 'string', length: 10, options: ['default' => 'published'])]
+    private string $status = 'published'; // published, draft, cancelled
 
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
@@ -71,7 +71,13 @@ class Event
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $imageUrl = null;
 
-    #[ORM\OneToMany(mappedBy: 'event', targetEntity: Registration::class)]
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $latitude = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $longitude = null;
+
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: Registration::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $registrations;
 
     public function __construct()
@@ -103,5 +109,9 @@ class Event
     public function setOrganizerId(?int $v): static { $this->organizerId = $v; return $this; }
     public function getImageUrl(): ?string { return $this->imageUrl; }
     public function setImageUrl(?string $v): static { $this->imageUrl = $v; return $this; }
+    public function getLatitude(): ?float { return $this->latitude; }
+    public function setLatitude(?float $v): static { $this->latitude = $v; return $this; }
+    public function getLongitude(): ?float { return $this->longitude; }
+    public function setLongitude(?float $v): static { $this->longitude = $v; return $this; }
     public function getRegistrations(): Collection { return $this->registrations; }
 }

@@ -2,4 +2,13 @@
 
 {% block title %}Edit Event{% endblock %}
 
-{% block form_title %}Edit Event: {{ event.title }}{% endblock %}
+{% block app_content %}
+<div style="max-width: 900px; margin: 0 auto; padding-bottom: 3rem;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2.25rem; font-weight: 800; color: #0f172a; margin: 0;">Edit Event</h1>
+        <p style="color: #64748b; margin-top: 0.5rem; font-size: 1.1rem;">Update your event information and manage its visibility.</p>
+    </div>
+
+    {{ include('event/_form.html.twig', {'button_label': 'Update Event'}) }}
+</div>
+{% endblock %}
