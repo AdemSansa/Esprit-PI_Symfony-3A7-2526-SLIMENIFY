@@ -77,6 +77,36 @@ class Quiz
     public function setMinScore(int $v): static { $this->minScore = $v; return $this; }
     public function getMaxScore(): int { return $this->maxScore; }
     public function setMaxScore(int $v): static { $this->maxScore = $v; return $this; }
+    public function getEstimatedTime(): int
+    {
+        return $this->totalQuestions * 45;
+    }
+
+    public function getEstimatedTimeFormatted(): string
+    {
+        $seconds = $this->getEstimatedTime();
+        if ($seconds === 0) {
+            return '0s';
+        }
+
+        $minutes = floor($seconds / 60);
+        $remainingSeconds = $seconds % 60;
+
+        if ($minutes > 0) {
+            return sprintf('%dm %ds', $minutes, $remainingSeconds);
+        }
+
+        return sprintf('%ds', $remainingSeconds);
+    }
+
+    public function getParticipantCount(): int
+    {
+        $userIds = [];
+        foreach ($this->results as $result) {
+            $userIds[$result->getUser()->getId()] = true;
+        }
+        return count($userIds);
+    }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     public function setCreatedAt(\DateTimeImmutable $v): static { $this->createdAt = $v; return $this; }
     public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }

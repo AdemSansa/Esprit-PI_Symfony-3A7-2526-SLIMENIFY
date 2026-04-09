@@ -16,10 +16,14 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class QuizCrudController extends AbstractController
 {
     #[Route('', name: 'app_quiz_index', methods: ['GET'])]
-    public function index(QuizRepository $quizRepository): Response
+    public function index(Request $request, QuizRepository $quizRepository): Response
     {
+        $query = $request->query->get('q');
+        $quizzes = $query ? $quizRepository->findBySearchQuery($query) : $quizRepository->findAll();
+
         return $this->render('quiz/index.html.twig', [
-            'quizzes' => $quizRepository->findAll(),
+            'quizzes' => $quizzes,
+            'searchQuery' => $query,
         ]);
     }
 

@@ -1,0 +1,1 @@
+<?php require 'vendor/autoload.php'; $client = Symfony\Component\HttpClient\HttpClient::create(); $response = $client->request('GET', 'https://text.pollinations.ai/hello'); echo $response->getContent();

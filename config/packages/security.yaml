@@ -10,6 +10,11 @@ security:
                 class: App\Entity\User
                 property: email
 
+    # ROLE HIERARCHY: Admin automatically has Therapist and Patient permissions
+    role_hierarchy:
+        ROLE_ADMIN:       [ROLE_THERAPIST, ROLE_PATIENT]
+        ROLE_THERAPIST:   ROLE_PATIENT
+
     firewalls:
         dev:
             # Ensure dev tools and static assets are always allowed
@@ -42,6 +47,8 @@ security:
         - { path: ^/assessment, roles: [ROLE_PATIENT, ROLE_ADMIN] }
         - { path: ^/quiz, roles: [ROLE_THERAPIST, ROLE_ADMIN] }
         - { path: ^/questions, roles: [ROLE_THERAPIST, ROLE_ADMIN] }
+        - { path: ^/product, roles: [ROLE_PATIENT, ROLE_THERAPIST, ROLE_ADMIN] }
+        - { path: ^/supplier, roles: [ROLE_ADMIN] }
 
 when@test:
     security:

@@ -3,40 +3,202 @@
 {% block title %}Log in!{% endblock %}
 
 {% block body %}
-<main class="auth-page">
-    <form class="auth-card" method="post" action="{{ path('app_login') }}">
-        {% if error %}
-            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-        {% endif %}
+<style>
+    /* Styling for the new Login Template */
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Affiche le motif entier en se répétant */
+        background: #f6f5ed url('{{ asset("psy.png") }}') top left repeat;
+        background-size: auto; /* Affiche la photo à sa taille réelle ou utilisez contain pour l'ajuster */
+        padding: 2rem;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+    .login-card {
+        display: flex;
+        background: #fff;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 820px; /* Réduit de 950px */
+        min-height: 500px; /* Réduit de 550px */
+    }
+    .login-left {
+        flex: 1;
+        padding: 2.5rem; /* Réduit de 3rem */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: #ffffff;
+    }
+    .logo-container {
+        width: 120px; /* Réduit de 140px */
+        height: 120px; /* Réduit de 140px */
+        border-radius: 50%;
+        border: 2px solid #f1f5f9;
+        padding: 5px;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+    .login-right {
+        flex: 1;
+        padding: 3rem; /* Réduit de 3.5rem */
+        background: #fafaf5; /* Couleur crème très clair */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-left: 1px solid #f1f5f9;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #475569;
+    }
+    .form-input {
+        width: 100%;
+        padding: 0.65rem 0.9rem; /* Réduit de 0.75rem 1rem */
+        border: 1px solid #cbd5e1;
+        border-radius: 10px; /* Un peu plus arrondi pour la douceur */
+        font-size: 0.9rem; /* Réduit de 0.95rem */
+        outline: none;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+    .form-input:focus {
+        border-color: #627255;
+        box-shadow: 0 0 0 3px rgba(98, 114, 85, 0.08);
+    }
+    .forgot-password {
+        display: block;
+        text-align: right;
+        font-size: 0.85rem;
+        color: #64748b;
+        text-decoration: none;
+        margin-bottom: 2rem;
+        transition: color 0.2s;
+    }
+    .forgot-password:hover {
+        color: #4f5d44;
+    }
+    .btn-login {
+        width: 100%;
+        background: linear-gradient(135deg, #748764, #546549);
+        color: white;
+        padding: 0.75rem; /* Réduit de 0.85rem */
+        border-radius: 30px; /* Plus arrondi pour l'élégance */
+        border: none;
+        font-weight: 600;
+        font-size: 0.95rem; /* Réduit de 1rem */
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 4px 10px -1px rgba(98, 114, 85, 0.2);
+    }
+    .btn-login:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 12px -2px rgba(98, 114, 85, 0.3);
+    }
+    .register-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+    .register-link a {
+        color: #627255;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .register-link a:hover {
+        text-decoration: underline;
+    }
+    
+    @media (max-width: 768px) {
+        .login-card { flex-direction: column; }
+        .login-left { padding: 2rem; border-right: none; border-bottom: 1px solid #f1f5f9; }
+        .login-right { padding: 2rem; border-left: none; }
+    }
+</style>
 
-        {% if app.user %}
-            <div class="auth-state">
-                You are logged in as {{ app.user.userIdentifier }}, <a href="{{ logout_path() }}">Logout</a>
+<main class="login-container">
+    <div class="login-card">
+        
+        <!-- Colonne Gauche -->
+        <div class="login-left">
+            <div class="logo-container">
+                <!-- Logo situé dans assets/logo.jpg -->
+                <img src="{{ asset('logo.jpg') }}" alt="Logo Slimenify" style="max-width: 100%; max-height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.src='https://ui-avatars.com/api/?name=Slimenify&background=627255&color=fff&size=140'">
             </div>
-        {% endif %}
-
-        <h1 class="auth-title">Welcome back</h1>
-        <p class="auth-subtitle">Sign in to continue to your account.</p>
-
-        <div class="auth-field">
-            <label class="auth-label" for="inputEmail">Email</label>
-            <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="auth-input" autocomplete="email" required autofocus>
+            <h1 style="font-size: 2.5rem; font-weight: 800; margin: 0 0 0.5rem 0; background: linear-gradient(90deg, #3d4a32, #6a7c5c); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Slimenify</h1>
+            <p style="color: #64748b; font-size: 1.15rem; font-style: italic; margin: 0 0 2rem 0;">Votre bien-être, notre priorité.</p>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin: 0; max-width: 250px; line-height: 1.5;">Rejoignez notre communauté de soins et de soutien.</p>
         </div>
 
-        <div class="auth-field">
-            <label class="auth-label" for="inputPassword">Password</label>
-            <input type="password" name="password" id="inputPassword" class="auth-input" autocomplete="current-password" required>
+        <!-- Colonne Droite -->
+        <div class="login-right">
+            <form method="post" action="{{ path('app_login') }}">
+                
+                <h2 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0 0 0.25rem 0;">Connexion</h2>
+                <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 2rem 0;">Veuillez entrer vos identifiants</p>
+
+                {% if error %}
+                    <div style="background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; padding: 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1.5rem;">
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
+                    </div>
+                {% endif %}
+
+                {% if app.user %}
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1.5rem;">
+                        You are logged in as {{ app.user.userIdentifier }}, <a href="{{ logout_path() }}" style="font-weight: bold; color: inherit; text-decoration: underline;">Logout</a>
+                    </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="form-label" for="inputEmail">Email / Nom d'utilisateur</label>
+                    <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-input" autocomplete="email" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="inputPassword">Mot de passe</label>
+                    <input type="password" name="password" id="inputPassword" class="form-input" autocomplete="current-password" required>
+                </div>
+
+                <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+
+                <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+
+                <button class="btn-login" type="submit">
+                    Se connecter
+                </button>
+
+                <p class="register-link">
+                    Pas encore de compte ? <a href="{{ path('app_register') }}">S'inscrire</a>
+                </p>
+
+                <!-- DEV TOOLS (GARDÉ POUR VOS TESTS) -->
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px dashed #e2e8f0;">
+                    <p style="text-align: center; margin-bottom: 0.75rem; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Outils Développeur (Auto-fill)</p>
+                    <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                        <button type="button" style="padding: 4px 8px; font-size: 0.75rem; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; color: #64748b; cursor: pointer;" onclick="document.getElementById('inputEmail').value='patient@gmail.com'; document.getElementById('inputPassword').value='123456';">Patient</button>
+                        <button type="button" style="padding: 4px 8px; font-size: 0.75rem; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; color: #64748b; cursor: pointer;" onclick="document.getElementById('inputEmail').value='therapist@gmail.com'; document.getElementById('inputPassword').value='123456';">Therapist</button>
+                        <button type="button" style="padding: 4px 8px; font-size: 0.75rem; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; color: #64748b; cursor: pointer;" onclick="document.getElementById('inputEmail').value='admin@gmail.com'; document.getElementById('inputPassword').value='123456';">Admin</button>
+                    </div>
+                </div>
+            </form>
         </div>
-
-        <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
-
-        <button class="auth-submit" type="submit">
-            Sign in
-        </button>
-
-        <p class="auth-subtitle auth-footer-text" style="margin-top: 1rem; text-align: center;">
-            Don't have an account? <a class="auth-link" href="{{ path('app_register') }}">Register here</a>
-        </p>
-    </form>
+    </div>
 </main>
 {% endblock %}
