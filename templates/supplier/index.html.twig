@@ -180,7 +180,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">Suppliers Management</h1>
-            <p class="page-subtitle" id="supplier-count">{{ suppliers|length }} supplier(s) registered</p>
+            <p class="page-subtitle">{{ suppliers|length }} supplier(s) registered</p>
         </div>
         <a href="{{ path('app_supplier_new') }}" class="btn-primary">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -188,23 +188,12 @@
         </a>
     </div>
 
-    <form method="GET" action="{{ path('app_supplier_index') }}" class="toolbar" id="filter-form" style="flex-wrap: wrap;" data-turbo="false">
-        <div class="search-container" style="flex: 2; min-width: 200px;">
+    <div class="toolbar">
+        <div class="search-container">
             <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" name="search" value="{{ search|default('') }}" class="search-input" id="supplier-search" placeholder="Search suppliers by name, email or city..." style="font-size: 1rem; padding: 0.65rem 1rem 0.65rem 2.5rem;">
+            <input type="text" class="search-input" placeholder="Search by name, email, or city...">
         </div>
-        <select name="status" class="search-input" id="status-filter" style="width: auto; padding-left: 1rem;">
-            <option value="all" {% if status|default('all') == 'all' %}selected{% endif %}>All Statuses</option>
-            <option value="active" {% if status|default('') == 'active' %}selected{% endif %}>Active</option>
-            <option value="inactive" {% if status|default('') == 'inactive' %}selected{% endif %}>Inactive</option>
-        </select>
-        <select name="sort" class="search-input" id="sort-filter" style="width: auto; padding-left: 1rem;">
-            <option value="newest" {% if sort|default('newest') == 'newest' %}selected{% endif %}>Newest First</option>
-            <option value="name-asc" {% if sort|default('') == 'name-asc' %}selected{% endif %}>Name: A-Z</option>
-            <option value="name-desc" {% if sort|default('') == 'name-desc' %}selected{% endif %}>Name: Z-A</option>
-            <option value="city-asc" {% if sort|default('') == 'city-asc' %}selected{% endif %}>City</option>
-        </select>
-    </form>
+    </div>
 
     <div class="data-table-container">
         <table class="data-table">
@@ -220,10 +209,7 @@
             </thead>
             <tbody>
                 {% for supplier in suppliers %}
-                    <tr class="supplier-row" 
-                        data-name="{{ supplier.name|lower }}"
-                        data-email="{{ supplier.email|lower }}"
-                        data-city="{{ supplier.city|lower }}">
+                    <tr>
                         <td>
                             <div class="supp-name">{{ supplier.name }}</div>
                         </td>
@@ -240,7 +226,7 @@
                         </td>
                         <td>
                             <span class="badge {{ supplier.status == 'active' ? 'badge-active' : 'badge-inactive' }}">
-                                {{ supplier.status|capitalize }}
+                                {{ supplier.status }}
                             </span>
                         </td>
                         <td>
@@ -248,7 +234,7 @@
                                 <a href="{{ path('app_supplier_edit', {'id': supplier.id}) }}" class="btn-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                                 </a>
-                                <form method="post" action="{{ path('app_supplier_delete', {'id': supplier.id}) }}" onsubmit="return confirm('Are you sure you want to permanently remove this supplier from the system?');" style="margin: 0;">
+                                <form method="post" action="{{ path('app_supplier_delete', {'id': supplier.id}) }}" onsubmit="return confirm('Are you sure you want to delete this supplier?');" style="margin: 0;">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ supplier.id) }}">
                                     <button class="btn-icon delete">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -268,68 +254,3 @@
         </table>
     </div>
 {% endblock %}
-
-{% block javascripts %}
-    <script>
-        const initSupplierSearch = () => {
-            const filterForm = document.getElementById('filter-form');
-            const statusFilter = document.getElementById('status-filter');
-            const sortFilter = document.getElementById('sort-filter');
-            const searchInput = document.getElementById('supplier-search');
-            const tableBody = document.querySelector('.data-table tbody');
-            const countLabel = document.getElementById('supplier-count');
-            
-            function executeAjaxFilter() {
-                if (!filterForm) return;
-                
-                const actionPath = filterForm.getAttribute('action');
-                const formData = new FormData(filterForm);
-                const params = new URLSearchParams(formData);
-                const fullUrl = actionPath + '?' + params.toString();
-                
-                // Update browser URL without reloading so sharing links works
-                window.history.replaceState({}, '', fullUrl);
-
-                fetch(fullUrl, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, "text/html");
-                    
-                    const newTableBody = doc.querySelector('.data-table tbody');
-                    if (newTableBody && tableBody) {
-                        tableBody.innerHTML = newTableBody.innerHTML;
-                    }
-                    
-                    const newCount = doc.getElementById('supplier-count');
-                    if (newCount && countLabel) {
-                        countLabel.textContent = newCount.textContent;
-                    }
-                });
-            }
-
-            let debounceTimer;
-            function autoSubmit() {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(executeAjaxFilter, 300);
-            }
-
-            if (filterForm) {
-                statusFilter?.addEventListener('change', autoSubmit);
-                sortFilter?.addEventListener('change', autoSubmit);
-                searchInput?.addEventListener('input', autoSubmit);
-                
-                filterForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    executeAjaxFilter();
-                });
-            }
-        };
-
-        document.addEventListener("DOMContentLoaded", initSupplierSearch);
-        document.addEventListener("turbo:load", initSupplierSearch);
-    </script>
-{% endblock %}
-

@@ -12,25 +12,13 @@
 		--app-main-bg: #f6f5ed;
 	}
 	@keyframes fadeInSlideUp {
-		0% {
-			opacity: 0;
-			transform: translateY(15px);
-		}
-		100% {
-			opacity: 1;
-			transform: translateY(0);
-		}
+		0% { opacity: 0; transform: translateY(15px); }
+		100% { opacity: 1; transform: translateY(0); }
 	}
 	@keyframes pulseGlow {
-		0% {
-			box-shadow: 0 0 0 0 rgba(128, 140, 117, 0.4);
-		}
-		70% {
-			box-shadow: 0 0 0 10px rgba(128, 140, 117, 0);
-		}
-		100% {
-			box-shadow: 0 0 0 0 rgba(128, 140, 117, 0);
-		}
+		0% { box-shadow: 0 0 0 0 rgba(128, 140, 117, 0.4); }
+		70% { box-shadow: 0 0 0 10px rgba(128, 140, 117, 0); }
+		100% { box-shadow: 0 0 0 0 rgba(128, 140, 117, 0); }
 	}
 	.app-layout {
 		display: flex;
@@ -52,7 +40,7 @@
 		font-weight: 800;
 		font-size: 1.3rem;
 		letter-spacing: -0.02em;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+		border-bottom: 1px solid rgba(255, 255, 255, .15);
 		margin-bottom: 0.75rem;
 		background: linear-gradient(90deg, #ffffff, #d5d9d1);
 		-webkit-background-clip: text;
@@ -76,7 +64,7 @@
 	}
 	.app-sidebar__nav a:hover {
 		color: var(--app-sidebar-text);
-		background: rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, .1);
 	}
 	.app-sidebar__nav a.is-active {
 		color: #fff;
@@ -84,30 +72,17 @@
 	}
 	.app-sidebar__footer {
 		margin-top: auto;
-		padding: 1rem 1.25rem 1.5rem;
+		padding: 1rem 1.25rem 0;
 		border-top: 1px solid rgba(255, 255, 255, .08);
 		font-size: 0.8rem;
 		color: var(--app-sidebar-muted);
 	}
-	.btn-logout {
-		display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-		margin-top: 12px;
-		padding: 8px 15px;
-		background: rgba(255, 255, 255, 0.15);
-		border: 1px solid rgba(255, 255, 255, 0.3);
-		color: #ffffff !important;
-		border-radius: 8px;
+	.app-sidebar__footer a {
+		color: var(--app-accent);
 		text-decoration: none;
-		font-weight: 600;
-		transition: all 0.2s;
 	}
-	.btn-logout:hover {
-		background: #D9534F;
-        border-color: #D9534F;
-		text-decoration: none;
+	.app-sidebar__footer a:hover {
+		text-decoration: underline;
 	}
 	.app-main {
 		flex: 1;
@@ -186,52 +161,40 @@
 	<aside class="app-sidebar" aria-label="Main navigation">
 		<div class="app-sidebar__brand">Slimenify</div>
 		<nav class="app-sidebar__nav">
-			<a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'is-active' : '' }}">Home</a>
+    <a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'is-active' : '' }}">Home</a>
 
-			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_ADMIN') %}
-				<a href="{{ path('app_assessment_index') }}" class="{{ route starts with 'app_assessment' ? 'is-active' : '' }}">Assessments</a>
-			{% endif %}
+    {% if is_granted('ROLE_PATIENT') or is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('app_assessment_index') }}" class="{{ route starts with 'app_assessment' ? 'is-active' : '' }}">Assessments</a>
+    {% endif %}
 
-			{% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
-				<a href="{{ path('app_quiz_index') }}" class="{{ route starts with 'app_quiz' ? 'is-active' : '' }}">Quizzes</a>
-				<a href="{{ path('app_question_index') }}" class="{{ route starts with 'app_question' ? 'is-active' : '' }}">Questions</a>
-				<a href="{{ path('app_availability_manage') }}" class="{{ route starts with 'app_availability' ? 'is-active' : '' }}">Availability</a>
-			{% endif %}
+    {% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('app_quiz_index') }}" class="{{ route starts with 'app_quiz' ? 'is-active' : '' }}">Quizzes</a>
+        <a href="{{ path('app_question_index') }}" class="{{ route starts with 'app_question' ? 'is-active' : '' }}">Questions</a>
+    {% endif %}
 
-			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
-				<a href="{{ path('app_product_index') }}" class="{{ route starts with 'app_product' ? 'is-active' : '' }}">Products</a>
-				<a href="{{ path('app_appointments_calendar') }}" class="{{ route starts with 'app_appointments' ? 'is-active' : '' }}">Appointments</a>
-			{% endif %}
+    {% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('app_product_index') }}" class="{{ route starts with 'app_product' ? 'is-active' : '' }}">Products</a>
+    {% endif %}
 
-			{% if is_granted('ROLE_PATIENT') %}
-				<a href="{{ path('app_patient_dashboard') }}" class="{{ route == 'app_patient_dashboard' ? 'is-active' : '' }}" style="margin-top: 1.5rem;">Therapists</a>
-			{% endif %}
+    {# === New Reviews button === #}
+    {% if is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('app_reviews_admin') }}" class="{{ route starts with 'app_reviews_admin' ? 'is-active' : '' }}">Reviews (Admin)</a>
+    {% elseif is_granted('ROLE_THERAPIST') %}
+        <a href="{{ path('app_reviews_therapist') }}" class="{{ route starts with 'app_reviews_therapist' ? 'is-active' : '' }}">Reviews (Therapist)</a>
+    {% elseif is_granted('ROLE_PATIENT') %}
+        <a href="{{ path('app_reviews_user') }}" class="{{ route starts with 'app_reviews_user' ? 'is-active' : '' }}">My Reviews</a>
+    {% endif %}
 
-			{% if is_granted('ROLE_ADMIN') %}
-				<div style="margin-top: 1.5rem; margin-bottom: 0.25rem; padding: 0 0.85rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-sidebar-muted);">Admin Area</div>
-				<a href="{{ path('app_admin_user_index') }}" class="{{ route starts with 'app_admin_user' ? 'is-active' : '' }}">Users</a>
-				<a href="{{ path('app_admin_therapist_index') }}" class="{{ route starts with 'app_admin_therapist' ? 'is-active' : '' }}">Therapists</a>
-				<a href="{{ path('app_supplier_index') }}" class="{{ route starts with 'app_supplier' ? 'is-active' : '' }}">Suppliers</a>
-			{% endif %}
-
-			{% if is_granted('ROLE_THERAPIST') and not is_granted('ROLE_ADMIN') %}
-				<div style="margin-top: 1.5rem; margin-bottom: 0.25rem; padding: 0 0.85rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-sidebar-muted);">Therapist Space</div>
-				<a href="{{ path('app_therapist_dashboard') }}" class="{{ route == 'app_therapist_dashboard' ? 'is-active' : '' }}">My Dashboard</a>
-				<a href="{{ path('app_therapist_directory') }}" class="{{ route == 'app_therapist_directory' ? 'is-active' : '' }}">Therapists</a>
-			{% endif %}
-		</nav>
+    {% if is_granted('ROLE_ADMIN') %}
+        <div style="margin-top: 1.5rem; margin-bottom: 0.25rem; padding: 0 0.85rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-sidebar-muted);">Admin Area</div>
+        <a href="{{ path('app_supplier_index') }}" class="{{ route starts with 'app_supplier' ? 'is-active' : '' }}">Suppliers</a>
+    {% endif %}
+</nav>
 		<div class="app-sidebar__footer">
 			{% if app.user %}
-				<div style="font-weight: 600; color: #fff; margin-bottom: 5px;">{{ app.user.userIdentifier }}</div>
+				<div>{{ app.user.userIdentifier }}</div>
 			{% endif %}
-            <a href="{{ path('app_profile_index') }}" class="btn-logout" style="margin-top: 5px; background: rgba(255,255,255,0.05); border-color: transparent;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                My Profile
-            </a>
-			<a href="{{ path('app_logout') }}" class="btn-logout">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                Log out
-            </a>
+			<a href="{{ path('app_logout') }}">Log out</a>
 		</div>
 	</aside>
 	<main class="app-main">
@@ -289,26 +252,6 @@
 		</header>
 
 		<div class="app-main__inner">
-			{% for label, messages in app.flashes %}
-				{% for message in messages %}
-					<div class="alert alert-{{ label }}">
-						{% if label == 'success' %}
-							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-								<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-								<polyline points="22 4 12 14.01 9 11.01"></polyline>
-							</svg>
-						{% else %}
-							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-								<circle cx="12" cy="12" r="10"></circle>
-								<line x1="12" y1="8" x2="12" y2="12"></line>
-								<line x1="12" y1="16" x2="12.01" y2="16"></line>
-							</svg>
-						{% endif %}
-						{{ message }}
-					</div>
-				{% endfor %}
-			{% endfor %}
-
 			{% block app_content %}{% endblock %}
 		</div>
 

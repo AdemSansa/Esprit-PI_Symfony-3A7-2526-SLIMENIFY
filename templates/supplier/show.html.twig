@@ -1,156 +1,58 @@
-{% extends 'layout/app_shell.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}Supplier Details | {{ supplier.name }}{% endblock %}
+{% block title %}Supplier{% endblock %}
 
-{% block app_content %}
-<style>
-    .detail-card {
-        background: #fff;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-        border: 1px solid #f1f5f9;
-        overflow: hidden;
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    .detail-header {
-        background: linear-gradient(135deg, #748764, #546549);
-        padding: 2.5rem;
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .header-title {
-        margin: 0;
-        font-size: 1.8rem;
-        font-weight: 800;
-        letter-spacing: -0.01em;
-    }
-    .status-badge {
-        padding: 0.5rem 1rem;
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        border-radius: 30px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .detail-body {
-        padding: 2.5rem;
-    }
-    .info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-    }
-    .info-item {
-        display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-    }
-    .info-label {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .info-value {
-        font-size: 1.05rem;
-        color: #1e293b;
-        font-weight: 500;
-        line-height: 1.5;
-    }
-    .detail-footer {
-        padding: 1.5rem 2.5rem;
-        background: #f8fafc;
-        border-top: 1px solid #f1f5f9;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .back-link {
-        color: #64748b;
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: color 0.2s;
-    }
-    .back-link:hover {
-        color: #1e293b;
-    }
-    .btn-edit-header {
-        background: #fff;
-        color: #546549;
-        padding: 0.6rem 1.25rem;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.2s;
-    }
-    .btn-edit-header:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-</style>
+{% block body %}
+    <h1>Supplier</h1>
 
-<div class="detail-card">
-    <div class="detail-header">
-        <div>
-            <h1 class="header-title">{{ supplier.name }}</h1>
-            <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.25rem;">Supplier ID: #{{ supplier.id }}</div>
-        </div>
-        <div class="status-badge">{{ supplier.status }}</div>
-    </div>
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ supplier.id }}</td>
+            </tr>
+            <tr>
+                <th>Name</th>
+                <td>{{ supplier.name }}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{ supplier.email }}</td>
+            </tr>
+            <tr>
+                <th>Phone</th>
+                <td>{{ supplier.phone }}</td>
+            </tr>
+            <tr>
+                <th>Address</th>
+                <td>{{ supplier.address }}</td>
+            </tr>
+            <tr>
+                <th>City</th>
+                <td>{{ supplier.city }}</td>
+            </tr>
+            <tr>
+                <th>Country</th>
+                <td>{{ supplier.country }}</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td>{{ supplier.status }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ supplier.createdAt ? supplier.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>UpdatedAt</th>
+                <td>{{ supplier.updatedAt ? supplier.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
 
-    <div class="detail-body">
-        <div class="info-grid">
-            <div class="info-item">
-                <span class="info-label">Email Address</span>
-                <span class="info-value">{{ supplier.email ?: 'No email provided' }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Phone Number</span>
-                <span class="info-value">{{ supplier.phone ?: 'No phone provided' }}</span>
-            </div>
-            <div class="info-item" style="grid-column: span 2;">
-                <span class="info-label">Physical Address</span>
-                <span class="info-value">{{ supplier.address ?: 'No address provided' }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">City</span>
-                <span class="info-value">{{ supplier.city ?: 'N/A' }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Country</span>
-                <span class="info-value">{{ supplier.country ?: 'N/A' }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Registered On</span>
-                <span class="info-value">{{ supplier.createdAt ? supplier.createdAt|date('F d, Y') : 'N/A' }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Last Updated</span>
-                <span class="info-value">{{ supplier.updatedAt ? supplier.updatedAt|date('F d, Y') : 'N/A' }}</span>
-            </div>
-        </div>
-    </div>
+    <a href="{{ path('app_supplier_index') }}">back to list</a>
 
-    <div class="detail-footer">
-        <a href="{{ path('app_supplier_index') }}" class="back-link">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            Back to List
-        </a>
-        <div style="display: flex; gap: 1rem;">
-            <a href="{{ path('app_supplier_edit', {'id': supplier.id}) }}" class="btn-edit-header" style="background: #f1f5f9; color: #1e293b;">Edit Supplier</a>
-            {{ include('supplier/_delete_form.html.twig') }}
-        </div>
-    </div>
-</div>
+    <a href="{{ path('app_supplier_edit', {'id': supplier.id}) }}">edit</a>
+
+    {{ include('supplier/_delete_form.html.twig') }}
 {% endblock %}

@@ -17,19 +17,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class SupplierCrudController extends AbstractController
 {
     #[Route('', name: 'app_supplier_index', methods: ['GET'])]
-    public function index(Request $request, SupplierRepository $supplierRepository): Response
+    public function index(SupplierRepository $supplierRepository): Response
     {
-        $search = $request->query->get('search', '');
-        $status = $request->query->get('status', 'all');
-        $sort = $request->query->get('sort', 'newest');
-
-        $suppliers = $supplierRepository->findFiltered($search, $status, $sort);
-
         return $this->render('supplier/index.html.twig', [
-            'suppliers' => $suppliers,
-            'search' => $search,
-            'status' => $status,
-            'sort' => $sort,
+            'suppliers' => $supplierRepository->findAll(),
         ]);
     }
 
@@ -43,8 +34,6 @@ class SupplierCrudController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($supplier);
             $entityManager->flush();
-
-            $this->addFlash('success', 'The supplier has been registered successfully.');
 
             return $this->redirectToRoute('app_supplier_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -65,8 +54,6 @@ class SupplierCrudController extends AbstractController
             $supplier->setUpdatedAt(new \DateTime());
             $entityManager->flush();
 
-            $this->addFlash('success', 'The supplier information has been updated successfully.');
-
             return $this->redirectToRoute('app_supplier_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -82,7 +69,6 @@ class SupplierCrudController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$supplier->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($supplier);
             $entityManager->flush();
-            $this->addFlash('success', 'The supplier has been removed from the system.');
         }
 
         return $this->redirectToRoute('app_supplier_index', [], Response::HTTP_SEE_OTHER);

@@ -13,48 +13,6 @@ class SupplierRepository extends ServiceEntityRepository
         parent::__construct($registry, Supplier::class);
     }
 
-    /**
-     * Server-side filtered and sorted supplier query.
-     */
-    public function findFiltered(
-        ?string $search = null,
-        ?string $status = null,
-        ?string $sort = 'newest'
-    ): array {
-        $qb = $this->createQueryBuilder('s');
-
-        // Search by name, email, or company/city
-        if (!empty($search)) {
-            $qb->andWhere('LOWER(s.name) LIKE LOWER(:search) OR LOWER(s.email) LIKE LOWER(:search) OR LOWER(s.city) LIKE LOWER(:search)')
-               ->setParameter('search', '%' . strtolower($search) . '%');
-        }
-
-        // Filter by status
-        if (!empty($status) && $status !== 'all') {
-            $qb->andWhere('s.status = :status')
-               ->setParameter('status', $status);
-        }
-
-        // Sorting
-        switch ($sort) {
-            case 'name-asc':
-                $qb->orderBy('s.name', 'ASC');
-                break;
-            case 'name-desc':
-                $qb->orderBy('s.name', 'DESC');
-                break;
-            case 'city-asc':
-                $qb->orderBy('s.city', 'ASC');
-                break;
-            case 'newest':
-            default:
-                $qb->orderBy('s.createdAt', 'DESC');
-                break;
-        }
-
-        return $qb->getQuery()->getResult();
-    }
-
     public function save(Supplier $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);

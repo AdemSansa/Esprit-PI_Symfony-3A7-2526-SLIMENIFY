@@ -11,7 +11,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: \App\Repository\SupplierRepository::class)]
 #[ORM\Table(name: 'suppliers')]
-#[UniqueEntity(fields: ['email'], message: 'This email is already in use by another supplier.')]
+#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé par un autre fournisseur.')]
 class Supplier
 {
     #[ORM\Id]
@@ -20,38 +20,33 @@ class Supplier
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    #[Assert\NotBlank(message: "The supplier name cannot be empty.")]
-    #[Assert\Length(
-        min: 3, 
-        max: 100, 
-        minMessage: "The supplier name must be at least {{ limit }} characters long.",
-        maxMessage: "The supplier name cannot exceed {{ limit }} characters."
-    )]
+    #[Assert\NotBlank(message: "Le nom du fournisseur est obligatoire.")]
+    #[Assert\Length(min: 3, max: 100, minMessage: "Le nom doit faire au moins {{ limit }} caractères.")]
     private ?string $name = null;
 
     #[ORM\Column(length: 150, unique: true, nullable: true)]
-    #[Assert\NotBlank(message: "A valid email address is required.")]
-    #[Assert\Email(message: "The email '{{ value }}' is not a valid email format.")]
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "L'email '{{ value }}' n'est pas un email valide.")]
     private ?string $email = null;
 
     #[ORM\Column(length: 20, nullable: true)]
-    #[Assert\NotBlank(message: "A contact phone number is required.")]
+    #[Assert\NotBlank(message: "Le numéro de téléphone est obligatoire.")]
     #[Assert\Regex(
         pattern: "/^(\+216|00216)?[234579]\d{7}$/",
-        message: "Please enter a valid Tunisian phone number (8 digits, optionally starting with +216)."
+        message: "Le numéro de téléphone doit être un numéro tunisien valide (8 chiffres, ex: 20123456)."
     )]
     private ?string $phone = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Assert\NotBlank(message: "The physical address is required.")]
+    #[Assert\NotBlank(message: "L'adresse est obligatoire.")]
     private ?string $address = null;
 
     #[ORM\Column(length: 100, nullable: true)]
-    #[Assert\NotBlank(message: "The city name is required.")]
+    #[Assert\NotBlank(message: "La ville est obligatoire.")]
     private ?string $city = null;
 
     #[ORM\Column(length: 100, nullable: true)]
-    #[Assert\NotBlank(message: "The country name is required.")]
+    #[Assert\NotBlank(message: "Le pays est obligatoire.")]
     private ?string $country = null;
 
     #[ORM\Column(length: 20, options: ['default' => 'active'])]

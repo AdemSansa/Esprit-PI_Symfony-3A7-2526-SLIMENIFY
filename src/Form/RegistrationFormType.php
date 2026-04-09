@@ -12,20 +12,12 @@ use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-use Symfony\Component\Validator\Constraints\Email;
-use Symfony\Component\Validator\Constraints\Regex;
-
 class RegistrationFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('email', null, [
-                'constraints' => [
-                    new NotBlank(['message' => 'Email cannot be blank']),
-                    new Email(['message' => 'Please enter a valid email address.']),
-                ]
-            ])
+            ->add('email')
             ->add('agreeTerms', CheckboxType::class, [
                                 'mapped' => false,
                 'constraints' => [
@@ -51,27 +43,9 @@ class RegistrationFormType extends AbstractType
                     ),
                 ],
             ])
-            ->add('firstName', null, [
-                'constraints' => [
-                    new NotBlank(['message' => 'First name cannot be blank']),
-                    new Length(['min' => 2, 'max' => 50, 'minMessage' => 'First name must be at least {{ limit }} characters']),
-                ]
-            ])
-            ->add('lastName', null, [
-                'constraints' => [
-                    new NotBlank(['message' => 'Last name cannot be blank']),
-                    new Length(['min' => 2, 'max' => 50, 'minMessage' => 'Last name must be at least {{ limit }} characters']),
-                ]
-            ])
-            ->add('phone', null, [
-                'constraints' => [
-                    new NotBlank(['message' => 'Phone number cannot be blank']),
-                    new Regex([
-                        'pattern' => '/^\+?[0-9]{8,15}$/',
-                        'message' => 'Please enter a valid phone number (8 to 15 digits).'
-                    ])
-                ]
-            ])
+            ->add('firstName')
+            ->add('lastName')
+            ->add('phone')
             ->add('dateNaissance')
             ->add('gender', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
                 'choices'  => [
@@ -81,50 +55,7 @@ class RegistrationFormType extends AbstractType
                 'expanded' => true,
                 'multiple' => false,
             ])
-            ->add('role', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
-                'choices'  => [
-                    'Patient' => 'patient',
-                    'Therapist' => 'therapist',
-                ],
-                'expanded' => false, // Combobox
-                'multiple' => false,
-                'mapped' => false, // we will set this in the controller
-                'data' => 'patient',
-            ])
-            ->add('specialization', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
-                'choices' => [
-                    'Psychologie' => 'Psychologie',
-                    'Sexologie' => 'Sexologie',
-                    'Thérapie de couple' => 'Thérapie de couple',
-                    'Psychiatrie' => 'Psychiatrie',
-                ],
-                'placeholder' => 'Choose a specialization...',
-                'mapped' => false,
-                'required' => false,
-            ])
-            ->add('consultationType', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
-                'choices'  => [
-                    'Online' => 'ONLINE',
-                    'In Person' => 'IN_PERSON',
-                    'Both' => 'BOTH',
-                ],
-                'mapped' => false,
-                'required' => false,
-            ])
-            ->add('description', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, [
-                'mapped' => false,
-                'required' => false,
-            ])
-            ->add('diplomaPath', \Symfony\Component\Form\Extension\Core\Type\FileType::class, [
-                'mapped' => false,
-                'required' => false,
-                'label' => 'Diploma (PDF/Image)',
-            ])
-            ->add('photoUrl', \Symfony\Component\Form\Extension\Core\Type\FileType::class, [
-                'mapped' => false,
-                'required' => false,
-                'label' => 'Profile Photo',
-            ])
+            ->add('photoUrl')
             ->add('isVerified')
             
             
