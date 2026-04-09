@@ -21,20 +21,25 @@ class ReviewController extends AbstractController
     #[Route('/reviews/therapist', name: 'app_reviews_therapist')]
     public function list(Request $request, ReviewRepository $reviewRepo): Response
     {
-        $sort = strtoupper($request->query->get('sort', 'DESC'));
-        $search = trim($request->query->get('search', ''));
+    $sort = strtoupper($request->query->get('sort', 'DESC'));
+    $search = trim($request->query->get('search', ''));
 
-        if (!in_array($sort, ['ASC', 'DESC'])) {
-            $sort = 'DESC';
-        }
+    if (!in_array($sort, ['ASC', 'DESC'])) {
+        $sort = 'DESC';
+    }
 
-        $reviews = $reviewRepo->findBySearchAndSort($search, $sort);
+    // Récupérer les reviews triées + filtrées
+    $reviews = $reviewRepo->findBySearchAndSort($search, $sort);
 
-        return $this->render('review/reviews.html.twig', [
-            'reviews' => $reviews,
-            'currentSort' => $sort,
-            'searchTerm' => $search,
-        ]);
+    // Récupérer les statistiques pour le pie chart
+    $stats = $reviewRepo->getReviewStats();
+
+    return $this->render('review/reviews.html.twig', [
+        'reviews' => $reviews,
+        'currentSort' => $sort,
+        'searchTerm' => $search,
+        'stats' => $stats,
+    ]);
     }
 
     #[Route('/reviews/add', name: 'app_reviews_add', methods: ['POST'])]

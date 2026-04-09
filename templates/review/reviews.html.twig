@@ -81,18 +81,32 @@
         </div>
 
         <script>
-        (function() {
-            let reviews = {{ reviews|length }};
-            let answered = {{ reviews|filter(r => r.replies|length > 0)|length }};
-            let unanswered = reviews - answered;
+(function() {
+    let answered = {{ stats.answeredPercent }};
+    let unanswered = {{ stats.unansweredPercent }};
 
-            new Chart(document.getElementById('statsChart'), {
-                type:'pie',
-                data:{ labels:['Answered','Unanswered'], datasets:[{data:[answered,unanswered], backgroundColor:['#10b981','#f43f5e']}] },
-                options:{ responsive:true, plugins:{ legend:{position:'bottom'}, title:{display:true,text:'Review Response Rate'} } }
-            });
-        })();
-        </script>
+    new Chart(document.getElementById('statsChart'), {
+        type: 'pie',
+        data: {
+            labels: ['Answered', 'Unanswered'],
+            datasets: [{
+                data: [answered, unanswered],
+                backgroundColor: ['#10b981', '#f43f5e']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' },
+                title: {
+                    display: true,
+                    text: 'Review Response Rate (%)'
+                }
+            }
+        }
+    });
+})();
+</script>
         {% endif %}
 
         {# === Reviews List === #}
