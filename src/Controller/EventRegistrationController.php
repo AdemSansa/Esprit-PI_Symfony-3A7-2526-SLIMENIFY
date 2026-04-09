@@ -19,12 +19,12 @@ class EventRegistrationController extends AbstractController
     #[Route('/list', name: 'app_event_registration_list', methods: ['GET'])]
     public function index(RegistrationRepository $registrationRepository): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_THERAPIST');
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         $user = $this->getUser();
 
         if ($this->isGranted('ROLE_ADMIN')) {
             $registrations = $registrationRepository->findAll();
-        } else {
+        } elseif ($this->isGranted('ROLE_THERAPIST')) {
             // Filter registrations for events organized by the current therapist
             $registrations = $registrationRepository->createQueryBuilder('r')
                 ->join('r.event', 'e')
@@ -32,6 +32,10 @@ class EventRegistrationController extends AbstractController
                 ->setParameter('organizerId', $user->getId())
                 ->getQuery()
                 ->getResult();
+        } else {
+             // Filter registrations for the patient
+             $email = method_exists($user, 'getEmail') ? $user->getEmail() : null;
+             $registrations = $email ? $registrationRepository->findBy(['participantEmail' => $email]) : [];
         }
 
         return $this->render('event_registration/list.html.twig', [

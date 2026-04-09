@@ -176,9 +176,15 @@
                                 </div>
                             </td>
                             <td>
-                                <a href="{{ path('app_event_edit', {'id': reg.event.id}) }}" class="event-link">
-                                    {{ reg.event.title }}
-                                </a>
+                                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_THERAPIST') %}
+                                    <a href="{{ path('app_event_edit', {'id': reg.event.id}) }}" class="event-link">
+                                        {{ reg.event.title }}
+                                    </a>
+                                {% else %}
+                                    <span class="event-link">
+                                        {{ reg.event.title }}
+                                    </span>
+                                {% endif %}
                                 <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.15rem;">📍 {{ reg.event.location ?: 'Online' }}</div>
                             </td>
                             <td>

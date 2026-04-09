@@ -204,6 +204,14 @@
 				<a href="{{ path('app_appointments_history') }}" class="{{ route == 'app_appointments_history' ? 'is-active' : '' }}">Appointments History</a>
 			{% endif %}
 
+			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_event_index') }}" class="{{ route starts with 'app_event' ? 'is-active' : '' }}">Events</a>
+			{% endif %}
+
+			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_event_registration_list') }}" class="{{ route starts with 'app_event_registration' ? 'is-active' : '' }}">Registrations</a>
+			{% endif %}
+
 				 {# === New Reviews button === #}
     {% if is_granted('ROLE_ADMIN') %}
         <a href="{{ path('app_reviews_admin') }}" class="{{ route starts with 'app_reviews_admin' ? 'is-active' : '' }}">Reviews (Admin)</a>
