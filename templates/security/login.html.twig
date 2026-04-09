@@ -160,6 +160,12 @@
                     </div>
                 {% endif %}
 
+                {% for message in app.flashes('success') %}
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1.5rem;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
                 {% if app.user %}
                     <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1.5rem;">
                         You are logged in as {{ app.user.userIdentifier }}, <a href="{{ logout_path() }}" style="font-weight: bold; color: inherit; text-decoration: underline;">Logout</a>
@@ -178,7 +184,7 @@
 
                 <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
 
-                <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+                <a href="{{ path('app_forgot_password') }}" class="forgot-password">Mot de passe oublié ?</a>
 
                 <button class="btn-login" type="submit">
                     Se connecter

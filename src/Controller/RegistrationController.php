@@ -38,7 +38,72 @@ class RegistrationController extends AbstractController
             // encode the plain password
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
 
+            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $photoFile */
+            $photoFile = $form->get('photoUrl')->getData();
+            if ($photoFile) {
+                $newFilename = uniqid().'.'.$photoFile->guessExtension();
+                try {
+                    $photoFile->move(
+                        $this->getParameter('kernel.project_dir').'/public/uploads/photos',
+                        $newFilename
+                    );
+                    $user->setPhotoUrl('/uploads/photos/'.$newFilename);
+                } catch (\Exception $e) {
+                    $user->setPhotoUrl('/uploads/default.png');
+                }
+            } else {
+                $user->setPhotoUrl('/uploads/default.png'); // Fallback if user doesn't upload a photo
+            }
+
+            // Set the selected role
+            $role = $form->get('role')->getData();
+            $user->setRole($role);
+
             $entityManager->persist($user);
+
+            // If the user chose to register as a therapist, create the Therapist entity
+            if ($role === 'therapist') {
+                $therapist = new \App\Entity\Therapist();
+                $therapist->setFirstName((string)$user->getFirstName());
+                $therapist->setLastName((string)$user->getLastName());
+                $therapist->setEmail((string)$user->getEmail());
+                $therapist->setPhoneNumber((string)$user->getPhone() ?: '');
+                $therapist->setPhotoUrl((string)$user->getPhotoUrl());
+                
+                // Extra therapist-specific fields
+                $specValue = $form->get('specialization')->getData();
+                $therapist->setSpecialization(is_string($specValue) ? $specValue : '');
+
+                $consulValue = $form->get('consultationType')->getData();
+                if ($consulValue) {
+                    $therapist->setConsultationType((string)$consulValue);
+                }
+                
+                /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $diplomaFile */
+                $diplomaFile = $form->get('diplomaPath')->getData();
+                if ($diplomaFile) {
+                    $newFilename = uniqid().'.'.$diplomaFile->guessExtension();
+                    try {
+                        $diplomaFile->move(
+                            $this->getParameter('kernel.project_dir').'/public/uploads/diplomas',
+                            $newFilename
+                        );
+                        $therapist->setDiplomaPath('/uploads/diplomas/'.$newFilename);
+                    } catch (\Exception $e) {
+                         $therapist->setDiplomaPath('');
+                    }
+                } else {
+                    $therapist->setDiplomaPath('');
+                }
+
+                $therapist->setDescription($form->get('description')->getData() ? (string)$form->get('description')->getData() : null);
+                
+                // Add hashed password to therapist since entity expects it
+                $therapist->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
+
+                $entityManager->persist($therapist);
+            }
+
             $entityManager->flush();
 
             // generate a signed url and email it to the user
