@@ -386,24 +386,24 @@
     {% endif %}
 </div>
 
-    <div class="toolbar" style="flex-wrap: wrap;">
+    <form method="GET" action="{{ path('app_product_index') }}" class="toolbar" style="flex-wrap: wrap;" id="filter-form" data-turbo="false">
         <div class="search-container" style="flex: 2; min-width: 200px;">
             <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" class="search-input" id="search-input" placeholder="Search products..." style="font-size: 1rem; padding: 0.65rem 1rem 0.65rem 2.5rem;">
+            <input type="text" name="search" value="{{ search|default('') }}" class="search-input" id="search-input" placeholder="Search products..." style="font-size: 1rem; padding: 0.65rem 1rem 0.65rem 2.5rem;">
         </div>
-        <select class="filter-select" id="category-filter">
-            <option value="all">All Categories</option>
-            <option value="Authorized Vitamins">Authorized Vitamins</option>
-            <option value="Psychology Books">Psychology Books</option>
-            <option value="Relaxing Products">Relaxing Products</option>
-            <option value="Therapeutic Games & Activities">Therapeutic Games & Activities</option>
+        <select name="category" class="filter-select" id="category-filter">
+            <option value="all" {% if category|default('all') == 'all' %}selected{% endif %}>All Categories</option>
+            <option value="Authorized Vitamins" {% if category|default('') == 'Authorized Vitamins' %}selected{% endif %}>Authorized Vitamins</option>
+            <option value="Psychology Books" {% if category|default('') == 'Psychology Books' %}selected{% endif %}>Psychology Books</option>
+            <option value="Relaxing Products" {% if category|default('') == 'Relaxing Products' %}selected{% endif %}>Relaxing Products</option>
+            <option value="Therapeutic Games & Activities" {% if category|default('') == 'Therapeutic Games & Activities' %}selected{% endif %}>Therapeutic Games & Activities</option>
         </select>
-        <select class="filter-select" id="sort-select">
-            <option value="newest">Newest First</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="name-asc">Name: A-Z</option>
-            <option value="name-desc">Name: Z-A</option>
+        <select name="sort" class="filter-select" id="sort-select">
+            <option value="newest" {% if sort|default('newest') == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="price-low" {% if sort|default('') == 'price-low' %}selected{% endif %}>Price: Low to High</option>
+            <option value="price-high" {% if sort|default('') == 'price-high' %}selected{% endif %}>Price: High to Low</option>
+            <option value="name-asc" {% if sort|default('') == 'name-asc' %}selected{% endif %}>Name: A-Z</option>
+            <option value="name-desc" {% if sort|default('') == 'name-desc' %}selected{% endif %}>Name: Z-A</option>
         </select>
 
         <div id="price-slider-wrap" style="display: flex; align-items: center; gap: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.5rem 1rem; min-width: 240px; position: relative;">
@@ -414,9 +414,9 @@
                 </div>
                 <div style="position: relative; height: 4px; background: #e2e8f0; border-radius: 4px; margin: 6px 0;">
                     <div id="price-range-fill" style="position: absolute; height: 100%; background: linear-gradient(90deg, #748764, #b2936a); border-radius: 4px; left: 0%; right: 0%;"></div>
-                    <input id="price-min" type="range" min="0" max="2000" step="5" value="0"
+                    <input name="priceMin" id="price-min" type="range" min="0" max="2000" step="5" value="{{ priceMin|default('0') }}"
                         style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 3; top: 0; left: 0;">
-                    <input id="price-max" type="range" min="0" max="2000" step="5" value="2000"
+                    <input name="priceMax" id="price-max" type="range" min="0" max="2000" step="5" value="{{ priceMax|default('2000') }}"
                         style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 4; top: 0; left: 0;">
                     <div id="thumb-min" style="position: absolute; width: 14px; height: 14px; background: #627255; border: 2px solid #fff; border-radius: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 0 2px 6px rgba(98,114,85,0.4); pointer-events: none; left: 0%;"></div>
                     <div id="thumb-max" style="position: absolute; width: 14px; height: 14px; background: #b2936a; border: 2px solid #fff; border-radius: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 0 2px 6px rgba(178,147,106,0.4); pointer-events: none; left: 100%;"></div>
@@ -434,7 +434,7 @@
             </button>
         </div>
         {% endif %}
-    </div>
+    </form>
 
     {# GRID VIEW #}
     <div class="product-grid" id="view-grid">
@@ -596,109 +596,91 @@
             const viewGrid = document.getElementById('view-grid');
             const viewList = document.getElementById('view-list');
             
+            const filterForm = document.getElementById('filter-form');
             const searchInput = document.getElementById('search-input');
             const categoryFilter = document.getElementById('category-filter');
             const sortSelect = document.getElementById('sort-select');
-            const productCount = document.getElementById('product-count');
-
-            if (!viewGrid || !searchInput) return;
-
-            const gridCards = Array.from(document.querySelectorAll('.grid-card'));
-            const listRows = Array.from(document.querySelectorAll('.list-row'));
-            const listTableBody = document.querySelector('.data-table tbody');
+            const sliderMin = document.getElementById('price-min');
+            const sliderMax = document.getElementById('price-max');
 
             // View Toggling
-            btnGrid?.addEventListener('click', () => {
+            btnGrid?.addEventListener('click', (e) => {
+                e.preventDefault();
                 btnGrid.classList.add('active');
-                btnList.classList.remove('active');
+                if (btnList) btnList.classList.remove('active');
                 viewGrid.style.display = 'grid';
-                viewList.style.display = 'none';
+                if (viewList) viewList.style.display = 'none';
             });
 
-            btnList?.addEventListener('click', () => {
+            btnList?.addEventListener('click', (e) => {
+                e.preventDefault();
                 btnList.classList.add('active');
-                btnGrid.classList.remove('active');
-                viewGrid.style.display = 'none';
-                viewList.style.display = 'block';
+                if (btnGrid) btnGrid.classList.remove('active');
+                if (viewGrid) viewGrid.style.display = 'none';
+                if (viewList) viewList.style.display = 'block';
             });
 
-            // Intelligent Filter & Sort Logic
-            function updateDisplay() {
-                if (!searchInput || !categoryFilter || !sortSelect) return;
+            // AJAX Intelligent Search & Sort (Calls PHP without full reload)
+            function executeAjaxFilter() {
+                if (!filterForm) return;
                 
-                const query = searchInput.value.toLowerCase();
-                const category = categoryFilter.value;
-                const sortBy = sortSelect.value;
-                const sliderMin = document.getElementById('price-min');
-                const sliderMax = document.getElementById('price-max');
-                const priceMin = parseFloat(sliderMin?.value) || 0;
-                const priceMax = parseFloat(sliderMax?.value) || Infinity;
+                const actionPath = filterForm.getAttribute('action');
+                const formData = new FormData(filterForm);
+                const params = new URLSearchParams(formData);
+                const fullUrl = actionPath + '?' + params.toString();
+                
+                // Update browser URL without reloading so sharing links works
+                window.history.replaceState({}, '', fullUrl);
 
-                let visibleCount = 0;
-
-                // 1. Filtering Logic
-                const filterItem = (item) => {
-                    const name = item.dataset.name;
-                    const cat = item.dataset.category;
-                    const matchesSearch = name.includes(query) || cat.toLowerCase().includes(query);
-                    const matchesCategory = category === 'all' || cat === category;
-                    const price = parseFloat(item.dataset.price) || 0;
-                    const matchesPrice = price >= priceMin && price <= priceMax;
-
-                    const isVisible = matchesSearch && matchesCategory && matchesPrice;
-                    if (isVisible) {
-                        item.style.display = '';
-                        visibleCount++;
-                    } else {
-                        item.style.display = 'none';
+                // Add grid/list state so we update both, though backend returns both anyway
+                fetch(fullUrl, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, "text/html");
+                    
+                    // Replace Grid View
+                    const newGrid = doc.getElementById('view-grid');
+                    if (newGrid && viewGrid) {
+                        viewGrid.innerHTML = newGrid.innerHTML;
                     }
-                    return isVisible;
-                };
-
-                gridCards.forEach(filterItem);
-                listRows.forEach(filterItem);
-
-                // 2. Sorting Logic
-                const sortFn = (a, b) => {
-                    const nameA = a.dataset.name;
-                    const nameB = b.dataset.name;
-                    const priceA = parseFloat(a.dataset.price);
-                    const priceB = parseFloat(b.dataset.price);
-                    const dateA = new Date(a.dataset.date);
-                    const dateB = new Date(b.dataset.date);
-
-                    switch (sortBy) {
-                        case 'price-low': return priceA - priceB;
-                        case 'price-high': return priceB - priceA;
-                        case 'name-asc': return nameA.localeCompare(nameB);
-                        case 'name-desc': return nameB.localeCompare(nameA);
-                        case 'newest': return dateB - dateA;
-                        default: return 0;
+                    
+                    // Replace List View
+                    const newList = doc.querySelector('.data-table tbody');
+                    const currentListBody = document.querySelector('.data-table tbody');
+                    if (newList && currentListBody) {
+                        currentListBody.innerHTML = newList.innerHTML;
                     }
-                };
-
-                // Re-order Grid
-                const sortedGrid = gridCards.sort(sortFn);
-                sortedGrid.forEach(card => viewGrid.appendChild(card));
-
-                // Re-order List
-                const sortedList = listRows.sort(sortFn);
-                sortedList.forEach(row => listTableBody.appendChild(row));
-
-                // Update Count
-                if (productCount) {
-                    productCount.textContent = `${visibleCount} product(s) found`;
-                }
+                    
+                    // Update Count
+                    const newCount = doc.getElementById('product-count');
+                    if (newCount) {
+                        document.getElementById('product-count').textContent = newCount.textContent;
+                    }
+                });
             }
 
-            searchInput.addEventListener('input', updateDisplay);
-            categoryFilter.addEventListener('change', updateDisplay);
-            sortSelect.addEventListener('change', updateDisplay);
+            let debounceTimer;
+            function autoSubmit() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(executeAjaxFilter, 300); // 300ms intelligent debounce
+            }
+
+            // Bind triggers
+            if (filterForm) {
+                categoryFilter?.addEventListener('change', autoSubmit);
+                sortSelect?.addEventListener('change', autoSubmit);
+                searchInput?.addEventListener('input', autoSubmit);
+                filterForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    executeAjaxFilter();
+                });
+            }
 
             // Dual Range Slider Logic
-            function updateSlider() {
-                const sliderMin = document.getElementById('price-min');
-                const sliderMax = document.getElementById('price-max');
+            function updateSliderVisuals() {
                 const thumbMin = document.getElementById('thumb-min');
                 const thumbMax = document.getElementById('thumb-max');
                 const fill = document.getElementById('price-range-fill');
@@ -727,16 +709,17 @@
                     const maxLabel = maxVal >= 2000 ? '∞' : maxVal;
                     display.textContent = `${minVal} — ${maxLabel} TND`;
                 }
-
-                updateDisplay();
             }
 
-            document.getElementById('price-min')?.addEventListener('input', updateSlider);
-            document.getElementById('price-max')?.addEventListener('input', updateSlider);
-            updateSlider();
+            sliderMin?.addEventListener('input', updateSliderVisuals);
+            sliderMax?.addEventListener('input', updateSliderVisuals);
             
-            // Initial Call
-            updateDisplay();
+            // Intelligent fetch on drag completion (change event)
+            sliderMin?.addEventListener('change', autoSubmit);
+            sliderMax?.addEventListener('change', autoSubmit);
+
+            // Initialize visuals
+            updateSliderVisuals();
         };
 
         // Listen for both event types to handle initial load and Turbo navigation
