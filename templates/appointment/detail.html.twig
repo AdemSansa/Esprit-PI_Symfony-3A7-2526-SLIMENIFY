@@ -27,12 +27,26 @@
     {% if can_manage_status %}
         <section style="margin-top:1rem; background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1rem;">
             <h2 style="margin-top:0; color:#334155; font-size:1.1rem;">Manage Status</h2>
-            <form method="post" action="{{ path('app_appointments_status', {id: appointment.id}) }}" style="display:flex; gap:0.6rem; flex-wrap:wrap;">
-                <button type="submit" name="status" value="confirmed" style="border:none; background:#22c55e; color:#fff; border-radius:8px; padding:0.5rem 0.75rem; cursor:pointer;">Confirm</button>
-                <button type="submit" name="status" value="completed" style="border:none; background:#3b82f6; color:#fff; border-radius:8px; padding:0.5rem 0.75rem; cursor:pointer;">Mark Completed</button>
-                <button type="submit" name="status" value="cancelled" style="border:none; background:#ef4444; color:#fff; border-radius:8px; padding:0.5rem 0.75rem; cursor:pointer;">Cancel</button>
-                <button type="submit" name="status" value="pending" style="border:none; background:#eab308; color:#fff; border-radius:8px; padding:0.5rem 0.75rem; cursor:pointer;">Set Pending</button>
-            </form>
+            {% if next_statuses is empty %}
+                <p style="color:#64748b; margin-bottom:0;">No further status transitions available.</p>
+            {% else %}
+                <form method="post" action="{{ path('app_appointments_status', {id: appointment.id}) }}" style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                    {% for status in next_statuses %}
+                        <button
+                            type="submit"
+                            name="status"
+                            value="{{ status }}"
+                            style="border:none; background:{{
+                                status == 'confirmed' ? '#22c55e' :
+                                (status == 'completed' ? '#3b82f6' :
+                                (status == 'cancelled' ? '#ef4444' : '#eab308'))
+                            }}; color:#fff; border-radius:8px; padding:0.5rem 0.75rem; cursor:pointer;"
+                        >
+                            {{ status == 'confirmed' ? 'Confirm' : (status == 'completed' ? 'Mark Completed' : (status == 'cancelled' ? 'Cancel' : status|capitalize)) }}
+                        </button>
+                    {% endfor %}
+                </form>
+            {% endif %}
         </section>
     {% endif %}
 
