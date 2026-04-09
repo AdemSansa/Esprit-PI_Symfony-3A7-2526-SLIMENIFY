@@ -34,4 +34,15 @@ class QuizRepository extends ServiceEntityRepository
     {
         return $this->findBy(['category' => $category]);
     }
+
+    public function findBySearchQuery(string $query): array
+    {
+        return $this->createQueryBuilder('q')
+            ->where('q.title LIKE :query')
+            ->orWhere('q.description LIKE :query')
+            ->orWhere('q.category LIKE :query')
+            ->setParameter('query', '%' . $query . '%')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -12,13 +12,25 @@
 		--app-main-bg: #f6f5ed;
 	}
 	@keyframes fadeInSlideUp {
-		0% { opacity: 0; transform: translateY(15px); }
-		100% { opacity: 1; transform: translateY(0); }
+		0% {
+			opacity: 0;
+			transform: translateY(15px);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 	@keyframes pulseGlow {
-		0% { box-shadow: 0 0 0 0 rgba(128, 140, 117, 0.4); }
-		70% { box-shadow: 0 0 0 10px rgba(128, 140, 117, 0); }
-		100% { box-shadow: 0 0 0 0 rgba(128, 140, 117, 0); }
+		0% {
+			box-shadow: 0 0 0 0 rgba(128, 140, 117, 0.4);
+		}
+		70% {
+			box-shadow: 0 0 0 10px rgba(128, 140, 117, 0);
+		}
+		100% {
+			box-shadow: 0 0 0 0 rgba(128, 140, 117, 0);
+		}
 	}
 	.app-layout {
 		display: flex;
@@ -40,7 +52,7 @@
 		font-weight: 800;
 		font-size: 1.3rem;
 		letter-spacing: -0.02em;
-		border-bottom: 1px solid rgba(255, 255, 255, .15);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 		margin-bottom: 0.75rem;
 		background: linear-gradient(90deg, #ffffff, #d5d9d1);
 		-webkit-background-clip: text;
@@ -64,7 +76,7 @@
 	}
 	.app-sidebar__nav a:hover {
 		color: var(--app-sidebar-text);
-		background: rgba(255, 255, 255, .1);
+		background: rgba(255, 255, 255, 0.1);
 	}
 	.app-sidebar__nav a.is-active {
 		color: #fff;
@@ -176,10 +188,12 @@
 			{% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_quiz_index') }}" class="{{ route starts with 'app_quiz' ? 'is-active' : '' }}">Quizzes</a>
 				<a href="{{ path('app_question_index') }}" class="{{ route starts with 'app_question' ? 'is-active' : '' }}">Questions</a>
+				<a href="{{ path('app_availability_manage') }}" class="{{ route starts with 'app_availability' ? 'is-active' : '' }}">Availability</a>
 			{% endif %}
 
 			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_product_index') }}" class="{{ route starts with 'app_product' ? 'is-active' : '' }}">Products</a>
+				<a href="{{ path('app_appointments_calendar') }}" class="{{ route starts with 'app_appointments' ? 'is-active' : '' }}">Appointments</a>
 			{% endif %}
 
 			{% if is_granted('ROLE_PATIENT') %}
@@ -235,6 +249,26 @@
 		</header>
 
 		<div class="app-main__inner">
+			{% for label, messages in app.flashes %}
+				{% for message in messages %}
+					<div class="alert alert-{{ label }}">
+						{% if label == 'success' %}
+							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+								<polyline points="22 4 12 14.01 9 11.01"></polyline>
+							</svg>
+						{% else %}
+							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+								<circle cx="12" cy="12" r="10"></circle>
+								<line x1="12" y1="8" x2="12" y2="12"></line>
+								<line x1="12" y1="16" x2="12.01" y2="16"></line>
+							</svg>
+						{% endif %}
+						{{ message }}
+					</div>
+				{% endfor %}
+			{% endfor %}
+
 			{% block app_content %}{% endblock %}
 		</div>
 	</main>

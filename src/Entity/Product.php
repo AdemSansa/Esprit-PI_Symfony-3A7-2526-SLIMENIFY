@@ -16,29 +16,36 @@ class Product
     private ?int $id = null;
 
     #[ORM\Column(length: 150)]
-    #[Assert\NotBlank(message: "Le nom du produit est obligatoire.")]
-    #[Assert\Length(min: 2, max: 150)]
+    #[Assert\NotBlank(message: "Product name is required to continue.")]
+    #[Assert\Length(
+        min: 2, 
+        max: 150, 
+        minMessage: "The name must be at least {{ limit }} characters long.",
+        maxMessage: "The name cannot exceed {{ limit }} characters."
+    )]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    #[Assert\NotBlank(message: "Le prix est obligatoire.")]
-    #[Assert\PositiveOrZero(message: "Le prix ne peut pas être négatif.")]
+    #[Assert\NotBlank(message: "A price must be specified for this product.")]
+    #[Assert\PositiveOrZero(message: "The price must be a positive number or zero.")]
     private ?string $price = null;
 
     #[ORM\Column(options: ['default' => 0])]
-    #[Assert\NotNull(message: "La quantité en stock est obligatoire.")]
-    #[Assert\PositiveOrZero(message: "Le stock ne peut pas être négatif.")]
+    #[Assert\NotNull(message: "Stock quantity cannot be empty.")]
+    #[Assert\PositiveOrZero(message: "Stock quantity must be zero or a positive integer.")]
     private ?int $stockQuantity = 0;
 
-    #[ORM\Column(type: 'string', columnDefinition: "ENUM('Antidepressants', 'Anxiolytics', 'Stimulants', 'Antipsychotics', 'Mood Stabilizers')", nullable: true)]
-    #[Assert\Choice(choices: ['Antidepressants', 'Anxiolytics', 'Stimulants', 'Antipsychotics', 'Mood Stabilizers'], message: "Veuillez choisir une catégorie valide.")]
+    #[ORM\Column(type: 'string', columnDefinition: "ENUM('Authorized Vitamins', 'Psychology Books', 'Relaxing Products', 'Therapeutic Games & Activities')", nullable: true)]
+    #[Assert\Choice(choices: [
+        'Authorized Vitamins', 'Psychology Books', 'Relaxing Products', 'Therapeutic Games & Activities'
+    ], message: "Please select a valid product category.")]
     private ?string $category = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    #[Assert\GreaterThan("today", message: "La date d'expiration doit être une date future.")]
+    #[Assert\GreaterThan("today", message: "The expiration date must be a future date.")]
     private ?\DateTimeInterface $expirationDate = null;
 
     #[ORM\ManyToOne(targetEntity: Supplier::class, inversedBy: 'products')]

@@ -1,0 +1,163 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Confirmation - {{ registration.event.title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .ticket-wrapper {
+            max-width: 580px;
+            margin: 3rem auto;
+            perspective: 1000px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .ticket-container {
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            position: relative;
+            animation: ticketFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes ticketFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(0.5deg); }
+        }
+
+        .ticket-header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 3rem 2rem 2rem;
+            color: white;
+            text-align: center;
+            position: relative;
+        }
+
+        .success-checkmark {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .ticket-header h1 { font-size: 1.75rem; font-weight: 800; margin: 0; letter-spacing: -0.02em; }
+        .ticket-header p { opacity: 0.9; margin-top: 0.5rem; font-weight: 500; font-size: 0.95rem; }
+
+        .ticket-body { padding: 2.5rem; position: relative; }
+
+        .ticket-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .info-item { display: flex; flex-direction: column; gap: 0.4rem; }
+        .info-label { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+        .info-value { font-size: 1rem; font-weight: 700; color: #1e293b; }
+
+        .ticket-divider {
+            height: 2px;
+            border-top: 2.5px dashed #e2e8f0;
+            margin: 2rem -2.5rem;
+            position: relative;
+        }
+
+        .ticket-divider::before, .ticket-divider::after {
+            content: "";
+            position: absolute;
+            top: -15px;
+            width: 30px;
+            height: 30px;
+            background: var(--app-main-bg);
+            border-radius: 50%;
+        }
+
+        .ticket-divider::before { left: -15px; }
+        .ticket-divider::after { right: -15px; }
+
+        .qr-section { text-align: center; margin-top: 1rem; }
+        .qr-frame {
+            display: inline-block;
+            padding: 1.25rem;
+            background: #fff;
+            border: 2px solid #f1f5f9;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1rem;
+        }
+
+        .qr-image { width: 180px; height: 180px; display: block; border-radius: 12px; }
+
+        .download-hint { font-size: 0.85rem; color: #64748b; font-weight: 500; line-height: 1.5; padding: 0 1rem; }
+
+        .action-footer { margin-top: 2.5rem; text-align: center; display: flex; gap: 1rem; justify-content: center; }
+        .btn-action { padding: 0.85rem 1.75rem; border-radius: 14px; font-weight: 700; font-size: 0.95rem; text-decoration: none; cursor: pointer; transition: all 0.2s; border: none; }
+        .btn-home { background: #f1f5f9; color: #475569; }
+        .btn-print { background: #1e293b; color: white; }
+        .btn-home:hover { background: #e2e8f0; transform: translateY(-2px); }
+        .btn-print:hover { background: #334155; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    </style>
+{% endblock %}
+
+{% block app_content %}
+<div class="ticket-wrapper">
+    <div class="ticket-container">
+        <!-- Header -->
+        <div class="ticket-header">
+            <div class="success-checkmark">✓</div>
+            <h1>Ticket Confirmed</h1>
+            <p>You're all set! We've sent a copy to your email.</p>
+        </div>
+
+        <!-- Body -->
+        <div class="ticket-body">
+            <div class="ticket-info-grid">
+                <div class="info-item">
+                    <span class="info-label">Event</span>
+                    <span class="info-value" style="color: #6366f1;">{{ registration.event.title }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Participant</span>
+                    <span class="info-value">{{ registration.participantName }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Date & Time</span>
+                    <span class="info-value">{{ registration.event.dateStart|date('M d, Y') }}<br>{{ registration.event.dateStart|date('H:i') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Location</span>
+                    <span class="info-value">{{ registration.event.location ?: 'Virtual Presence' }}</span>
+                </div>
+            </div>
+
+            <div class="ticket-divider"></div>
+
+            <div class="qr-section">
+                <div class="qr-frame">
+                    <img src="{{ qrCodeUrl }}" alt="QR Ticket" class="qr-image">
+                </div>
+                <p class="info-label" style="margin-bottom: 0.5rem;">Registration ID: #{{ registration.id }}</p>
+                <div class="download-hint">
+                    Present this QR code at the event entrance for a quick and seamless check-in.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-footer">
+        <a href="{{ path('app_event_index') }}" class="btn-action btn-home">Browse More Events</a>
+        <button onclick="window.print()" class="btn-action btn-print">Print Ticket</button>
+    </div>
+</div>
+{% endblock %}
