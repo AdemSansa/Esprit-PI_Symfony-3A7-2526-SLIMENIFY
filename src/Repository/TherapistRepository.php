@@ -42,4 +42,9 @@ class TherapistRepository extends ServiceEntityRepository
     {
         return $this->findBy(['consultationType' => $type, 'status' => 'ACTIVE']);
     }
+
+    public function findOneByEmail(string $email): ?Therapist
+    {
+        return $this->findOneBy(['email' => $email]);
+    }
 }

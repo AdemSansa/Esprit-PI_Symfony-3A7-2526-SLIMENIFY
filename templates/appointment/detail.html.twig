@@ -1,0 +1,75 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Appointment Details{% endblock %}
+
+{% block app_content %}
+    <h1 style="margin-top:0; color:#334155;">Appointment Details</h1>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div style="margin:0.7rem 0; padding:0.7rem 0.9rem; border-radius:10px; border:1px solid {{ label == 'error' ? '#fecaca' : '#bbf7d0' }}; background:{{ label == 'error' ? '#fef2f2' : '#f0fdf4' }}; color:{{ label == 'error' ? '#b91c1c' : '#166534' }};">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <section style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1rem;">
+        <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0.7rem; color:#334155;">
+            <div><strong>Date:</strong> {{ appointment.appointmentDate|date('Y-m-d') }}</div>
+            <div><strong>Time:</strong> {{ appointment.startTime|date('H:i') }} - {{ appointment.endTime|date('H:i') }}</div>
+            <div><strong>Status:</strong> {{ appointment.status|default('pending')|capitalize }}</div>
+            <div><strong>Type:</strong> {{ appointment.type|default('n/a')|capitalize }}</div>
+            <div><strong>Therapist:</strong> {{ appointment.therapist.firstName }} {{ appointment.therapist.lastName }}</div>
+            <div><strong>Client:</strong> {{ appointment.patient.firstName }} {{ appointment.patient.lastName }}</div>
+        </div>
+    </section>
+
+    {% if can_manage_status %}
+        <section style="margin-top:1rem; background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1rem;">
+            <h2 style="margin-top:0; color:#334155; font-size:1.1rem;">Manage Status</h2>
+            <form method="post" action="{{ path('app_appointments_status', {id: appointment.id}) }}" style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                <button type="submit" name="status" value="confirmed" style="border:none; background:#22c55e; color:#fff; border-radius:8px; padding:0.5rem 0.75rem; cursor:pointer;">Confirm</button>
+                <button type="submit" name="status" value="completed" style="border:none; background:#3b82f6; color:#fff; border-radius:8px; padding:0.5rem 0.75rem; cursor:pointer;">Mark Completed</button>
+                <button type="submit" name="status" value="cancelled" style="border:none; background:#ef4444; color:#fff; border-radius:8px; padding:0.5rem 0.75rem; cursor:pointer;">Cancel</button>
+                <button type="submit" name="status" value="pending" style="border:none; background:#eab308; color:#fff; border-radius:8px; padding:0.5rem 0.75rem; cursor:pointer;">Set Pending</button>
+            </form>
+        </section>
+    {% endif %}
+
+    <section style="margin-top:1rem; background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1rem;">
+        <h2 style="margin-top:0; color:#334155; font-size:1.1rem;">Session Notes</h2>
+
+        {% if can_manage_notes %}
+            <form method="post" action="{{ path('app_appointments_add_note', {id: appointment.id}) }}" style="display:grid; gap:0.55rem; margin-bottom:1rem;">
+                <label style="font-size:0.9rem; color:#475569;">Add Note</label>
+                <textarea name="content" rows="3" required style="border:1px solid #cbd5e1; border-radius:8px; padding:0.55rem;"></textarea>
+                <input type="text" name="mood" placeholder="Mood (optional)" style="border:1px solid #cbd5e1; border-radius:8px; padding:0.55rem;">
+                <button type="submit" style="width:max-content; border:none; background:#627255; color:#fff; border-radius:8px; padding:0.45rem 0.75rem; cursor:pointer;">Save Note</button>
+            </form>
+        {% endif %}
+
+        {% if notes is empty %}
+            <p style="color:#64748b;">No notes yet.</p>
+        {% else %}
+            {% for note in notes %}
+                <article style="border:1px solid #e2e8f0; border-radius:10px; padding:0.7rem; margin-bottom:0.6rem;">
+                    <div style="font-size:0.86rem; color:#64748b; margin-bottom:0.4rem;">
+                        {{ note.createdAt|date('Y-m-d H:i') }}{% if note.mood %} • Mood: {{ note.mood }}{% endif %}
+                    </div>
+                    <p style="margin:0; color:#334155; white-space:pre-wrap;">{{ note.content }}</p>
+
+                    {% if can_manage_status %}
+                        <form method="post" action="{{ path('app_appointments_edit_note', {noteId: note.id}) }}" style="display:grid; gap:0.45rem; margin-top:0.6rem;">
+                            <textarea name="content" rows="2" style="border:1px solid #cbd5e1; border-radius:8px; padding:0.5rem;">{{ note.content }}</textarea>
+                            <input type="text" name="mood" value="{{ note.mood }}" placeholder="Mood (optional)" style="border:1px solid #cbd5e1; border-radius:8px; padding:0.45rem;">
+                            <div style="display:flex; gap:0.45rem;">
+                                <button type="submit" style="border:none; background:#627255; color:#fff; border-radius:8px; padding:0.35rem 0.7rem; cursor:pointer;">Update</button>
+                                <button formaction="{{ path('app_appointments_delete_note', {noteId: note.id}) }}" style="border:none; background:#ef4444; color:#fff; border-radius:8px; padding:0.35rem 0.7rem; cursor:pointer;">Delete</button>
+                            </div>
+                        </form>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        {% endif %}
+    </section>
+{% endblock %}

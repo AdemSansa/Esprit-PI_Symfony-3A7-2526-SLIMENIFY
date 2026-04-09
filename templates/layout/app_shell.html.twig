@@ -109,10 +109,12 @@
 			{% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_quiz_index') }}" class="{{ route starts with 'app_quiz' ? 'is-active' : '' }}">Quizzes</a>
 				<a href="{{ path('app_question_index') }}" class="{{ route starts with 'app_question' ? 'is-active' : '' }}">Questions</a>
+				<a href="{{ path('app_availability_manage') }}" class="{{ route starts with 'app_availability' ? 'is-active' : '' }}">Availability</a>
 			{% endif %}
 
 			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_product_index') }}" class="{{ route starts with 'app_product' ? 'is-active' : '' }}">Products</a>
+				<a href="{{ path('app_appointments_calendar') }}" class="{{ route starts with 'app_appointments' ? 'is-active' : '' }}">Appointments</a>
 			{% endif %}
 
 			{% if is_granted('ROLE_ADMIN') %}
