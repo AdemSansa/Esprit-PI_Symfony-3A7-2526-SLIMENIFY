@@ -11,6 +11,15 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class HomeController extends AbstractController
 {
+    #[Route('/', name: 'app_start')]
+    public function landing(): Response
+    {
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_home');
+        }
+        return $this->render('home/landing.html.twig');
+    }
+
     #[Route('/home', name: 'app_home')]
     public function index(): Response
     {

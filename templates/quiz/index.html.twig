@@ -1,68 +1,140 @@
 {% extends 'layout/app_shell.html.twig' %}
 
-{% block title %}Quiz{% endblock %}
+{% block title %}Quizzes Management{% endblock %}
 
 {% block app_content %}
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;">
-        <h1 style="margin:0; font-size:1.75rem;">Quizzes Management</h1>
+    <style>
+        .page-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap;
+        }
+        .search-form {
+            display: flex; flex: 1; max-width: 450px; gap: 0.5rem; margin-left: auto;
+            background: #fff; padding: 0.3rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(98, 114, 85, 0.08);
+            border: 1px solid rgba(122, 91, 73, 0.1);
+        }
+        .search-input {
+            flex: 1; padding: 0.6rem 1.2rem; border-radius: 8px; border: none; outline: none; font-size: 0.95rem;
+            color: #5D4A3E; background: transparent;
+        }
+        .search-btn {
+            background: #627255; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease;
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .search-btn:hover { background: #4f5d44; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(98, 114, 85, 0.2); }
+        .create-btn {
+            background: linear-gradient(135deg, #748764, #627255); color: white; padding: 0.8rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(98, 114, 85, 0.25); white-space: nowrap; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem; border: none;
+        }
+        .create-btn:hover {
+            transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 20px rgba(98, 114, 85, 0.35); text-decoration: none; color: white;
+        }
+        .quiz-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; animation: fadeInSlideUp 0.5s ease-out forwards;
+        }
+        .quiz-card {
+            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 16px; padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02), 0 10px 15px -3px rgba(0,0,0,0.05); border: 1px solid rgba(255, 255, 255, 0.5);
+            display: flex; flex-direction: column; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative; overflow: hidden;
+        }
+        .quiz-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(to bottom, #748764, #b2936a);
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .quiz-card:hover {
+            transform: translateY(-5px); box-shadow: 0 15px 30px rgba(98,114,85,0.15); border-color: rgba(116, 135, 100, 0.2);
+        }
+        .quiz-card:hover::before { opacity: 1; }
+        .quiz-badge {
+            padding: 0.3rem 0.8rem; border-radius: 20px; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: inline-flex; align-items: center; gap: 4px;
+        }
+        .badge-active { background: rgba(98, 114, 85, 0.1); color: #627255; }
+        .badge-inactive { background: #f1f5f9; color: #94a3b8; }
+        .badge-category { background: rgba(168, 134, 110, 0.1); color: #A8866E; }
         
-        <form method="get" action="{{ path('app_quiz_index') }}" style="display: flex; flex: 1; max-width: 400px; gap: 0.5rem; margin-left: auto;">
-            <input type="text" name="q" value="{{ searchQuery ?? '' }}" placeholder="Search quizzes..." style="flex: 1; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-size: 0.95rem;">
-            <button type="submit" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">Search</button>
+        .quiz-title { font-size: 1.3rem; font-weight: 800; color: #5D4A3E; margin: 1rem 0 0.5rem 0; line-height: 1.3; }
+        .quiz-desc { color: #808c75; font-size: 0.95rem; margin: 0 0 1.5rem 0; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        .quiz-stats {
+            background: #ffffff; border-radius: 12px; padding: 1rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.5rem; text-align: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            border: 1px solid rgba(122, 91, 73, 0.05);
+        }
+        .stat-label { font-size: 0.7rem; color: #A8866E; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; font-weight: 600; }
+        .stat-value { font-weight: 800; color: #5D4A3E; font-size: 1.1rem; }
+        
+        .action-bar { display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center; border-top: 1px dashed rgba(122, 91, 73, 0.15); padding-top: 1.25rem; }
+        .btn-edit {
+            background: white; color: #748764; text-decoration: none; font-size: 0.85rem; padding: 0.5rem 1rem; border: 1px solid #748764; border-radius: 8px; font-weight: 600; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .btn-edit:hover { background: #748764; color: white; }
+    </style>
+
+    <div class="page-header">
+        <h1 style="margin:0; font-size:2rem; font-weight: 800; color: #5D4A3E;">Quizzes <span style="color: #A8866E; font-weight: 400;">Management</span></h1>
+        
+        <form method="get" action="{{ path('app_quiz_index') }}" class="search-form">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A8866E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 12px; align-self: center;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" name="q" value="{{ searchQuery ?? '' }}" placeholder="Search quizzes..." class="search-input">
             {% if searchQuery %}
-                <a href="{{ path('app_quiz_index') }}" style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #fee2e2; color: #ef4444; border-radius: 8px; text-decoration: none; font-weight: bold;" title="Clear search">×</a>
+                <a href="{{ path('app_quiz_index') }}" style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #fee2e2; color: #ef4444; border-radius: 8px; text-decoration: none; font-weight: bold; align-self: center; margin-right: 4px;" title="Clear search">×</a>
             {% endif %}
+            <button type="submit" class="search-btn">Search</button>
         </form>
 
-        <a href="{{ path('app_quiz_new') }}" style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); white-space: nowrap;">
-            + Create New Quiz
+        <a href="{{ path('app_quiz_new') }}" class="create-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Create New Quiz
         </a>
     </div>
 
     {% if quizzes is empty %}
-        <div style="background: #fff; padding: 3rem; text-align: center; border-radius: 12px; border: 1px dashed #cbd5e1;">
-            <p style="color:#64748b; font-size: 1.1rem; margin-bottom: 1rem;">No quizzes have been created yet.</p>
-            <a href="{{ path('app_quiz_new') }}" class="auth-link">Create your first quiz</a>
+        <div style="background: rgba(255,255,255,0.6); padding: 4rem 2rem; text-align: center; border-radius: 16px; border: 2px dashed rgba(122,91,73,0.2); backdrop-filter: blur(10px);">
+            <div style="width: 64px; height: 64px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#A8866E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </div>
+            <h3 style="color: #5D4A3E; font-size: 1.3rem; margin-bottom: 0.5rem;">No quizzes found</h3>
+            <p style="color:#808c75; font-size: 1rem; margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">It looks like you haven't created any quizzes yet, or none match your search.</p>
+            <a href="{{ path('app_quiz_new') }}" class="create-btn" style="padding: 0.6rem 1.2rem;">Start Creating</a>
         </div>
     {% else %}
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+        <div class="quiz-grid">
             {% for quiz in quizzes %}
-                <div style="background:#fff; border-radius:12px; padding:1.5rem; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; display: flex; flex-direction: column; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.05)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05)'">
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                        <span style="background: {{ quiz.active ? '#dcfce7' : '#f1f5f9' }}; color: {{ quiz.active ? '#166534' : '#64748b' }}; padding: 0.2rem 0.6rem; border-radius: 20px; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                <div class="quiz-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <span class="quiz-badge {{ quiz.active ? 'badge-active' : 'badge-inactive' }}">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
                             {{ quiz.active ? 'Active' : 'Inactive' }}
                         </span>
                         {% if quiz.category %}
-                            <span style="background: #eff6ff; color: #2563eb; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 500; font-size: 0.8rem;">
+                            <span class="quiz-badge badge-category">
                                 {{ quiz.category }}
                             </span>
                         {% endif %}
                     </div>
 
-                    <h2 style="font-size: 1.25rem; font-weight: 600; color: #0f172a; margin: 0 0 0.5rem 0;">{{ quiz.title }}</h2>
-                    
-                    <p style="color: #64748b; font-size: 0.95rem; margin: 0 0 1.5rem 0; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 3; -line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
-                        {{ quiz.description ?: 'No description provided.' }}
-                    </p>
+                    <h2 class="quiz-title">{{ quiz.title }}</h2>
+                    <p class="quiz-desc">{{ quiz.description ?: 'No description provided.' }}</p>
 
-                    <div style="background: #f8fafc; border-radius: 8px; padding: 0.75rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.25rem; text-align: center;">
+                    <div class="quiz-stats">
                         <div>
-                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Questions</div>
-                            <div style="font-weight: 600; color: #334155;">{{ quiz.totalQuestions }}</div>
+                            <div class="stat-label">Questions</div>
+                            <div class="stat-value">{{ quiz.totalQuestions }}</div>
                         </div>
                         <div>
-                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Est. Time</div>
-                            <div style="font-weight: 600; color: #334155;">{{ quiz.estimatedTimeFormatted }}</div>
+                            <div class="stat-label">Time</div>
+                            <div class="stat-value">{{ quiz.estimatedTimeFormatted }}</div>
                         </div>
                         <div>
-                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Taken By</div>
-                            <div style="font-weight: 600; color: #334155;">{{ quiz.participantCount }}</div>
+                            <div class="stat-label">Taken By</div>
+                            <div class="stat-value">{{ quiz.participantCount }}</div>
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: auto; border-top: 1px solid #f1f5f9; padding-top: 1rem;">
-                        <a href="{{ path('app_quiz_edit', {'id': quiz.id}) }}" style="background: white; color: #3b82f6; text-decoration: none; font-size: 0.85rem; padding: 0.4rem 0.75rem; border: 1px solid #bfdbfe; border-radius: 6px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='white'">Edit</a>
+                    <div class="action-bar">
+                        <a href="{{ path('app_quiz_edit', {'id': quiz.id}) }}" class="btn-edit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            Edit
+                        </a>
                         {{ include('quiz/_delete_form.html.twig', {'quiz': quiz}) }}
                     </div>
                 </div>

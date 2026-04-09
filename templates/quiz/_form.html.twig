@@ -1,83 +1,116 @@
-{{ form_start(form, {'attr': {'class': 'auth-card', 'style': 'margin-top: 1rem; max-width: 800px; width: 100%;'}}) }}
+<style>
+    .custom-form-container {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(98, 114, 85, 0.1);
+        padding: 2.5rem;
+        border: 1px solid rgba(122, 91, 73, 0.1);
+        margin-top: 1rem;
+        position: relative;
+    }
+    .custom-form-container::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(to right, #748764, #A8866E); border-radius: 16px 16px 0 0;
+    }
+    .form-group-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .form-group { grid-column: span 2; display: flex; flex-direction: column; gap: 0.5rem; }
+    .form-label { font-weight: 600; color: #5D4A3E; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; }
+    .form-control {
+        padding: 0.85rem 1.2rem; border-radius: 10px; border: 1px solid #d5d9d1; font-size: 1rem; color: #5D4A3E; background: #fafaf9; transition: all 0.3s; width: 100%; box-sizing: border-box;
+    }
+    .form-control:focus { outline: none; border-color: #748764; box-shadow: 0 0 0 4px rgba(116, 135, 100, 0.1); background: #ffffff; }
+    
+    .questions-selector-wrapper {
+        margin-top: 2rem; border-top: 1px dashed rgba(122, 91, 73, 0.2); padding-top: 2rem;
+    }
+    .q-search-input {
+        padding: 0.6rem 1rem; border: 1px solid #d5d9d1; border-radius: 8px; font-size: 0.9rem; width: 250px; outline: none; background: #fafaf9; transition: all 0.2s;
+    }
+    .q-search-input:focus { border-color: #748764; background: #fff; box-shadow: 0 0 0 3px rgba(116, 135, 100, 0.1); }
+    
+    .q-items-container {
+        max-height: 400px; overflow-y: auto; background: #fafaf9; border: 1px solid #e8ede4; border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .q-items-container::-webkit-scrollbar { width: 8px; }
+    .q-items-container::-webkit-scrollbar-thumb { background-color: #d5d9d1; border-radius: 10px; }
+    
+    .q-item-card {
+        display: flex; align-items: center; padding: 1rem 1.25rem; background: #ffffff; border: 1px solid #e8ede4; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+    .q-item-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(98, 114, 85, 0.08); border-color: #A8866E; }
+    .q-item-card:has(input:checked) { border-color: #627255; background: #f6f8f5; box-shadow: 0 0 0 1px #627255; }
+    
+    .modern-checkbox {
+        appearance: none; width: 1.4rem; height: 1.4rem; border: 2px solid #A8866E; border-radius: 6px; position: relative; cursor: pointer; background: white; margin: 0; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;
+    }
+    .modern-checkbox:checked { background: #627255; border-color: #627255; }
+    .modern-checkbox:checked::after {
+        content: ''; width: 6px; height: 10px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-top: -2px;
+    }
+    
+    .switch-wrap { display: flex; align-items: center; gap: 1rem; margin: 2rem 0; padding: 1rem 1.5rem; background: #f6f8f5; border-radius: 10px; border: 1px solid rgba(98, 114, 85, 0.1); }
+    .form-actions { display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid rgba(122, 91, 73, 0.1); padding-top: 1.5rem; margin-top: 2rem; }
+    .btn-submit {
+        background: linear-gradient(135deg, #748764, #627255); color: white; border: none; padding: 0.8rem 2rem; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: 700; transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(98, 114, 85, 0.3); display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(98, 114, 85, 0.4); }
+</style>
+
+{{ form_start(form, {'attr': {'class': 'custom-form-container'}}) }}
     {{ form_errors(form) }}
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <div class="auth-field" style="grid-column: span 2;">
-            {{ form_label(form.title, null, {'label_attr': {'class': 'auth-label'}}) }}
-            {{ form_widget(form.title) }}
+    <div class="form-group-grid">
+        <div class="form-group">
+            {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'Enter quiz title...'}}) }}
             {{ form_errors(form.title) }}
         </div>
 
-        <div class="auth-field" style="grid-column: span 2;">
-            {{ form_label(form.description, null, {'label_attr': {'class': 'auth-label'}}) }}
-            {{ form_widget(form.description) }}
+        <div class="form-group">
+            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'placeholder': 'Describe what this quiz covers...', 'rows': 4}}) }}
             {{ form_errors(form.description) }}
         </div>
 
-        <div class="auth-field" style="grid-column: span 2;">
-            {{ form_label(form.category, null, {'label_attr': {'class': 'auth-label'}}) }}
-            {{ form_widget(form.category) }}
+        <div class="form-group">
+            {{ form_label(form.category, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.category, {'attr': {'class': 'form-control'}}) }}
             {{ form_errors(form.category) }}
         </div>
-
-
     </div>
     
-    <div class="auth-field" style="margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            {{ form_label(form.questions, 'Select Questions', {'label_attr': {'class': 'auth-label', 'style': 'margin: 0;'}}) }}
-            <input type="text" id="questionSearch" placeholder="Search questions..." style="padding: 0.4rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; width: 220px; outline: none;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#cbd5e1'">
+    <div class="questions-selector-wrapper">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A8866E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                {{ form_label(form.questions, 'Select Questions', {'label_attr': {'class': 'form-label', 'style': 'margin: 0; font-size: 1.2rem;'}}) }}
+            </div>
+            <input type="text" id="questionSearch" placeholder="Search questions..." class="q-search-input">
         </div>
         
-        <div class="questions-list-container" style="max-height: 350px; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
+        <div class="q-items-container">
             {% for child in form.questions %}
-                <label class="question-item-card" style="display: flex; align-items: center; padding: 0.8rem 1rem; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
-                    <div style="margin-right: 1rem; display: flex; align-items: center;">
-                        {{ form_widget(child, {'attr': {'class': 'custom-checkbox'}}) }}
+                <label class="q-item-card">
+                    <div style="margin-right: 1.2rem; display: flex; align-items: center;">
+                        {{ form_widget(child, {'attr': {'class': 'modern-checkbox'}}) }}
                     </div>
-                    <div style="flex-grow: 1; font-size: 0.95rem; color: #334155; line-height: 1.4;" class="question-text">
+                    <div style="flex-grow: 1; font-size: 1rem; color: #5D4A3E; font-weight: 500; line-height: 1.5;" class="question-text">
                         {{ child.vars.label }}
                     </div>
                 </label>
             {% else %}
-                <div style="text-align: center; color: #64748b; padding: 1.5rem;">No questions available. Try creating some first!</div>
+                <div style="text-align: center; color: #A8866E; padding: 2rem; font-weight: 500;">No questions available. Try creating some first!</div>
             {% endfor %}
-            <div id="noResults" style="display: none; text-align: center; color: #64748b; padding: 1.5rem;">No questions match your search.</div>
+            <div id="noResults" style="display: none; text-align: center; color: #A8866E; padding: 2rem; font-weight: 500;">No questions match your search.</div>
         </div>
         {{ form_errors(form.questions) }}
     </div>
 
-    <style>
-        .questions-list-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        .questions-list-container::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 10px;
-        }
-        .question-item-card:hover {
-            border-color: #cbd5e1;
-            background: #f1f5f9 !important;
-            transform: translateY(-1px);
-        }
-        .question-item-card:has(input:checked) {
-            border-color: #3b82f6;
-            background: #eff6ff !important;
-            box-shadow: 0 0 0 1px #3b82f6;
-        }
-        .custom-checkbox {
-            width: 1.25rem;
-            height: 1.25rem;
-            accent-color: #3b82f6;
-            cursor: pointer;
-            margin: 0;
-        }
-    </style>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('questionSearch');
-            const questionCards = document.querySelectorAll('.question-item-card');
+            const questionCards = document.querySelectorAll('.q-item-card');
             const noResults = document.getElementById('noResults');
 
             if (searchInput) {
@@ -103,11 +136,16 @@
         });
     </script>
 
-    <div class="auth-checkbox-wrap" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
-        {{ form_widget(form.active) }}
-        {{ form_label(form.active, null, {'label_attr': {'class': 'auth-checkbox-label'}}) }}
+    <div class="switch-wrap">
+        {{ form_widget(form.active, {'attr': {'class': 'modern-checkbox'}}) }}
+        {{ form_label(form.active, 'Make this quiz Active (Visible)', {'label_attr': {'class': 'form-label', 'style': 'cursor: pointer; margin: 0;'}}) }}
         {{ form_errors(form.active) }}
     </div>
 
-    <button class="auth-submit" style="width: auto; padding: 0.75rem 1.5rem;">{{ button_label|default('Save') }}</button>
+    <div class="form-actions">
+        <button type="submit" class="btn-submit">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            {{ button_label|default('Save Quiz') }}
+        </button>
+    </div>
 {{ form_end(form) }}
