@@ -81,30 +81,7 @@ class ReviewController extends AbstractController
             return $this->redirect($request->headers->get('referer') ?: '/reviews/user');
         }
 
-        // Try to find therapist by email
         $therapist = $therapistRepo->findOneBy(['email' => $user->getEmail()]);
-        
-        // Fallback: search by name
-        if (!$therapist) {
-            $therapist = $therapistRepo->findOneBy(['firstName' => $user->getFirstName(), 'lastName' => $user->getLastName()]);
-        }
-
-        // AUTO-CREATION: If user is therapist/admin but has no record in therapists table
-        if (!$therapist) {
-            $therapist = new \App\Entity\Therapist();
-            $therapist->setFirstName($user->getFirstName());
-            $therapist->setLastName($user->getLastName() ?: $user->getFirstName());
-            $therapist->setEmail($user->getEmail());
-            $therapist->setPhoneNumber($user->getPhone() ?: '0000000000');
-            $therapist->setSpecialization(in_array('ROLE_ADMIN', $user->getRoles()) ? 'Review Administrator' : 'Psychologist');
-            $therapist->setPhotoUrl($user->getPhotoUrl() ?: 'default-avatar.png');
-            $therapist->setDiplomaPath('none');
-            $therapist->setStatus('ACTIVE');
-            
-            $em->persist($therapist);
-            $em->flush();
-        }
-
         $content = trim($request->request->get('content'));
         if (mb_strlen($content) <= 10) {
             $this->addFlash('error', 'The reply must be at least 11 characters.');
