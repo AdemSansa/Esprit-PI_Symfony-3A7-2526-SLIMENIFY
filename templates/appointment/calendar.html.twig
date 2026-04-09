@@ -5,6 +5,17 @@
 {% block stylesheets %}
     {{ parent() }}
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+    <style>
+        .app-main__inner {
+            max-width: 1400px;
+        }
+        #calendar {
+            min-height: 78vh;
+        }
+        #calendar .fc .fc-timegrid-slot {
+            height: 3.1rem;
+        }
+    </style>
 {% endblock %}
 
 {% block app_content %}
@@ -28,12 +39,10 @@
                     </option>
                 {% endfor %}
             </select>
-        {% else %}
-            <span style="padding:0.35rem 0.6rem; background:#f1f5f9; color:#334155; border-radius:8px; border:1px solid #e2e8f0;">
-                Therapist: {{ selected_therapist ? selected_therapist.firstName ~ ' ' ~ selected_therapist.lastName : 'Not linked to current user' }}
-            </span>
         {% endif %}
-        <a href="{{ path('app_appointments_calendar') }}" style="text-decoration:none; background:#627255; color:#fff; border-radius:8px; padding:0.5rem 0.8rem;">Refresh</a>
+        {% if not is_therapist %}
+            <a href="{{ path('app_appointments_calendar') }}" style="text-decoration:none; background:#627255; color:#fff; border-radius:8px; padding:0.5rem 0.8rem;">Refresh</a>
+        {% endif %}
     </div>
 
     <div style="display:flex; gap:0.5rem; margin-bottom:0.7rem;">
@@ -64,6 +73,43 @@
     {{ parent() }}
     <script>
         let appointmentCalendarInstance = null;
+        let isSwalLoading = false;
+
+        async function ensureSweetAlertLoaded() {
+            if (window.Swal) return;
+            if (isSwalLoading) return;
+            isSwalLoading = true;
+            await new Promise((resolve, reject) => {
+                const existing = document.querySelector('script[data-swal-loader="true"]');
+                if (existing) {
+                    existing.addEventListener('load', () => resolve(), { once: true });
+                    existing.addEventListener('error', () => reject(new Error('Failed to load SweetAlert2 script.')), { once: true });
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+                script.async = true;
+                script.dataset.swalLoader = 'true';
+                script.onload = () => resolve();
+                script.onerror = () => reject(new Error('Failed to load SweetAlert2 script.'));
+                document.head.appendChild(script);
+            });
+            isSwalLoading = false;
+        }
+
+        async function showErrorAlert(message) {
+            await ensureSweetAlertLoaded();
+            if (window.Swal) {
+                window.Swal.fire({
+                    icon: 'error',
+                    title: 'Not Allowed',
+                    text: message,
+                    confirmButtonColor: '#627255',
+                });
+                return;
+            }
+            alert(message);
+        }
 
         async function ensureFullCalendarLoaded() {
             if (window.FullCalendar) return;
@@ -107,13 +153,16 @@
             let selectedSlot = null;
             let consultationType = 'BOTH';
             let activeTherapistId = isTherapist ? selectedTherapistFromBackend : parseInt((therapistSelect && therapistSelect.value) || 0, 10);
+            let businessHoursCache = [];
 
             const formatTime = (dateObj) => dateObj.toTimeString().slice(0, 5);
             const formatDate = (dateObj) => dateObj.toISOString().slice(0, 10);
 
             async function loadBusinessHours() {
                 if (!activeTherapistId) return { businessHours: [] };
-                const response = await fetch(`{{ path('app_appointments_business_hours') }}?therapist_id=${activeTherapistId}`);
+                const response = await fetch(`{{ path('app_appointments_business_hours') }}?therapist_id=${activeTherapistId}&_ts=${Date.now()}`, {
+                    cache: 'no-store',
+                });
                 return response.json();
             }
 
@@ -126,9 +175,31 @@
                 ];
             }
 
+            function toMinuteOfDay(dateObj) {
+                return (dateObj.getHours() * 60) + dateObj.getMinutes();
+            }
+
+            function isWithinBusinessHours(startDate, endDate) {
+                const day = startDate.getDay();
+                const startMinutes = toMinuteOfDay(startDate);
+                const endMinutes = toMinuteOfDay(endDate);
+                return businessHoursCache.some((block) => {
+                    if (!Array.isArray(block.daysOfWeek) || !block.daysOfWeek.includes(day)) {
+                        return false;
+                    }
+                    const [bhStartHour, bhStartMinute] = String(block.startTime || '00:00:00').split(':').map(Number);
+                    const [bhEndHour, bhEndMinute] = String(block.endTime || '00:00:00').split(':').map(Number);
+                    const bhStart = (bhStartHour * 60) + bhStartMinute;
+                    const bhEnd = (bhEndHour * 60) + bhEndMinute;
+                    return startMinutes >= bhStart && endMinutes <= bhEnd;
+                });
+            }
+
             async function openBookingModal(slotInfo) {
-                selectedSlot = slotInfo;
+                const fixedEnd = new Date(slotInfo.start.getTime() + (60 * 60 * 1000));
+                selectedSlot = { start: slotInfo.start, end: fixedEnd };
                 modalRangeEl.textContent = `${formatDate(slotInfo.start)} ${formatTime(slotInfo.start)} - ${formatTime(slotInfo.end)}`;
+                modalRangeEl.textContent = `${formatDate(selectedSlot.start)} ${formatTime(selectedSlot.start)} - ${formatTime(selectedSlot.end)} (60 min)`;
                 modalTypeEl.innerHTML = '';
                 typeOptionsByConsultation(consultationType).forEach((option) => {
                     const el = document.createElement('option');
@@ -166,7 +237,7 @@
                     });
                     const body = await response.json().catch(() => ({}));
                     if (!response.ok) {
-                        alert(body.error || 'Booking failed.');
+                        await showErrorAlert(body.error || 'Booking failed.');
                         return;
                     }
                     closeBookingModal();
@@ -179,16 +250,24 @@
                 slotDuration: '00:30:00',
                 allDaySlot: false,
                 selectable: !isTherapist,
-                editable: isTherapist,
+                editable: true,
+                eventStartEditable: true,
+                eventDurationEditable: false,
+                selectConstraint: 'businessHours',
+                eventConstraint: 'businessHours',
                 selectMirror: true,
                 nowIndicator: true,
                 eventOverlap: false,
                 eventClick: (info) => { window.location.href = info.event.extendedProps.detailUrl; },
                 eventDrop: async (info) => {
+                    if (!isWithinBusinessHours(info.event.start, info.event.end)) {
+                        info.revert();
+                        await showErrorAlert('This move is outside therapist business hours.');
+                        return;
+                    }
                     const payload = {
                         date: formatDate(info.event.start),
                         start_time: formatTime(info.event.start),
-                        end_time: formatTime(info.event.end),
                     };
                     const response = await fetch(`{{ path('app_appointments_move', {id: 0}) }}`.replace('/0/move', `/${info.event.id}/move`), {
                         method: 'POST',
@@ -197,41 +276,46 @@
                     });
                     if (!response.ok) {
                         const body = await response.json().catch(() => ({}));
-                        alert(body.error || 'Could not move this appointment.');
+                        await showErrorAlert(body.error || 'Could not move this appointment.');
                         info.revert();
                     }
                 },
                 eventResize: async (info) => {
-                    const payload = {
-                        date: formatDate(info.event.start),
-                        start_time: formatTime(info.event.start),
-                        end_time: formatTime(info.event.end),
-                    };
-                    const response = await fetch(`{{ path('app_appointments_move', {id: 0}) }}`.replace('/0/move', `/${info.event.id}/move`), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                    });
-                    if (!response.ok) {
-                        const body = await response.json().catch(() => ({}));
-                        alert(body.error || 'Could not resize this appointment.');
-                        info.revert();
-                    }
+                    info.revert();
+                    await showErrorAlert('Appointment duration is fixed to 60 minutes.');
                 },
-                selectAllow: () => !!activeTherapistId && !isTherapist,
+                selectAllow: (selectionInfo) => {
+                    if (!activeTherapistId || isTherapist) {
+                        return false;
+                    }
+                    return isWithinBusinessHours(selectionInfo.start, selectionInfo.end);
+                },
                 select: (selectionInfo) => {
                     if (!activeTherapistId) {
-                        alert('Please select a therapist first.');
+                        showErrorAlert('Please select a therapist first.');
+                        return;
+                    }
+                    if (!isWithinBusinessHours(selectionInfo.start, selectionInfo.end)) {
+                        showErrorAlert('You cannot book outside therapist business hours.');
                         return;
                     }
                     openBookingModal(selectionInfo);
+                },
+                dateClick: (info) => {
+                    if (isTherapist || !activeTherapistId) return;
+                    const end = new Date(info.date.getTime() + (30 * 60 * 1000));
+                    if (!isWithinBusinessHours(info.date, end)) {
+                        showErrorAlert('This slot is outside therapist business hours.');
+                    }
                 },
                 events: (fetchInfo, successCallback, failureCallback) => {
                     if (!activeTherapistId) {
                         successCallback([]);
                         return;
                     }
-                    fetch(`{{ path('app_appointments_events') }}?therapist_id=${activeTherapistId}`)
+                    fetch(`{{ path('app_appointments_events') }}?therapist_id=${activeTherapistId}&_ts=${Date.now()}`, {
+                        cache: 'no-store',
+                    })
                         .then((res) => res.json())
                         .then((events) => successCallback(events))
                         .catch((err) => failureCallback(err));
@@ -241,7 +325,8 @@
             async function refreshCalendarOptions() {
                 const data = await loadBusinessHours();
                 consultationType = data.consultationType || 'BOTH';
-                appointmentCalendarInstance.setOption('businessHours', data.businessHours || []);
+                businessHoursCache = data.businessHours || [];
+                appointmentCalendarInstance.setOption('businessHours', businessHoursCache);
                 appointmentCalendarInstance.render();
                 appointmentCalendarInstance.refetchEvents();
             }
@@ -264,6 +349,20 @@
             }
         });
         document.addEventListener('turbo:load', initAppointmentCalendar);
+        document.addEventListener('turbo:render', async () => {
+            if (appointmentCalendarInstance) {
+                appointmentCalendarInstance.refetchEvents();
+            } else {
+                await initAppointmentCalendar();
+            }
+        });
+        window.addEventListener('pageshow', async () => {
+            if (appointmentCalendarInstance) {
+                appointmentCalendarInstance.refetchEvents();
+            } else {
+                await initAppointmentCalendar();
+            }
+        });
         if (document.readyState === 'interactive' || document.readyState === 'complete') {
             initAppointmentCalendar();
         }

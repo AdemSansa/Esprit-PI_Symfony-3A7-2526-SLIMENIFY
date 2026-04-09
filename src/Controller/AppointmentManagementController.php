@@ -85,7 +85,11 @@ class AppointmentManagementController extends AbstractController
             ];
         }
 
-        return $this->json($events);
+        $response = $this->json($events);
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+        return $response;
     }
 
     #[Route('/business-hours', name: 'business_hours', methods: ['GET'])]
@@ -115,11 +119,15 @@ class AppointmentManagementController extends AbstractController
             ];
         }
 
-        return $this->json([
+        $response = $this->json([
             'businessHours' => $businessHours,
             'consultationType' => strtoupper((string) ($therapist->getConsultationType() ?: 'BOTH')),
             'therapistName' => trim($therapist->getFirstName() . ' ' . $therapist->getLastName()),
         ]);
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+        return $response;
     }
 
     #[Route('/book', name: 'book', methods: ['POST'])]
@@ -139,11 +147,11 @@ class AppointmentManagementController extends AbstractController
 
         $date = \DateTime::createFromFormat('Y-m-d', (string) ($data['date'] ?? ''));
         $start = \DateTime::createFromFormat('H:i', (string) ($data['start_time'] ?? ''));
-        $end = \DateTime::createFromFormat('H:i', (string) ($data['end_time'] ?? ''));
         $type = strtolower((string) ($data['type'] ?? ''));
-        if (!$date || !$start || !$end || $end <= $start) {
+        if (!$date || !$start) {
             return $this->json(['error' => 'Invalid date/time range'], Response::HTTP_BAD_REQUEST);
         }
+        $end = (clone $start)->modify('+60 minutes');
 
         if (!$this->isAppointmentTypeAllowed($therapist, $type)) {
             return $this->json(['error' => 'Appointment type not allowed for this therapist'], Response::HTTP_BAD_REQUEST);
@@ -173,7 +181,7 @@ class AppointmentManagementController extends AbstractController
     #[Route('/{id}/move', name: 'move', methods: ['POST'])]
     public function move(int $id, Request $request): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_THERAPIST');
+        $this->denyAccessUnlessGranted('ROLE_PATIENT');
         $appointment = $this->appointmentRepository->find($id);
         if ($appointment === null || !$this->canAccessAppointment($appointment)) {
             return $this->json(['error' => 'Appointment not found'], Response::HTTP_NOT_FOUND);
@@ -182,10 +190,10 @@ class AppointmentManagementController extends AbstractController
         $data = json_decode($request->getContent(), true) ?? [];
         $date = \DateTime::createFromFormat('Y-m-d', (string) ($data['date'] ?? ''));
         $start = \DateTime::createFromFormat('H:i', (string) ($data['start_time'] ?? ''));
-        $end = \DateTime::createFromFormat('H:i', (string) ($data['end_time'] ?? ''));
-        if (!$date || !$start || !$end || $end <= $start) {
+        if (!$date || !$start) {
             return $this->json(['error' => 'Invalid date/time range'], Response::HTTP_BAD_REQUEST);
         }
+        $end = (clone $start)->modify('+60 minutes');
 
         if (!$this->isSlotInsideBusinessHours($appointment->getTherapist(), $date, $start, $end)) {
             return $this->json(['error' => 'Slot is outside business hours or blocked by exception'], Response::HTTP_BAD_REQUEST);
@@ -218,6 +226,12 @@ class AppointmentManagementController extends AbstractController
             return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
         }
 
+        $currentStatus = strtolower((string) ($appointment->getStatus() ?: 'pending'));
+        if (!$this->isValidStatusProgression($currentStatus, $status)) {
+            $this->addFlash('error', 'Status can only move forward: pending -> confirmed -> completed -> cancelled.');
+            return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
+        }
+
         $appointment->setStatus($status);
         $this->appointmentRepository->save($appointment);
         $this->addFlash('success', 'Appointment status updated.');
@@ -239,6 +253,7 @@ class AppointmentManagementController extends AbstractController
             'notes' => $this->noteRepository->findBy(['appointment' => $appointment], ['createdAt' => 'DESC']),
             'can_manage_status' => $this->isGranted('ROLE_THERAPIST'),
             'can_manage_notes' => $this->isGranted('ROLE_THERAPIST') && $this->canCreateNoteNow($appointment),
+            'next_statuses' => $this->getNextStatuses(strtolower((string) ($appointment->getStatus() ?: 'pending'))),
         ]);
     }
 
@@ -416,5 +431,32 @@ class AppointmentManagementController extends AbstractController
             'completed' => '#3b82f6',
             default => '#eab308',
         };
+    }
+
+    private function getStatusRank(string $status): int
+    {
+        return match ($status) {
+            'pending' => 1,
+            'confirmed' => 2,
+            'completed' => 3,
+            'cancelled' => 4,
+            default => 0,
+        };
+    }
+
+    private function isValidStatusProgression(string $current, string $next): bool
+    {
+        return $this->getStatusRank($next) > $this->getStatusRank($current);
+    }
+
+    private function getNextStatuses(string $current): array
+    {
+        $ordered = ['pending', 'confirmed', 'completed', 'cancelled'];
+        $currentRank = $this->getStatusRank($current);
+
+        return array_values(array_filter(
+            $ordered,
+            fn (string $status): bool => $this->getStatusRank($status) > $currentRank
+        ));
     }
 }
