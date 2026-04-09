@@ -17,10 +17,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class SupplierCrudController extends AbstractController
 {
     #[Route('', name: 'app_supplier_index', methods: ['GET'])]
-    public function index(SupplierRepository $supplierRepository): Response
+    public function index(Request $request, SupplierRepository $supplierRepository): Response
     {
+        $search = $request->query->get('search', '');
+        $status = $request->query->get('status', 'all');
+        $sort = $request->query->get('sort', 'newest');
+
+        $suppliers = $supplierRepository->findFiltered($search, $status, $sort);
+
         return $this->render('supplier/index.html.twig', [
-            'suppliers' => $supplierRepository->findAll(),
+            'suppliers' => $suppliers,
+            'search' => $search,
+            'status' => $status,
+            'sort' => $sort,
         ]);
     }
 
