@@ -6,11 +6,17 @@
     {{ parent() }}
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
     <style>
+        /* Use full width of .app-main (area to the right of the sidebar) */
         .app-main__inner {
-            max-width: 1400px;
+            max-width: none;
+            width: 100%;
         }
         #calendar {
             min-height: 78vh;
+            width: 100%;
+        }
+        #calendar .fc {
+            max-width: 100%;
         }
         #calendar .fc .fc-timegrid-slot {
             height: 3.1rem;
@@ -247,6 +253,17 @@
 
             appointmentCalendarInstance = new window.FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                buttonText: {
+                    today: 'Today',
+                    month: 'Month',
+                    week: 'Week',
+                    day: 'Day'
+                },
                 slotDuration: '00:30:00',
                 allDaySlot: false,
                 selectable: !isTherapist,
