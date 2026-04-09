@@ -55,6 +55,8 @@ class ProductCrudController extends AbstractController
             $entityManager->persist($product);
             $entityManager->flush();
 
+            $this->addFlash('success', 'The product has been successfully added to the shop.');
+
             return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -75,6 +77,8 @@ class ProductCrudController extends AbstractController
             $product->setUpdatedAt(new \DateTime());
             $entityManager->flush();
 
+            $this->addFlash('success', 'The product details have been updated successfully.');
+
             return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -91,6 +95,7 @@ class ProductCrudController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$product->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($product);
             $entityManager->flush();
+            $this->addFlash('success', 'The product has been successfully removed from the inventory.');
         }
 
         return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);
