@@ -43,8 +43,25 @@ class TherapistRepository extends ServiceEntityRepository
         return $this->findBy(['consultationType' => $type, 'status' => 'ACTIVE']);
     }
 
-    public function findOneByEmail(string $email): ?Therapist
+    /**
+     * @return Therapist[]
+     */
+    public function searchAndSort(?string $searchQuery, ?string $specialty): array
     {
-        return $this->findOneBy(['email' => $email]);
+        $qb = $this->createQueryBuilder('t');
+
+        if ($searchQuery) {
+            $qb->andWhere('t.firstName LIKE :query OR t.lastName LIKE :query')
+               ->setParameter('query', '%' . $searchQuery . '%');
+        }
+
+        if ($specialty && $specialty !== 'all') {
+            $qb->andWhere('t.specialization = :spec')
+               ->setParameter('spec', $specialty);
+        }
+
+        $qb->orderBy('t.id', 'ASC');
+
+        return $qb->getQuery()->getResult();
     }
 }
