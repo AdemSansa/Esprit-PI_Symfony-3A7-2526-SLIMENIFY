@@ -79,7 +79,7 @@ class AppointmentManagementController extends AbstractController
                 'extendedProps' => [
                     'status' => $status,
                     'type' => $appointment->getType(),
-                    'detailUrl' => $this->generateUrl('app_appointments_detail', ['id' => $appointment->getId()]),
+                    'detailUrl' => $this->generateUrl('app_appointments_detail_readonly', ['id' => $appointment->getId()]),
                     'canEditTime' => $this->isGranted('ROLE_THERAPIST'),
                 ],
             ];
@@ -178,7 +178,7 @@ class AppointmentManagementController extends AbstractController
         return $this->json(['ok' => true, 'id' => $appointment->getId()], Response::HTTP_CREATED);
     }
 
-    #[Route('/{id}/move', name: 'move', methods: ['POST'])]
+    #[Route('/{id}/move', name: 'move', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function move(int $id, Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_PATIENT');
@@ -211,7 +211,7 @@ class AppointmentManagementController extends AbstractController
         return $this->json(['ok' => true]);
     }
 
-    #[Route('/{id}/status', name: 'status', methods: ['POST'])]
+    #[Route('/{id}/status', name: 'status', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function status(int $id, Request $request): RedirectResponse
     {
         $this->denyAccessUnlessGranted('ROLE_THERAPIST');
@@ -231,6 +231,13 @@ class AppointmentManagementController extends AbstractController
             $this->addFlash('error', 'Status can only move forward: pending -> confirmed -> completed -> cancelled.');
             return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
         }
+        
+        if ($status === 'cancelled') {
+            $this->entityManager->remove($appointment);
+            $this->entityManager->flush();
+            $this->addFlash('success', 'Appointment cancelled and deleted.');
+            return $this->redirectToRoute('app_appointments_history');
+        }
 
         $appointment->setStatus($status);
         $this->appointmentRepository->save($appointment);
@@ -239,7 +246,50 @@ class AppointmentManagementController extends AbstractController
         return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
     }
 
-    #[Route('/{id}', name: 'detail', methods: ['GET'])]
+    #[Route('/history', name: 'history', methods: ['GET'])]
+    public function history(): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_PATIENT');
+
+        $appointments = [];
+        if ($this->isGranted('ROLE_THERAPIST')) {
+            $therapist = $this->resolveTherapistForCurrentUser();
+            if ($therapist !== null) {
+                $appointments = $this->appointmentRepository->findByTherapist($therapist->getId());
+            }
+        } else {
+            $user = $this->getUser();
+            if ($user instanceof \App\Entity\User) {
+                $appointments = $this->appointmentRepository->findByPatient($user->getId());
+            }
+        }
+
+        return $this->render('appointment/history.html.twig', [
+            'appointments' => $appointments,
+            'is_therapist' => $this->isGranted('ROLE_THERAPIST'),
+        ]);
+    }
+
+    #[Route('/detail-readonly/{id}', name: 'detail_readonly', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function detailReadonly(int $id): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_PATIENT');
+        $appointment = $this->appointmentRepository->find($id);
+        if ($appointment === null || !$this->canAccessAppointment($appointment)) {
+            throw $this->createNotFoundException('Appointment not found.');
+        }
+
+        return $this->render('appointment/detail.html.twig', [
+            'appointment' => $appointment,
+            'notes' => $this->noteRepository->findBy(['appointment' => $appointment], ['createdAt' => 'DESC']),
+            'can_manage_status' => false,
+            'can_manage_notes' => false,
+            'next_statuses' => [],
+            'readonly' => true,
+        ]);
+    }
+
+    #[Route('/{id}', name: 'detail', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function detail(int $id): Response
     {
         $this->denyAccessUnlessGranted('ROLE_PATIENT');
@@ -254,10 +304,11 @@ class AppointmentManagementController extends AbstractController
             'can_manage_status' => $this->isGranted('ROLE_THERAPIST'),
             'can_manage_notes' => $this->isGranted('ROLE_THERAPIST') && $this->canCreateNoteNow($appointment),
             'next_statuses' => $this->getNextStatuses(strtolower((string) ($appointment->getStatus() ?: 'pending'))),
+            'readonly' => false,
         ]);
     }
 
-    #[Route('/{id}/notes', name: 'add_note', methods: ['POST'])]
+    #[Route('/{id}/notes', name: 'add_note', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function addNote(int $id, Request $request): RedirectResponse
     {
         $this->denyAccessUnlessGranted('ROLE_THERAPIST');
@@ -292,7 +343,7 @@ class AppointmentManagementController extends AbstractController
         return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
     }
 
-    #[Route('/notes/{noteId}/edit', name: 'edit_note', methods: ['POST'])]
+    #[Route('/notes/{noteId}/edit', name: 'edit_note', requirements: ['noteId' => '\d+'], methods: ['POST'])]
     public function editNote(int $noteId, Request $request): RedirectResponse
     {
         $this->denyAccessUnlessGranted('ROLE_THERAPIST');
@@ -312,7 +363,7 @@ class AppointmentManagementController extends AbstractController
         return $this->redirectToRoute('app_appointments_detail', ['id' => $note->getAppointment()->getId()]);
     }
 
-    #[Route('/notes/{noteId}/delete', name: 'delete_note', methods: ['POST'])]
+    #[Route('/notes/{noteId}/delete', name: 'delete_note', requirements: ['noteId' => '\d+'], methods: ['POST'])]
     public function deleteNote(int $noteId): RedirectResponse
     {
         $this->denyAccessUnlessGranted('ROLE_THERAPIST');

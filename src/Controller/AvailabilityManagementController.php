@@ -127,6 +127,56 @@ class AvailabilityManagementController extends AbstractController
         return $this->redirectToRoute('app_availability_manage');
     }
 
+    #[Route('/update/{id}', name: 'update', methods: ['POST'])]
+    public function update(int $id, Request $request): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_THERAPIST');
+        $therapist = $this->resolveTherapistForCurrentUser($request);
+        if ($therapist === null) {
+            throw $this->createNotFoundException('Therapist profile was not found for this user.');
+        }
+
+        $availability = $this->availabilityRepository->find($id);
+        if (!$availability || $availability->getTherapist()->getId() !== $therapist->getId()) {
+            $this->addFlash('error', 'Availability entry not found.');
+            return $this->redirectToRoute('app_availability_manage');
+        }
+
+        $start = (string) $request->request->get('start_time', '');
+        $end = (string) $request->request->get('end_time', '');
+        $startTime = \DateTime::createFromFormat('H:i', $start) ?: \DateTime::createFromFormat('H:i:s', $start);
+        $endTime = \DateTime::createFromFormat('H:i', $end) ?: \DateTime::createFromFormat('H:i:s', $end);
+        if (!$startTime || !$endTime || $endTime <= $startTime) {
+            $this->addFlash('error', 'Please provide a valid time range.');
+            return $this->redirectToRoute('app_availability_manage');
+        }
+
+        if ($availability->getSpecificDate() === null) {
+            $day = strtoupper((string) $request->request->get('day', ''));
+            if (!in_array($day, ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'], true)) {
+                $this->addFlash('error', 'Please select a valid weekday.');
+                return $this->redirectToRoute('app_availability_manage');
+            }
+            $availability->setDay($day);
+        } else {
+            $date = (string) $request->request->get('specific_date', '');
+            $specificDate = \DateTime::createFromFormat('Y-m-d', $date);
+            if (!$specificDate) {
+                $this->addFlash('error', 'Please provide a valid specific date.');
+                return $this->redirectToRoute('app_availability_manage');
+            }
+            $availability->setSpecificDate($specificDate);
+            $availability->setDay(strtoupper($specificDate->format('l')));
+        }
+
+        $availability->setStartTime($startTime);
+        $availability->setEndTime($endTime);
+        $this->availabilityRepository->save($availability);
+
+        $this->addFlash('success', 'Availability updated successfully.');
+        return $this->redirectToRoute('app_availability_manage');
+    }
+
     private function resolveTherapistForCurrentUser(Request $request): ?\App\Entity\Therapist
     {
         if ($this->isGranted('ROLE_ADMIN') && $request->query->has('therapist_id')) {

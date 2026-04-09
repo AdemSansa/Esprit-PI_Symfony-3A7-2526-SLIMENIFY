@@ -200,7 +200,8 @@
 
 			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_product_index') }}" class="{{ route starts with 'app_product' ? 'is-active' : '' }}">Products</a>
-				<a href="{{ path('app_appointments_calendar') }}" class="{{ route starts with 'app_appointments' ? 'is-active' : '' }}">Appointments</a>
+				<a href="{{ path('app_appointments_calendar') }}" class="{{ route starts with 'app_appointments' and route != 'app_appointments_history' ? 'is-active' : '' }}">Appointments</a>
+				<a href="{{ path('app_appointments_history') }}" class="{{ route == 'app_appointments_history' ? 'is-active' : '' }}">Appointments History</a>
 			{% endif %}
 
 				 {# === New Reviews button === #}
