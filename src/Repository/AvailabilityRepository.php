@@ -28,4 +28,16 @@ class AvailabilityRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    public function findByTherapistId(int $therapistId): array
+    {
+        return $this->createQueryBuilder('a')
+            ->where('a.therapist = :therapistId')
+            ->setParameter('therapistId', $therapistId)
+            ->orderBy('a.specificDate', 'ASC')
+            ->addOrderBy('a.day', 'ASC')
+            ->addOrderBy('a.startTime', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
