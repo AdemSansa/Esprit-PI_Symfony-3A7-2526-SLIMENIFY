@@ -35,6 +35,8 @@ class SupplierCrudController extends AbstractController
             $entityManager->persist($supplier);
             $entityManager->flush();
 
+            $this->addFlash('success', 'The supplier has been registered successfully.');
+
             return $this->redirectToRoute('app_supplier_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -54,6 +56,8 @@ class SupplierCrudController extends AbstractController
             $supplier->setUpdatedAt(new \DateTime());
             $entityManager->flush();
 
+            $this->addFlash('success', 'The supplier information has been updated successfully.');
+
             return $this->redirectToRoute('app_supplier_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -69,6 +73,7 @@ class SupplierCrudController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$supplier->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($supplier);
             $entityManager->flush();
+            $this->addFlash('success', 'The supplier has been removed from the system.');
         }
 
         return $this->redirectToRoute('app_supplier_index', [], Response::HTTP_SEE_OTHER);

@@ -18,27 +18,33 @@ class SupplierType extends AbstractType
         $builder
             ->add('name', TextType::class, [
                 'label' => 'Supplier Name',
-                'attr' => ['class' => 'auth-input', 'placeholder' => 'Enter supplier name']
+                'required' => false,
+                'attr' => ['class' => 'form-input', 'placeholder' => 'Enter supplier name']
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Email Address',
-                'attr' => ['class' => 'auth-input', 'placeholder' => 'supplier@example.com']
+                'required' => false,
+                'attr' => ['class' => 'form-input', 'placeholder' => 'supplier@example.com']
             ])
             ->add('phone', TextType::class, [
                 'label' => 'Phone Number',
-                'attr' => ['class' => 'auth-input', 'placeholder' => '20123456']
+                'required' => false,
+                'attr' => ['class' => 'form-input', 'placeholder' => '20123456']
             ])
             ->add('address', TextareaType::class, [
                 'label' => 'Physical Address',
-                'attr' => ['class' => 'auth-input', 'rows' => 3, 'placeholder' => 'Address details...']
+                'required' => false,
+                'attr' => ['class' => 'form-input', 'rows' => 3, 'placeholder' => 'Address details...']
             ])
             ->add('city', TextType::class, [
                 'label' => 'City',
-                'attr' => ['class' => 'auth-input']
+                'required' => false,
+                'attr' => ['class' => 'form-input']
             ])
             ->add('country', TextType::class, [
                 'label' => 'Country',
-                'attr' => ['class' => 'auth-input']
+                'required' => false,
+                'attr' => ['class' => 'form-input']
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'Status',
@@ -46,7 +52,7 @@ class SupplierType extends AbstractType
                     'Active' => 'active',
                     'Inactive' => 'inactive'
                 ],
-                'attr' => ['class' => 'auth-input']
+                'attr' => ['class' => 'form-input']
             ])
         ;
     }
