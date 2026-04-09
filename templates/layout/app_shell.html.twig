@@ -100,26 +100,35 @@
 	<aside class="app-sidebar" aria-label="Main navigation">
 		<div class="app-sidebar__brand">Slimenify</div>
 		<nav class="app-sidebar__nav">
-			<a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'is-active' : '' }}">Home</a>
+    <a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'is-active' : '' }}">Home</a>
 
-			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_ADMIN') %}
-				<a href="{{ path('app_assessment_index') }}" class="{{ route starts with 'app_assessment' ? 'is-active' : '' }}">Assessments</a>
-			{% endif %}
+    {% if is_granted('ROLE_PATIENT') or is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('app_assessment_index') }}" class="{{ route starts with 'app_assessment' ? 'is-active' : '' }}">Assessments</a>
+    {% endif %}
 
-			{% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
-				<a href="{{ path('app_quiz_index') }}" class="{{ route starts with 'app_quiz' ? 'is-active' : '' }}">Quizzes</a>
-				<a href="{{ path('app_question_index') }}" class="{{ route starts with 'app_question' ? 'is-active' : '' }}">Questions</a>
-			{% endif %}
+    {% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('app_quiz_index') }}" class="{{ route starts with 'app_quiz' ? 'is-active' : '' }}">Quizzes</a>
+        <a href="{{ path('app_question_index') }}" class="{{ route starts with 'app_question' ? 'is-active' : '' }}">Questions</a>
+    {% endif %}
 
-			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
-				<a href="{{ path('app_product_index') }}" class="{{ route starts with 'app_product' ? 'is-active' : '' }}">Products</a>
-			{% endif %}
+    {% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('app_product_index') }}" class="{{ route starts with 'app_product' ? 'is-active' : '' }}">Products</a>
+    {% endif %}
 
-			{% if is_granted('ROLE_ADMIN') %}
-				<div style="margin-top: 1.5rem; margin-bottom: 0.25rem; padding: 0 0.85rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-sidebar-muted);">Admin Area</div>
-				<a href="{{ path('app_supplier_index') }}" class="{{ route starts with 'app_supplier' ? 'is-active' : '' }}">Suppliers</a>
-			{% endif %}
-		</nav>
+    {# === New Reviews button === #}
+    {% if is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('app_reviews_admin') }}" class="{{ route starts with 'app_reviews_admin' ? 'is-active' : '' }}">Reviews (Admin)</a>
+    {% elseif is_granted('ROLE_THERAPIST') %}
+        <a href="{{ path('app_reviews_therapist') }}" class="{{ route starts with 'app_reviews_therapist' ? 'is-active' : '' }}">Reviews (Therapist)</a>
+    {% elseif is_granted('ROLE_PATIENT') %}
+        <a href="{{ path('app_reviews_user') }}" class="{{ route starts with 'app_reviews_user' ? 'is-active' : '' }}">My Reviews</a>
+    {% endif %}
+
+    {% if is_granted('ROLE_ADMIN') %}
+        <div style="margin-top: 1.5rem; margin-bottom: 0.25rem; padding: 0 0.85rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-sidebar-muted);">Admin Area</div>
+        <a href="{{ path('app_supplier_index') }}" class="{{ route starts with 'app_supplier' ? 'is-active' : '' }}">Suppliers</a>
+    {% endif %}
+</nav>
 		<div class="app-sidebar__footer">
 			{% if app.user %}
 				<div>{{ app.user.userIdentifier }}</div>
