@@ -28,4 +28,24 @@ class ReviewRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+    public function findAllSortedByDate(string $order = 'DESC'): array
+    {
+    return $this->createQueryBuilder('r')
+        ->orderBy('r.createdAt', $order)
+        ->getQuery()
+        ->getResult();
+    }
+    public function findBySearchAndSort(?string $search, string $order = 'DESC'): array
+    {
+    $qb = $this->createQueryBuilder('r');
+
+    if ($search) {
+        $qb->where('r.content LIKE :search')
+           ->setParameter('search', '%' . $search . '%');
+    }
+
+    $qb->orderBy('r.createdAt', $order);
+
+    return $qb->getQuery()->getResult();
+    }
 }
