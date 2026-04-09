@@ -386,25 +386,45 @@
     {% endif %}
 </div>
 
-    <div class="toolbar">
-        <div class="search-container">
+    <form method="GET" action="{{ path('app_product_index') }}" class="toolbar" style="flex-wrap: wrap;" id="filter-form" data-turbo="false">
+        <div class="search-container" style="flex: 2; min-width: 200px;">
             <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" class="search-input" id="search-input" placeholder="Search for books, relaxation, or care...">
+            <input type="text" name="search" value="{{ search|default('') }}" class="search-input" id="search-input" placeholder="Search products..." style="font-size: 1rem; padding: 0.65rem 1rem 0.65rem 2.5rem;">
         </div>
-        <select class="filter-select" id="category-filter">
-            <option value="all">All Categories</option>
-            <option value="Authorized Vitamins">Authorized Vitamins</option>
-            <option value="Psychology Books">Psychology Books</option>
-            <option value="Relaxing Products">Relaxing Products</option>
-            <option value="Therapeutic Games & Activities">Therapeutic Games & Activities</option>
+        <select name="category" class="filter-select" id="category-filter">
+            <option value="all" {% if category|default('all') == 'all' %}selected{% endif %}>All Categories</option>
+            <option value="Authorized Vitamins" {% if category|default('') == 'Authorized Vitamins' %}selected{% endif %}>Authorized Vitamins</option>
+            <option value="Psychology Books" {% if category|default('') == 'Psychology Books' %}selected{% endif %}>Psychology Books</option>
+            <option value="Relaxing Products" {% if category|default('') == 'Relaxing Products' %}selected{% endif %}>Relaxing Products</option>
+            <option value="Therapeutic Games & Activities" {% if category|default('') == 'Therapeutic Games & Activities' %}selected{% endif %}>Therapeutic Games & Activities</option>
         </select>
-        <select class="filter-select" id="sort-select">
-            <option value="newest">Newest First</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="name-asc">Name: A-Z</option>
-            <option value="name-desc">Name: Z-A</option>
+        <select name="sort" class="filter-select" id="sort-select">
+            <option value="newest" {% if sort|default('newest') == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="price-low" {% if sort|default('') == 'price-low' %}selected{% endif %}>Price: Low to High</option>
+            <option value="price-high" {% if sort|default('') == 'price-high' %}selected{% endif %}>Price: High to Low</option>
+            <option value="name-asc" {% if sort|default('') == 'name-asc' %}selected{% endif %}>Name: A-Z</option>
+            <option value="name-desc" {% if sort|default('') == 'name-desc' %}selected{% endif %}>Name: Z-A</option>
         </select>
+
+        <div id="price-slider-wrap" style="display: flex; align-items: center; gap: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.5rem 1rem; min-width: 240px; position: relative;">
+            <div style="display: flex; flex-direction: column; width: 100%; gap: 0.3rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;">Price (TND)</span>
+                    <span id="price-display" style="font-size: 0.78rem; font-weight: 800; color: #627255; background: #e8f0e4; padding: 0.15rem 0.5rem; border-radius: 20px;">0 — ∞ TND</span>
+                </div>
+                <div style="position: relative; height: 4px; background: #e2e8f0; border-radius: 4px; margin: 6px 0;">
+                    <div id="price-range-fill" style="position: absolute; height: 100%; background: linear-gradient(90deg, #748764, #b2936a); border-radius: 4px; left: 0%; right: 0%;"></div>
+                    <input name="priceMin" id="price-min" type="range" min="0" max="2000" step="5" value="{{ priceMin|default('0') }}"
+                        style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 3; top: 0; left: 0;">
+                    <input name="priceMax" id="price-max" type="range" min="0" max="2000" step="5" value="{{ priceMax|default('2000') }}"
+                        style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 4; top: 0; left: 0;">
+                    <div id="thumb-min" style="position: absolute; width: 14px; height: 14px; background: #627255; border: 2px solid #fff; border-radius: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 0 2px 6px rgba(98,114,85,0.4); pointer-events: none; left: 0%;"></div>
+                    <div id="thumb-max" style="position: absolute; width: 14px; height: 14px; background: #b2936a; border: 2px solid #fff; border-radius: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 0 2px 6px rgba(178,147,106,0.4); pointer-events: none; left: 100%;"></div>
+                </div>
+            </div>
+        </div>
+
+        {% if is_granted('ROLE_ADMIN') %}
         <div class="view-toggles">
             <button class="btn-view active" id="btn-grid-view">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
@@ -413,7 +433,8 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
             </button>
         </div>
-    </div>
+        {% endif %}
+    </form>
 
     {# GRID VIEW #}
     <div class="product-grid" id="view-grid">
@@ -429,11 +450,6 @@
                 <div class="grid-content">
                     <div class="grid-header">
                         <h2 class="grid-title">
-                            {% if product.category == 'Psychology Books' %}📚
-                            {% elseif product.category == 'Authorized Vitamins' %}💊
-                            {% elseif product.category == 'Relaxing Products' %}🕯️
-                            {% elseif product.category == 'Therapeutic Games & Activities' %}🎮
-                            {% endif %}
                             <a href="{{ path('app_product_show', {'id': product.id}) }}" style="color: inherit; text-decoration: none;">{{ product.name }}</a>
                         </h2>
                     </div>
@@ -454,12 +470,12 @@
                         <div class="price-text">{{ product.price }} TND</div>
                         {% if is_granted('ROLE_PATIENT') %}
                             <div style="display: flex; gap: 0.5rem;">
-                                <button class="btn-cart-small" onclick="alert('Ajouté au panier !')">
+                                <a href="{{ path('app_cart_add', {'id': product.id}) }}" class="btn-cart-small">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                                </button>
-                                <button class="btn-cart-small" style="background: transparent; border: 1px solid var(--primary-green); color: var(--primary-green);" onclick="alert('Ajouté à votre liste de traitement !')">
+                                </a>
+                                <a href="{{ path('app_cart_add', {'id': product.id}) }}" class="btn-cart-small" style="background: transparent; border: 1px solid var(--primary-green); color: var(--primary-green);">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-                                </button>
+                                </a>
                             </div>
                         {% endif %}
                     </div>
@@ -469,7 +485,7 @@
                         <a href="{{ path('app_product_edit', {'id': product.id}) }}" class="btn-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                         </a>
-                        <form method="post" action="{{ path('app_product_delete', {'id': product.id}) }}" onsubmit="return confirm('Are you sure?');" style="margin:0;">
+                        <form method="post" action="{{ path('app_product_delete', {'id': product.id}) }}" onsubmit="return confirm('Are you sure you want to permanently delete this product from the inventory?');" style="margin:0;">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
                             <button class="btn-icon delete">
                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -484,7 +500,8 @@
         {% endfor %}
     </div>
 
-    {# LIST VIEW #}
+    {# LIST VIEW — Admin only #}
+    {% if is_granted('ROLE_ADMIN') %}
     <div class="product-list" id="view-list">
         <div class="data-table-container">
             <table class="data-table">
@@ -549,16 +566,16 @@
                                         <a href="{{ path('app_product_edit', {'id': product.id}) }}" class="btn-icon">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                                         </a>
-                                        <form method="post" action="{{ path('app_product_delete', {'id': product.id}) }}" onsubmit="return confirm('Are you sure?');" style="margin: 0;">
+                                        <form method="post" action="{{ path('app_product_delete', {'id': product.id}) }}" onsubmit="return confirm('Are you sure you want to permanently delete this product from the inventory?');" style="margin: 0;">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
                                             <button class="btn-icon delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                             </button>
                                         </form>
                                     {% elseif is_granted('ROLE_PATIENT') %}
-                                        <button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="alert('Ajouté !')">
-                                            Prendre
-                                        </button>
+                                        <a href="{{ path('app_cart_add', {'id': product.id}) }}" class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                                            Take
+                                        </a>
                                     {% else %}
                                         <span style="font-size: 0.75rem; color: #94a3b8;">Consult</span>
                                     {% endif %}
@@ -570,6 +587,7 @@
             </table>
         </div>
     </div>
+    {% endif %}
 
     <script>
         const initInventoryFeatures = () => {
@@ -578,101 +596,130 @@
             const viewGrid = document.getElementById('view-grid');
             const viewList = document.getElementById('view-list');
             
+            const filterForm = document.getElementById('filter-form');
             const searchInput = document.getElementById('search-input');
             const categoryFilter = document.getElementById('category-filter');
             const sortSelect = document.getElementById('sort-select');
-            const productCount = document.getElementById('product-count');
-
-            if (!viewGrid || !viewList || !searchInput) return;
-
-            const gridCards = Array.from(document.querySelectorAll('.grid-card'));
-            const listRows = Array.from(document.querySelectorAll('.list-row'));
-            const listTableBody = document.querySelector('.data-table tbody');
+            const sliderMin = document.getElementById('price-min');
+            const sliderMax = document.getElementById('price-max');
 
             // View Toggling
-            btnGrid?.addEventListener('click', () => {
+            btnGrid?.addEventListener('click', (e) => {
+                e.preventDefault();
                 btnGrid.classList.add('active');
-                btnList.classList.remove('active');
+                if (btnList) btnList.classList.remove('active');
                 viewGrid.style.display = 'grid';
-                viewList.style.display = 'none';
+                if (viewList) viewList.style.display = 'none';
             });
 
-            btnList?.addEventListener('click', () => {
+            btnList?.addEventListener('click', (e) => {
+                e.preventDefault();
                 btnList.classList.add('active');
-                btnGrid.classList.remove('active');
-                viewGrid.style.display = 'none';
-                viewList.style.display = 'block';
+                if (btnGrid) btnGrid.classList.remove('active');
+                if (viewGrid) viewGrid.style.display = 'none';
+                if (viewList) viewList.style.display = 'block';
             });
 
-            // Intelligent Filter & Sort Logic
-            function updateDisplay() {
-                if (!searchInput || !categoryFilter || !sortSelect) return;
+            // AJAX Intelligent Search & Sort (Calls PHP without full reload)
+            function executeAjaxFilter() {
+                if (!filterForm) return;
                 
-                const query = searchInput.value.toLowerCase();
-                const category = categoryFilter.value;
-                const sortBy = sortSelect.value;
+                const actionPath = filterForm.getAttribute('action');
+                const formData = new FormData(filterForm);
+                const params = new URLSearchParams(formData);
+                const fullUrl = actionPath + '?' + params.toString();
+                
+                // Update browser URL without reloading so sharing links works
+                window.history.replaceState({}, '', fullUrl);
 
-                let visibleCount = 0;
-
-                // 1. Filtering Logic
-                const filterItem = (item) => {
-                    const name = item.dataset.name;
-                    const cat = item.dataset.category;
-                    const matchesSearch = name.includes(query) || cat.toLowerCase().includes(query);
-                    const matchesCategory = category === 'all' || cat === category;
-
-                    const isVisible = matchesSearch && matchesCategory;
-                    if (isVisible) {
-                        item.style.display = '';
-                        visibleCount++;
-                    } else {
-                        item.style.display = 'none';
+                // Add grid/list state so we update both, though backend returns both anyway
+                fetch(fullUrl, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, "text/html");
+                    
+                    // Replace Grid View
+                    const newGrid = doc.getElementById('view-grid');
+                    if (newGrid && viewGrid) {
+                        viewGrid.innerHTML = newGrid.innerHTML;
                     }
-                    return isVisible;
-                };
-
-                gridCards.forEach(filterItem);
-                listRows.forEach(filterItem);
-
-                // 2. Sorting Logic
-                const sortFn = (a, b) => {
-                    const nameA = a.dataset.name;
-                    const nameB = b.dataset.name;
-                    const priceA = parseFloat(a.dataset.price);
-                    const priceB = parseFloat(b.dataset.price);
-                    const dateA = new Date(a.dataset.date);
-                    const dateB = new Date(b.dataset.date);
-
-                    switch (sortBy) {
-                        case 'price-low': return priceA - priceB;
-                        case 'price-high': return priceB - priceA;
-                        case 'name-asc': return nameA.localeCompare(nameB);
-                        case 'name-desc': return nameB.localeCompare(nameA);
-                        case 'newest': return dateB - dateA;
-                        default: return 0;
+                    
+                    // Replace List View
+                    const newList = doc.querySelector('.data-table tbody');
+                    const currentListBody = document.querySelector('.data-table tbody');
+                    if (newList && currentListBody) {
+                        currentListBody.innerHTML = newList.innerHTML;
                     }
-                };
+                    
+                    // Update Count
+                    const newCount = doc.getElementById('product-count');
+                    if (newCount) {
+                        document.getElementById('product-count').textContent = newCount.textContent;
+                    }
+                });
+            }
 
-                // Re-order Grid
-                const sortedGrid = gridCards.sort(sortFn);
-                sortedGrid.forEach(card => viewGrid.appendChild(card));
+            let debounceTimer;
+            function autoSubmit() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(executeAjaxFilter, 300); // 300ms intelligent debounce
+            }
 
-                // Re-order List
-                const sortedList = listRows.sort(sortFn);
-                sortedList.forEach(row => listTableBody.appendChild(row));
+            // Bind triggers
+            if (filterForm) {
+                categoryFilter?.addEventListener('change', autoSubmit);
+                sortSelect?.addEventListener('change', autoSubmit);
+                searchInput?.addEventListener('input', autoSubmit);
+                filterForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    executeAjaxFilter();
+                });
+            }
 
-                // Update Count
-                if (productCount) {
-                    productCount.textContent = `${visibleCount} medication(s) found`;
+            // Dual Range Slider Logic
+            function updateSliderVisuals() {
+                const thumbMin = document.getElementById('thumb-min');
+                const thumbMax = document.getElementById('thumb-max');
+                const fill = document.getElementById('price-range-fill');
+                const display = document.getElementById('price-display');
+                if (!sliderMin || !sliderMax) return;
+
+                let minVal = parseInt(sliderMin.value);
+                let maxVal = parseInt(sliderMax.value);
+
+                // Prevent handles crossing
+                if (minVal >= maxVal) {
+                    if (this === sliderMin) minVal = maxVal - 5;
+                    else maxVal = minVal + 5;
+                    sliderMin.value = minVal;
+                    sliderMax.value = maxVal;
+                }
+
+                const range = parseInt(sliderMin.max) - parseInt(sliderMin.min);
+                const leftPct = ((minVal - parseInt(sliderMin.min)) / range) * 100;
+                const rightPct = 100 - ((maxVal - parseInt(sliderMin.min)) / range) * 100;
+
+                if (thumbMin) thumbMin.style.left = leftPct + '%';
+                if (thumbMax) thumbMax.style.left = (100 - rightPct) + '%';
+                if (fill) { fill.style.left = leftPct + '%'; fill.style.right = rightPct + '%'; }
+                if (display) {
+                    const maxLabel = maxVal >= 2000 ? '∞' : maxVal;
+                    display.textContent = `${minVal} — ${maxLabel} TND`;
                 }
             }
 
-            searchInput.addEventListener('input', updateDisplay);
-            categoryFilter.addEventListener('change', updateDisplay);
-            sortSelect.addEventListener('change', updateDisplay);
+            sliderMin?.addEventListener('input', updateSliderVisuals);
+            sliderMax?.addEventListener('input', updateSliderVisuals);
             
-            // Initial Call
-            updateDisplay();
+            // Intelligent fetch on drag completion (change event)
+            sliderMin?.addEventListener('change', autoSubmit);
+            sliderMax?.addEventListener('change', autoSubmit);
+
+            // Initialize visuals
+            updateSliderVisuals();
         };
 
         // Listen for both event types to handle initial load and Turbo navigation
