@@ -115,6 +115,14 @@
 				<a href="{{ path('app_product_index') }}" class="{{ route starts with 'app_product' ? 'is-active' : '' }}">Products</a>
 			{% endif %}
 
+			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_event_index') }}" class="{{ route starts with 'app_event' ? 'is-active' : '' }}">Events</a>
+			{% endif %}
+
+			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_event_registration_list') }}" class="{{ route starts with 'app_event_registration' ? 'is-active' : '' }}">Registrations</a>
+			{% endif %}
+
 			{% if is_granted('ROLE_ADMIN') %}
 				<div style="margin-top: 1.5rem; margin-bottom: 0.25rem; padding: 0 0.85rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-sidebar-muted);">Admin Area</div>
 				<a href="{{ path('app_supplier_index') }}" class="{{ route starts with 'app_supplier' ? 'is-active' : '' }}">Suppliers</a>
