@@ -16,10 +16,26 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProductCrudController extends AbstractController
 {
     #[Route('', name: 'app_product_index', methods: ['GET'])]
-    public function index(ProductRepository $productRepository): Response
+    public function index(Request $request, ProductRepository $productRepository): Response
     {
+        $search = $request->query->get('search', '');
+        $category = $request->query->get('category', 'all');
+        $sort = $request->query->get('sort', 'newest');
+        $priceMin = $request->query->get('priceMin');
+        $priceMax = $request->query->get('priceMax');
+
+        $priceMin = $priceMin !== null && $priceMin !== '' ? (float) $priceMin : null;
+        $priceMax = $priceMax !== null && $priceMax !== '' ? (float) $priceMax : null;
+
+        $products = $productRepository->findFiltered($search, $category, $sort, $priceMin, $priceMax);
+
         return $this->render('product/index.html.twig', [
-            'products' => $productRepository->findAll(),
+            'products' => $products,
+            'search' => $search,
+            'category' => $category,
+            'sort' => $sort,
+            'priceMin' => $priceMin ?? 0,
+            'priceMax' => $priceMax ?? 2000,
         ]);
     }
 
@@ -55,6 +71,8 @@ class ProductCrudController extends AbstractController
             $entityManager->persist($product);
             $entityManager->flush();
 
+            $this->addFlash('success', 'The product has been successfully added to the shop.');
+
             return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -75,6 +93,8 @@ class ProductCrudController extends AbstractController
             $product->setUpdatedAt(new \DateTime());
             $entityManager->flush();
 
+            $this->addFlash('success', 'The product details have been updated successfully.');
+
             return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -91,6 +111,7 @@ class ProductCrudController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$product->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($product);
             $entityManager->flush();
+            $this->addFlash('success', 'The product has been successfully removed from the inventory.');
         }
 
         return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);

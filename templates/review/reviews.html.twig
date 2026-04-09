@@ -8,53 +8,36 @@
 /* === Styles simplifiés === */
 .left-box { flex:1; min-width:300px; position:sticky; top:20px; }
 .right-box { flex:2; display:flex; flex-direction:column; gap:20px; }
-.section-title { font-size:1.3rem; font-weight:600; margin-bottom:15px; color: #1e293b; }
-.form-control, .reply-input, select { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; }
-.btn { padding:6px 12px; border:none; border-radius:6px; cursor:pointer; margin-right:5px; transition: all 0.2s; }
-.btn:hover { opacity:0.9; transform: translateY(-1px); }
+.section-title { font-size:1.3rem; font-weight:600; margin-bottom:15px; }
+.form-control, .reply-input, select { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; }
+.btn { padding:6px 12px; border:none; border-radius:6px; cursor:pointer; margin-right:5px; }
 .btn-submit { background:#10b981; color:white; }
 .btn-like { background:#e0f2fe; color:#0284c7; }
 .btn-dislike { background:#ffe4e6; color:#b91c1c; }
 .btn-edit { background:#fef08a; color:#854d0e; }
 .btn-delete { background:#fee2e2; color:#b91c1c; }
-.review-card, .reply-card { border-radius:10px; padding:20px; margin-bottom:15px; background:white; border: 1px solid #e2e8f0; }
-.review-header { display:flex; justify-content:space-between; margin-bottom:10px; border-bottom: 1px solid #f1f5f9; padding-bottom:10px; }
-.action-buttons { display:flex; gap:10px; margin-top:15px; align-items:center; }
+.review-card, .reply-card { border-radius:10px; padding:15px; margin-bottom:15px; background:#f8fafc; }
+.review-header { display:flex; justify-content:space-between; margin-bottom:10px; }
+.action-buttons { display:flex; gap:10px; margin-bottom:10px; }
 .author-actions { margin-left:auto; display:flex; gap:5px; }
-.reply-form { display:flex; gap:10px; margin-top:20px; background:#f8fafc; padding:15px; border-radius:8px; }
-.star-active { color: #f59e0b; }
-.star-inactive { color: #d1d5db; }
-
-/* Star Rating Input */
-.star-rating-input { display: flex; flex-direction: row-reverse; justify-content: flex-end; }
-.star-rating-input input { display: none; }
-.star-rating-input label { font-size: 2rem; color: #d1d5db; cursor: pointer; transition: color 0.2s; }
-.star-rating-input input:checked ~ label,
-.star-rating-input label:hover,
-.star-rating-input label:hover ~ label { color: #f59e0b; }
+.reply-form { display:flex; gap:10px; margin-top:10px; }
 </style>
 
 <div class="reviews-wrapper" style="display:flex; gap:30px;">
 
     {# === Formulaire Patient === #}
-    {% if is_granted('ROLE_PATIENT') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_THERAPIST') %}
+    {% if is_granted('ROLE_PATIENT') %}
     <div class="left-box">
-        <div style="background:white; padding:20px; border-radius:12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
-            <h2 class="section-title">✨ Share your experience</h2>
-            <form action="{{ path('app_reviews_add') }}" method="POST" id="addReviewForm">
-                <textarea name="content" class="form-control" required minlength="11" placeholder="Write your review (min 11 chars)" style="height:120px; margin-bottom:15px;"></textarea>
-                
-                <label style="display:block; margin-bottom:5px; font-weight:500;">Rating:</label>
-                <div class="star-rating-input">
-                    {% for i in 5..1 %}
-                        <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" {% if i == 5 %}checked{% endif %} />
-                        <label for="star{{ i }}" title="{{ i }} stars">★</label>
-                    {% endfor %}
-                </div>
-
-                <button type="submit" class="btn btn-submit" style="width:100%; margin-top:20px; font-weight:600; padding:12px;">Submit Review</button>
-            </form>
-        </div>
+        <h2 class="section-title">✨ Share your experience</h2>
+        <form action="{{ path('app_reviews_add') }}" method="POST">
+            <textarea name="content" class="form-control" required minlength="11" placeholder="Write your review (min 11 chars)"></textarea>
+            <select name="rating" class="form-control" style="margin-top:10px;">
+                {% for i in 1..5 %}
+                    <option value="{{ i }}">{{ i }} Star{% if i>1 %}s{% endif %}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-submit" style="margin-top:10px;">Submit Review</button>
+        </form>
     </div>
     {% endif %}
 
@@ -81,32 +64,18 @@
         </div>
 
         <script>
-(function() {
-    let answered = {{ stats.answeredPercent }};
-    let unanswered = {{ stats.unansweredPercent }};
+        (function() {
+            let reviews = {{ reviews|length }};
+            let answered = {{ reviews|filter(r => r.replies|length > 0)|length }};
+            let unanswered = reviews - answered;
 
-    new Chart(document.getElementById('statsChart'), {
-        type: 'pie',
-        data: {
-            labels: ['Answered', 'Unanswered'],
-            datasets: [{
-                data: [answered, unanswered],
-                backgroundColor: ['#10b981', '#f43f5e']
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'bottom' },
-                title: {
-                    display: true,
-                    text: 'Review Response Rate (%)'
-                }
-            }
-        }
-    });
-})();
-</script>
+            new Chart(document.getElementById('statsChart'), {
+                type:'pie',
+                data:{ labels:['Answered','Unanswered'], datasets:[{data:[answered,unanswered], backgroundColor:['#10b981','#f43f5e']}] },
+                options:{ responsive:true, plugins:{ legend:{position:'bottom'}, title:{display:true,text:'Review Response Rate'} } }
+            });
+        })();
+        </script>
         {% endif %}
 
         {# === Reviews List === #}
@@ -117,28 +86,17 @@
         {% for review in reviews %}
         <div class="review-card" data-id="{{ review.id }}">
             <div class="review-header">
-                <div>
-                    <span class="review-author" style="font-weight:700; color:#0f172a;">{{ review.user.firstName|default('Anonymous') }} {{ review.user.lastName|default('') }}</span>
-                    <div class="stars-display" style="margin-top:2px;">
-                        {% for i in 1..5 %}
-                            <span class="star {% if i <= review.rating %}star-active{% else %}star-inactive{% endif %}">★</span>
-                        {% endfor %}
-                    </div>
-                </div>
-                <span style="font-size:0.85rem; color:#64748b;">{{ review.createdAt|date('d M Y, H:i') }}</span>
+                <span class="review-author">{{ review.user.username|default('Anonymous') }}</span>
+                <span>{{ review.createdAt|date('d/m/Y H:i') }}</span>
             </div>
             <div class="review-content">{{ review.content }}</div>
             <div class="action-buttons">
                 <button class="btn btn-like" onclick="likeDislike('review', {{ review.id }}, 'like', this)">👍 <span>{{ review.likes|default(0) }}</span></button>
                 <button class="btn btn-dislike" onclick="likeDislike('review', {{ review.id }}, 'dislike', this)">👎 <span>{{ review.dislikes|default(0) }}</span></button>
 
-                {% if app.user and (is_granted('ROLE_ADMIN') or app.user.email == review.user.email) %}
+                {% if app.user and (is_granted('ROLE_ADMIN') or (is_granted('ROLE_PATIENT') and app.user.id == review.user.id)) %}
                 <div class="author-actions">
-                    <button class="btn btn-edit" 
-                            data-content="{{ review.content|e('html_attr') }}"
-                            onclick="editItem('review', {{ review.id }}, this.getAttribute('data-content'))">
-                        Edit
-                    </button>
+                    <button class="btn btn-edit" onclick="editItem('review', {{ review.id }}, {{ review.content|json_encode|raw }})">Edit</button>
                     <button class="btn btn-delete" onclick="deleteItem('review', {{ review.id }})">Delete</button>
                 </div>
                 {% endif %}
@@ -154,13 +112,9 @@
                         <button class="btn btn-like" onclick="likeDislike('reply', {{ reply.id }}, 'like', this)">👍 <span>{{ reply.likes|default(0) }}</span></button>
                         <button class="btn btn-dislike" onclick="likeDislike('reply', {{ reply.id }}, 'dislike', this)">👎 <span>{{ reply.dislikes|default(0) }}</span></button>
 
-                        {% if app.user and (is_granted('ROLE_ADMIN') or app.user.email == reply.therapist.email) %}
+                        {% if app.user and (is_granted('ROLE_ADMIN') or (is_granted('ROLE_THERAPIST') and app.user.id == reply.therapist.id)) %}
                         <div class="author-actions">
-                            <button class="btn btn-edit" 
-                                    data-content="{{ reply.content|e('html_attr') }}"
-                                    onclick="editItem('reply', {{ reply.id }}, this.getAttribute('data-content'))">
-                                Edit
-                            </button>
+                            <button class="btn btn-edit" onclick="editItem('reply', {{ reply.id }}, {{ reply.content|json_encode|raw }})">Edit</button>
                             <button class="btn btn-delete" onclick="deleteItem('reply', {{ reply.id }})">Delete</button>
                         </div>
                         {% endif %}
@@ -181,21 +135,6 @@
 </div>
 
 <script>
-// Handle Flash Messages with SweetAlert2
-document.addEventListener('DOMContentLoaded', function() {
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            Swal.fire({
-                icon: '{{ label == "error" ? "error" : "success" }}',
-                title: '{{ label|capitalize }}',
-                text: '{{ message|e("js") }}',
-                timer: 3000,
-                showConfirmButton: false
-            });
-        {% endfor %}
-    {% endfor %}
-});
-
 // Like/Dislike AJAX
 function likeDislike(type, id, action, btn){
     let url = (type==='review') ? `/api/reviews/${id}/${action}` : `/api/review-replies/${id}/${action}`;
@@ -208,62 +147,39 @@ function likeDislike(type, id, action, btn){
 // Edit item
 function editItem(type, id, content){
     Swal.fire({
-        title: 'Edit ' + (type === 'review' ? 'your review' : 'your reply'),
-        text: 'Do you really want to edit this ' + type + '?',
-        input: 'textarea',
-        inputValue: content,
-        showCancelButton: true,
-        confirmButtonText: 'Yes, update it!',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#10b981',
-        inputValidator: (value) => {
-            if (!value || value.trim().length <= 10) {
-                return 'Content must be more than 10 characters!'
-            }
-        }
+        title:'Edit content',
+        input:'textarea',
+        inputValue:content,
+        showCancelButton:true,
+        confirmButtonText:'Save'
     }).then(result=>{
         if(result.isConfirmed){
-            let url = (type==='review') ? `/reviews/${id}/edit` : `/reviews/reply/${id}/edit`;
+            let url = (type==='review') ? `/reviews/${id}` : `/reviews/reply/${id}`;
             fetch(url, {
-                method:'POST',
+                method:'PUT',
                 headers:{'Content-Type':'application/json'},
                 body: JSON.stringify({ content: result.value })
             }).then(r=>r.json()).then(d=>{
-                if(d.message) {
-                    Swal.fire({ icon: 'success', title: 'Updated!', text: d.message, timer: 1500, showConfirmButton: false })
-                        .then(() => location.reload());
-                } else {
-                    Swal.fire('Error', d.error || 'Something went wrong', 'error');
-                }
-            }).catch(err => {
-                Swal.fire('Error', 'Communication error with server', 'error');
+                if(d.message) location.reload();
+                else Swal.fire('Error', d.error, 'error');
             });
         }
     });
 }
 
 // Delete item
-function deleteItem(type, id){
+function deleteItem(type,id){
     Swal.fire({
-        title: 'Are you sure?',
-        text: "Do you really want to delete this " + type + "? This action cannot be undone.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Yes, delete it!'
+        title:'Delete?',
+        icon:'warning',
+        showCancelButton:true,
+        confirmButtonText:'Yes, delete'
     }).then(result=>{
         if(result.isConfirmed){
-            let url = (type==='review') ? `/reviews/${id}/delete` : `/reviews/reply/${id}/delete`;
-            fetch(url, { method:'POST' }).then(r=>r.json()).then(d=>{
-                if(d.message) {
-                    Swal.fire({ icon: 'success', title: 'Deleted!', text: d.message, timer: 1500, showConfirmButton: false })
-                        .then(() => location.reload());
-                } else {
-                    Swal.fire('Error', d.error || 'Something went wrong', 'error');
-                }
-            }).catch(err => {
-                Swal.fire('Error', 'Communication error with server', 'error');
+            let url = (type==='review') ? `/reviews/${id}` : `/reviews/reply/${id}`;
+            fetch(url, { method:'DELETE' }).then(r=>r.json()).then(d=>{
+                if(d.message) location.reload();
+                else Swal.fire('Error', d.error,'error');
             });
         }
     });

@@ -28,4 +28,26 @@ class UserRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    /**
+     * @return User[] Returns an array of User objects
+     */
+    public function searchAndSort(?string $searchQuery, ?string $roleFilter): array
+    {
+        $qb = $this->createQueryBuilder('u');
+
+        if ($searchQuery) {
+            $qb->andWhere('u.firstName LIKE :query OR u.lastName LIKE :query OR u.email LIKE :query')
+               ->setParameter('query', '%' . $searchQuery . '%');
+        }
+
+        if ($roleFilter) {
+            $qb->andWhere('u.role = :role')
+               ->setParameter('role', $roleFilter);
+        }
+
+        $qb->orderBy('u.id', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
 }

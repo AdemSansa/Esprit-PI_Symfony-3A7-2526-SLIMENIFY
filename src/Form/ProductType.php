@@ -23,51 +23,55 @@ class ProductType extends AbstractType
         $builder
             ->add('name', TextType::class, [
                 'label' => 'Product Name',
-                'attr' => ['class' => 'auth-input', 'placeholder' => 'Enter product name']
+                'required' => false,
+                'attr' => ['class' => 'form-input', 'placeholder' => 'e.g. Vitamin C 500mg']
             ])
             ->add('description', TextareaType::class, [
-                'label' => 'Description (Optional)',
+                'label' => 'Description',
                 'required' => false,
-                'attr' => ['class' => 'auth-input', 'rows' => 4, 'placeholder' => 'Details...']
+                'attr' => ['class' => 'form-input', 'rows' => 3, 'placeholder' => 'Product details...']
             ])
             ->add('price', NumberType::class, [
-                'label' => 'Price',
+                'label' => 'Price (TND)',
                 'scale' => 2,
-                'attr' => ['class' => 'auth-input', 'placeholder' => '0.00']
+                'required' => false,
+                'attr' => ['class' => 'form-input', 'placeholder' => '0.00']
             ])
             ->add('stockQuantity', IntegerType::class, [
                 'label' => 'Stock Quantity',
-                'attr' => ['class' => 'auth-input', 'placeholder' => '0']
+                'required' => false,
+                'attr' => ['class' => 'form-input', 'placeholder' => '0']
             ])
             ->add('category', ChoiceType::class, [
                 'label' => 'Category',
                 'required' => false,
-                'placeholder' => 'Select category',
+                'placeholder' => 'Choose a category',
                 'choices' => [
                     'Authorized Vitamins' => 'Authorized Vitamins',
                     'Psychology Books' => 'Psychology Books',
                     'Relaxing Products' => 'Relaxing Products',
                     'Therapeutic Games & Activities' => 'Therapeutic Games & Activities',
                 ],
-                'attr' => ['class' => 'auth-input']
+                'attr' => ['class' => 'form-input']
             ])
             ->add('expirationDate', DateType::class, [
                 'label' => 'Expiration Date',
                 'required' => false,
                 'widget' => 'single_text',
-                'attr' => ['class' => 'auth-input']
+                'attr' => ['class' => 'form-input']
             ])
             ->add('supplier', EntityType::class, [
                 'class' => Supplier::class,
+                'label' => 'Supplier',
                 'choice_label' => 'name',
                 'required' => false,
-                'placeholder' => 'Select a Supplier',
-                'attr' => ['class' => 'auth-input']
+                'placeholder' => 'Select a supplier',
+                'attr' => ['class' => 'form-input']
             ])
             ->add('photoUrl', UrlType::class, [
                 'label' => 'Photo URL',
                 'required' => false,
-                'attr' => ['class' => 'auth-input', 'placeholder' => 'https://...']
+                'attr' => ['class' => 'form-input', 'placeholder' => 'Link to image...']
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'Status',
@@ -76,7 +80,7 @@ class ProductType extends AbstractType
                     'Out of Stock' => 'out_of_stock',
                     'Discontinued' => 'discontinued'
                 ],
-                'attr' => ['class' => 'auth-input']
+                'attr' => ['class' => 'form-input']
             ])
         ;
     }

@@ -4,6 +4,198 @@
 
 {% block body %}
     <style>
+        body {
+            background: linear-gradient(135deg, #F9F8F5 0%, #EBE6DF 100%);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .auth-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(122, 91, 73, 0.12);
+            max-width: 700px;
+            width: 100%;
+            padding: 50px 60px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+            animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-logo-icon {
+            color: #687560;
+            width: 60px;
+            height: 60px;
+            margin-bottom: 5px;
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0% { filter: drop-shadow(0 0 0 rgba(104, 117, 96, 0.4)); }
+            50% { filter: drop-shadow(0 0 8px rgba(104, 117, 96, 0.6)); }
+            100% { filter: drop-shadow(0 0 0 rgba(104, 117, 96, 0.4)); }
+        }
+
+        .auth-title {
+            color: #5D4A3E;
+            font-size: 2.8rem;
+            font-weight: 900;
+            margin: 0;
+            text-align: center;
+            letter-spacing: -1px;
+        }
+
+        .auth-subtitle {
+            color: #A8866E;
+            font-size: 1.05rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-field {
+            margin-bottom: 22px;
+        }
+
+        .auth-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #7A5B49;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .auth-input, textarea.auth-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #EBE6DF;
+            border-radius: 12px;
+            background-color: #FDFDFD;
+            color: #4A4A4A;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .auth-input:focus, textarea.auth-input:focus {
+            outline: none;
+            border-color: #A8866E;
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(168, 134, 110, 0.1);
+        }
+
+        .role-select-input {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237A5B49' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1.2rem center;
+            background-size: 1.2em;
+        }
+
+        .auth-checkbox-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 30px 0;
+            padding: 15px;
+            background: #FDFDFD;
+            border: 1px solid #EBE6DF;
+            border-radius: 12px;
+        }
+
+        .auth-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #687560;
+        }
+
+        .auth-checkbox-label {
+            font-size: 0.95rem;
+            color: #5D4A3E;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .auth-submit {
+            background: linear-gradient(135deg, #7A5B49, #687560);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 16px 30px;
+            font-size: 1.15rem;
+            font-weight: 800;
+            width: 100%;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .auth-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(122, 91, 73, 0.25);
+        }
+
+        .auth-footer-text {
+            margin-top: 30px;
+            margin-bottom: 0;
+            text-align: center;
+        }
+
+        .auth-link {
+            color: #687560;
+            font-weight: 800;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .auth-link:hover {
+            color: #4F5D44;
+            text-decoration: underline;
+        }
+
+        /* Grouping two fields in a row */
+        .auth-row {
+            display: flex;
+            gap: 20px;
+        }
+        .auth-row > .auth-field {
+            flex: 1;
+            margin-bottom: 15px;
+        }
+
+        .error-message {
+            color: #D9534F;
+            font-size: 0.85rem;
+            margin-top: 6px;
+        }
+
         .gender-cards-container {
             display: flex;
             gap: 1rem;
@@ -21,13 +213,12 @@
             height: 0;
         }
         .gender-card-content {
-            border: 2px solid currentColor;
-            opacity: 0.4;
+            border: 2px solid #EBE6DF;
             border-radius: 12px;
             padding: 1rem;
             text-align: center;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            color: inherit;
+            color: #A8866E;
         }
         .gender-icon {
             width: 32px;
@@ -39,68 +230,97 @@
         }
         .gender-label {
             display: block;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.95rem;
         }
         
         .gender-card:hover .gender-card-content {
-            opacity: 0.7;
+            border-color: #A8866E;
             transform: translateY(-2px);
+            color: #A8866E;
         }
         
         .gender-radio-input:checked + .gender-card-content {
-            border-color: #627255;
-            color: #627255;
-            opacity: 1;
-            box-shadow: 0 4px 15px rgba(98, 114, 85, 0.2);
-            background: rgba(98, 114, 85, 0.05);
+            border-color: #687560;
+            color: #687560;
+            box-shadow: 0 4px 15px rgba(104, 117, 96, 0.15);
+            background: #FDFDFD;
             transform: translateY(-2px);
         }
 
-        .gender-radio-input:focus-visible + .gender-card-content {
-            outline: 2px solid #627255;
-            outline-offset: 2px;
-        }
-
-        .gender-card-content:active {
-            transform: scale(0.97);
+        .alert-error {
+            background:#FAD1D0;
+            color:#D9534F;
+            padding:15px;
+            border-radius:10px;
+            margin-bottom:20px;
+            text-align: center;
+            font-weight: 600;
         }
     </style>
     <main class="auth-page">
         <div class="auth-card">
+            
+            <div class="auth-logo-container">
+                <img src="{{ asset('logo.jpg') }}" alt="Slimenify Logo" style="width: 70px; height: 70px; object-fit: contain; margin-bottom: 5px;">
+                <h1 class="auth-title">Slimenify</h1>
+            </div>
+            
+            <p class="auth-subtitle">Begin your wellness and mental health journey.</p>
+
             {% for flash_error in app.flashes('verify_email_error') %}
-                <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+                <div class="alert-error" role="alert">{{ flash_error }}</div>
             {% endfor %}
 
-            {{ form_start(registrationForm) }}
-
-                {{ form_errors(registrationForm) }}
-
-                <h1 class="auth-title">Create your account</h1>
-                <p class="auth-subtitle">Join Slimenify and start your wellness journey.</p>
+            {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
+                <div class="error-message">{{ form_errors(registrationForm) }}</div>
 
                 <div class="auth-field">
-                    {{ form_label(registrationForm.firstName, 'First name', {'label_attr': {'class': 'auth-label'}}) }}
-                    {{ form_widget(registrationForm.firstName, {'attr': {'class': 'auth-input', 'autocomplete': 'given-name'}}) }}
-                    {{ form_errors(registrationForm.firstName) }}
+                    {{ form_label(registrationForm.role, 'Account Type', {'label_attr': {'class': 'auth-label'}}) }}
+                    {{ form_widget(registrationForm.role, {'attr': {'class': 'auth-input role-select-input'}}) }}
+                    <div class="error-message">{{ form_errors(registrationForm.role) }}</div>
                 </div>
 
-                <div class="auth-field">
-                    {{ form_label(registrationForm.lastName, 'Last name', {'label_attr': {'class': 'auth-label'}}) }}
-                    {{ form_widget(registrationForm.lastName, {'attr': {'class': 'auth-input', 'autocomplete': 'family-name'}}) }}
-                    {{ form_errors(registrationForm.lastName) }}
+                <div class="auth-row">
+                    <div class="auth-field">
+                        {{ form_label(registrationForm.firstName, 'First name', {'label_attr': {'class': 'auth-label'}}) }}
+                        {{ form_widget(registrationForm.firstName, {'attr': {'class': 'auth-input', 'autocomplete': 'given-name'}}) }}
+                        <div class="error-message">{{ form_errors(registrationForm.firstName) }}</div>
+                    </div>
+
+                    <div class="auth-field">
+                        {{ form_label(registrationForm.lastName, 'Last name', {'label_attr': {'class': 'auth-label'}}) }}
+                        {{ form_widget(registrationForm.lastName, {'attr': {'class': 'auth-input', 'autocomplete': 'family-name'}}) }}
+                        <div class="error-message">{{ form_errors(registrationForm.lastName) }}</div>
+                    </div>
                 </div>
 
-                <div class="auth-field">
-                    {{ form_label(registrationForm.phone, 'Phone', {'label_attr': {'class': 'auth-label'}}) }}
-                    {{ form_widget(registrationForm.phone, {'attr': {'class': 'auth-input', 'autocomplete': 'tel'}}) }}
-                    {{ form_errors(registrationForm.phone) }}
+                <div class="auth-row">
+                    <div class="auth-field">
+                        {{ form_label(registrationForm.email, 'Email Address', {'label_attr': {'class': 'auth-label'}}) }}
+                        {{ form_widget(registrationForm.email, {'attr': {'class': 'auth-input', 'autocomplete': 'email'}}) }}
+                        <div class="error-message">{{ form_errors(registrationForm.email) }}</div>
+                    </div>
+
+                    <div class="auth-field">
+                        {{ form_label(registrationForm.phone, 'Phone Number', {'label_attr': {'class': 'auth-label'}}) }}
+                        {{ form_widget(registrationForm.phone, {'attr': {'class': 'auth-input', 'autocomplete': 'tel'}}) }}
+                        <div class="error-message">{{ form_errors(registrationForm.phone) }}</div>
+                    </div>
                 </div>
 
-                <div class="auth-field">
-                    {{ form_label(registrationForm.dateNaissance, 'Date of birth', {'label_attr': {'class': 'auth-label'}}) }}
-                    {{ form_widget(registrationForm.dateNaissance, {'attr': {'class': 'auth-input'}}) }}
-                    {{ form_errors(registrationForm.dateNaissance) }}
+                <div class="auth-row">
+                    <div class="auth-field">
+                        {{ form_label(registrationForm.dateNaissance, 'Date of birth', {'label_attr': {'class': 'auth-label'}}) }}
+                        {{ form_widget(registrationForm.dateNaissance, {'attr': {'class': 'auth-input'}}) }}
+                        <div class="error-message">{{ form_errors(registrationForm.dateNaissance) }}</div>
+                    </div>
+
+                    <div class="auth-field">
+                        {{ form_label(registrationForm.plainPassword, 'Password', {'label_attr': {'class': 'auth-label'}}) }}
+                        {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'auth-input', 'autocomplete': 'new-password'}}) }}
+                        <div class="error-message">{{ form_errors(registrationForm.plainPassword) }}</div>
+                    </div>
                 </div>
 
                 <div class="auth-field">
@@ -125,22 +345,39 @@
                     {{ form_errors(registrationForm.gender) }}
                 </div>
 
-                <div class="auth-field">
-                    {{ form_label(registrationForm.photoUrl, 'Photo URL', {'label_attr': {'class': 'auth-label'}}) }}
-                    {{ form_widget(registrationForm.photoUrl, {'attr': {'class': 'auth-input', 'placeholder': 'https://example.com/photo.jpg'}}) }}
-                    {{ form_errors(registrationForm.photoUrl) }}
-                </div>
+
 
                 <div class="auth-field">
-                    {{ form_label(registrationForm.email, 'Email', {'label_attr': {'class': 'auth-label'}}) }}
-                    {{ form_widget(registrationForm.email, {'attr': {'class': 'auth-input', 'autocomplete': 'email'}}) }}
-                    {{ form_errors(registrationForm.email) }}
+                    {{ form_label(registrationForm.photoUrl, 'Profile Photo', {'label_attr': {'class': 'auth-label'}}) }}
+                    {{ form_widget(registrationForm.photoUrl, {'attr': {'class': 'auth-input'}}) }}
+                    <div class="error-message">{{ form_errors(registrationForm.photoUrl) }}</div>
                 </div>
 
-                <div class="auth-field">
-                    {{ form_label(registrationForm.plainPassword, 'Password', {'label_attr': {'class': 'auth-label'}}) }}
-                    {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'auth-input', 'autocomplete': 'new-password'}}) }}
-                    {{ form_errors(registrationForm.plainPassword) }}
+                <div id="therapist-fields" style="display: none;">
+                    <div style="display: flex; gap: 20px;">
+                        <div class="auth-field" style="flex: 1;">
+                            {{ form_label(registrationForm.specialization, 'Specialty', {'label_attr': {'class': 'auth-label'}}) }}
+                            {{ form_widget(registrationForm.specialization, {'attr': {'class': 'auth-input'}}) }}
+                            {{ form_errors(registrationForm.specialization) }}
+                        </div>
+                        <div class="auth-field" style="flex: 1;">
+                            {{ form_label(registrationForm.consultationType, 'Mode', {'label_attr': {'class': 'auth-label'}}) }}
+                            {{ form_widget(registrationForm.consultationType, {'attr': {'class': 'auth-input'}}) }}
+                            {{ form_errors(registrationForm.consultationType) }}
+                        </div>
+                    </div>
+
+                    <div class="auth-field">
+                        {{ form_label(registrationForm.description, 'Biography / Description', {'label_attr': {'class': 'auth-label'}}) }}
+                        {{ form_widget(registrationForm.description, {'attr': {'class': 'auth-input', 'rows': '3'}}) }}
+                        {{ form_errors(registrationForm.description) }}
+                    </div>
+
+                    <div class="auth-field">
+                        {{ form_label(registrationForm.diplomaPath, 'Diploma File (PDF/Image)', {'label_attr': {'class': 'auth-label'}}) }}
+                        {{ form_widget(registrationForm.diplomaPath, {'attr': {'class': 'auth-input'}}) }}
+                        {{ form_errors(registrationForm.diplomaPath) }}
+                    </div>
                 </div>
                 
 
@@ -161,4 +398,27 @@
             {{ form_end(registrationForm, { render_rest: false }) }}
         </div>
     </main>
+    <script>
+        function setupRoleToggle() {
+            const roleSelect = document.getElementById('registration_form_role') || document.querySelector('.role-select-input');
+            const therapistFields = document.getElementById('therapist-fields');
+
+            if (!roleSelect || !therapistFields) return;
+
+            function toggleFields() {
+                if (roleSelect.value === 'therapist') {
+                    therapistFields.style.display = 'block';
+                } else {
+                    therapistFields.style.display = 'none';
+                }
+            }
+
+            roleSelect.addEventListener('change', toggleFields);
+            toggleFields();
+        }
+
+        document.addEventListener('DOMContentLoaded', setupRoleToggle);
+        document.addEventListener('turbo:load', setupRoleToggle);
+        setupRoleToggle(); // Run immediately as fallback
+    </script>
 {% endblock %}

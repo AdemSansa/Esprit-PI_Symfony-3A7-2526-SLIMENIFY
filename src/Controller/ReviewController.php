@@ -21,25 +21,20 @@ class ReviewController extends AbstractController
     #[Route('/reviews/therapist', name: 'app_reviews_therapist')]
     public function list(Request $request, ReviewRepository $reviewRepo): Response
     {
-    $sort = strtoupper($request->query->get('sort', 'DESC'));
-    $search = trim($request->query->get('search', ''));
+        $sort = strtoupper($request->query->get('sort', 'DESC'));
+        $search = trim($request->query->get('search', ''));
 
-    if (!in_array($sort, ['ASC', 'DESC'])) {
-        $sort = 'DESC';
-    }
+        if (!in_array($sort, ['ASC', 'DESC'])) {
+            $sort = 'DESC';
+        }
 
-    // Récupérer les reviews triées + filtrées
-    $reviews = $reviewRepo->findBySearchAndSort($search, $sort);
+        $reviews = $reviewRepo->findBySearchAndSort($search, $sort);
 
-    // Récupérer les statistiques pour le pie chart
-    $stats = $reviewRepo->getReviewStats();
-
-    return $this->render('review/reviews.html.twig', [
-        'reviews' => $reviews,
-        'currentSort' => $sort,
-        'searchTerm' => $search,
-        'stats' => $stats,
-    ]);
+        return $this->render('review/reviews.html.twig', [
+            'reviews' => $reviews,
+            'currentSort' => $sort,
+            'searchTerm' => $search,
+        ]);
     }
 
     #[Route('/reviews/add', name: 'app_reviews_add', methods: ['POST'])]
@@ -71,17 +66,21 @@ class ReviewController extends AbstractController
     }
 
     #[Route('/reviews/{id}/reply', name: 'app_reviews_reply', methods: ['POST'])]
-    public function reply(Request $request, Review $review, ReviewReplyRepository $replyRepo, TherapistRepository $therapistRepo, EntityManagerInterface $em): Response
+    public function reply(Request $request, Review $review, ReviewReplyRepository $replyRepo, TherapistRepository $therapistRepo): Response
     {
-        /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        if (!$user || (!in_array('ROLE_THERAPIST', $user->getRoles()) && !in_array('ROLE_ADMIN', $user->getRoles()))) {
-            $this->addFlash('error', 'Only therapists and admins can reply.');
+        if (!$user || !in_array('ROLE_THERAPIST', $user->getRoles())) {
+            $this->addFlash('error', 'Only therapists can reply.');
             return $this->redirect($request->headers->get('referer') ?: '/reviews/user');
         }
 
         $therapist = $therapistRepo->findOneBy(['email' => $user->getEmail()]);
+        if (!$therapist) {
+            $this->addFlash('error', 'Therapist not found.');
+            return $this->redirect($request->headers->get('referer') ?: '/reviews/user');
+        }
+
         $content = trim($request->request->get('content'));
         if (mb_strlen($content) <= 10) {
             $this->addFlash('error', 'The reply must be at least 11 characters.');
@@ -94,7 +93,7 @@ class ReviewController extends AbstractController
         $reply->setTherapist($therapist);
         $replyRepo->save($reply, true);
 
-        $this->addFlash('success', 'Reply added successfully!');
+        $this->addFlash('success', 'Reply saved successfully!');
         return $this->redirect($request->headers->get('referer') ?: '/reviews/user');
     }
 
@@ -133,69 +132,46 @@ class ReviewController extends AbstractController
     }
 
     // === EDIT / DELETE Review ===
-    #[Route('/reviews/{id}/edit', name: 'review_edit', methods: ['POST'])]
+    #[Route('/reviews/{id}/edit', name: 'review_edit', methods: ['PUT'])]
     public function editReview(Request $request, Review $review, EntityManagerInterface $em): JsonResponse
     {
-        $user = $this->getUser();
-        // Check permission: Admin or the owner of the review
-        if (!$user || (!in_array('ROLE_ADMIN', $user->getRoles()) && $review->getUser()->getEmail() !== $user->getEmail())) {
-            return $this->json(['error' => 'Permission denied'], 403);
-        }
-
         $data = json_decode($request->getContent(), true);
-        if (!isset($data['content']) || mb_strlen(trim($data['content'])) <= 10) {
-            return $this->json(['error' => 'Content must be more than 10 characters'], 400);
+        if (!isset($data['content'])) {
+            return $this->json(['error' => 'Invalid data'], 400);
         }
 
-        $review->setContent(trim($data['content']));
-        $review->setUpdatedAt(new \DateTime());
+        $review->setContent($data['content']);
         $em->flush();
-        return $this->json(['message' => 'Review updated successfully!']);
+        return $this->json(['message' => 'Review updated']);
     }
 
-    #[Route('/reviews/{id}/delete', name: 'review_delete', methods: ['POST'])]
+    #[Route('/reviews/{id}/delete', name: 'review_delete', methods: ['DELETE'])]
     public function deleteReview(Review $review, EntityManagerInterface $em): JsonResponse
     {
-        $user = $this->getUser();
-        if (!$user || (!in_array('ROLE_ADMIN', $user->getRoles()) && $review->getUser()->getEmail() !== $user->getEmail())) {
-            return $this->json(['error' => 'Permission denied'], 403);
-        }
-
         $em->remove($review);
         $em->flush();
-        return $this->json(['message' => 'Review deleted successfully!']);
+        return $this->json(['message' => 'Review deleted']);
     }
 
     // === EDIT / DELETE Reply ===
-    #[Route('/reviews/reply/{id}/edit', name: 'reply_edit', methods: ['POST'])]
+    #[Route('/reviews/reply/{id}/edit', name: 'reply_edit', methods: ['PUT'])]
     public function editReply(Request $request, ReviewReply $reply, EntityManagerInterface $em): JsonResponse
     {
-        $user = $this->getUser();
-        // Here we assume therapist lookup link is needed or admin
-        if (!$user || (!in_array('ROLE_ADMIN', $user->getRoles()) && $reply->getTherapist()->getEmail() !== $user->getEmail())) {
-            return $this->json(['error' => 'Permission denied'], 403);
-        }
-
         $data = json_decode($request->getContent(), true);
-        if (!isset($data['content']) || mb_strlen(trim($data['content'])) <= 10) {
-            return $this->json(['error' => 'Content must be more than 10 characters'], 400);
+        if (!isset($data['content'])) {
+            return $this->json(['error' => 'Invalid data'], 400);
         }
 
-        $reply->setContent(trim($data['content']));
+        $reply->setContent($data['content']);
         $em->flush();
-        return $this->json(['message' => 'Reply updated successfully!']);
+        return $this->json(['message' => 'Reply updated']);
     }
 
-    #[Route('/reviews/reply/{id}/delete', name: 'reply_delete', methods: ['POST'])]
+    #[Route('/reviews/reply/{id}/delete', name: 'reply_delete', methods: ['DELETE'])]
     public function deleteReply(ReviewReply $reply, EntityManagerInterface $em): JsonResponse
     {
-        $user = $this->getUser();
-        if (!$user || (!in_array('ROLE_ADMIN', $user->getRoles()) && $reply->getTherapist()->getEmail() !== $user->getEmail())) {
-            return $this->json(['error' => 'Permission denied'], 403);
-        }
-
         $em->remove($reply);
         $em->flush();
-        return $this->json(['message' => 'Reply deleted successfully!']);
+        return $this->json(['message' => 'Reply deleted']);
     }
 }

@@ -1,0 +1,160 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block app_content %}
+<style>
+    .form-header {
+        margin-bottom: 30px;
+    }
+    .form-header h1 {
+        font-size: 1.8rem;
+        color: #5D4A3E;
+        margin: 0;
+    }
+    .form-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(122, 91, 73, 0.08);
+        border: 1px solid rgba(122, 91, 73, 0.05);
+        max-width: 600px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #7A5B49;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .form-control {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #EBE6DF;
+        border-radius: 8px;
+        background-color: #FDFDFD;
+        font-size: 1rem;
+        color: #2D2D2D;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #A8866E;
+        box-shadow: 0 0 0 3px rgba(168, 134, 110, 0.1);
+    }
+    .action-bar {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #F0EEEA;
+    }
+    .btn-cancel {
+        background: #F0EEEA;
+        color: #5D4A3E;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+    .btn-cancel:hover {
+        background: #EBE6DF;
+        color: #5D4A3E;
+        text-decoration: none;
+    }
+    .btn-save {
+        background: #687560;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .btn-save:hover {
+        background: #4F5D44;
+    }
+    
+    /* Target Symfony Form Output directly */
+    .form-card input, .form-card select, .form-card textarea {
+        display: block;
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #EBE6DF;
+        border-radius: 8px;
+        background-color: #FDFDFD;
+        font-size: 1rem;
+        color: #2D2D2D;
+        box-sizing: border-box;
+    }
+    .form-card div {
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="form-header">
+    <h1>Edit Profile</h1>
+</div>
+
+<div class="form-card">
+    {{ form_start(form) }}
+        
+        <div class="form-group">
+            {{ form_label(form.firstName) }}
+            {{ form_widget(form.firstName) }}
+            {{ form_errors(form.firstName) }}
+        </div>
+        
+        <div class="form-group">
+            {{ form_label(form.lastName) }}
+            {{ form_widget(form.lastName) }}
+            {{ form_errors(form.lastName) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.email) }}
+            {{ form_widget(form.email) }}
+            {{ form_errors(form.email) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.phone) }}
+            {{ form_widget(form.phone) }}
+            {{ form_errors(form.phone) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.gender) }}
+            <div style="display: flex; gap: 15px; align-items: center; justify-content: flex-start;">
+                {{ form_widget(form.gender) }}
+            </div>
+            {{ form_errors(form.gender) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.dateNaissance) }}
+            {{ form_widget(form.dateNaissance) }}
+            {{ form_errors(form.dateNaissance) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.photoUrl) }}
+            {{ form_widget(form.photoUrl, {'attr': {'placeholder': 'Ex: https://image.com/myphoto.jpg'}}) }}
+            {{ form_errors(form.photoUrl) }}
+        </div>
+
+        <div class="action-bar">
+            <a href="{{ path('app_profile_index') }}" class="btn-cancel">Cancel</a>
+            <button type="submit" class="btn-save">Save Changes</button>
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}
