@@ -25,6 +25,7 @@
 {% endblock %}
 
 {% block app_content %}
+    <meta name="turbo-cache-control" content="no-cache">
     <h1 style="margin-top:0; font-size:1.7rem; color:#334155;">Appointment Calendar</h1>
     <p style="color:#64748b; max-width:70ch;">
         {% if is_therapist %}
@@ -158,7 +159,13 @@
 
             let selectedSlot = null;
             let consultationType = 'BOTH';
-            let activeTherapistId = isTherapist ? selectedTherapistFromBackend : parseInt((therapistSelect && therapistSelect.value) || 0, 10);
+            let activeTherapistId = parseInt(selectedTherapistFromBackend, 10) || (therapistSelect && parseInt(therapistSelect.value, 10)) || 0;
+            if (isNaN(activeTherapistId)) activeTherapistId = 0;
+
+            if (therapistSelect && activeTherapistId > 0 && therapistSelect.value != activeTherapistId) {
+                therapistSelect.value = activeTherapistId;
+            }
+
             let businessHoursCache = [];
 
             const formatTime = (dateObj) => dateObj.toTimeString().slice(0, 5);
@@ -275,6 +282,12 @@
                 selectMirror: true,
                 nowIndicator: true,
                 eventOverlap: false,
+                selectAllow: (selectInfo) => {
+                    return selectInfo.start >= new Date();
+                },
+                eventAllow: (dropInfo, draggedEvent) => {
+                    return dropInfo.start >= new Date();
+                },
                 eventClick: (info) => { window.location.href = info.event.extendedProps.detailUrl; },
                 eventDrop: async (info) => {
                     if (!isWithinBusinessHours(info.event.start, info.event.end)) {
@@ -365,23 +378,22 @@
                 appointmentCalendarInstance = null;
             }
         });
-        document.addEventListener('turbo:load', initAppointmentCalendar);
-        document.addEventListener('turbo:render', async () => {
-            if (appointmentCalendarInstance) {
+        
+        let hasInitialized = false;
+
+        async function safeInit() {
+            if (hasInitialized && appointmentCalendarInstance) {
                 appointmentCalendarInstance.refetchEvents();
-            } else {
-                await initAppointmentCalendar();
+                return;
             }
-        });
-        window.addEventListener('pageshow', async () => {
-            if (appointmentCalendarInstance) {
-                appointmentCalendarInstance.refetchEvents();
-            } else {
-                await initAppointmentCalendar();
-            }
-        });
+            hasInitialized = true;
+            await initAppointmentCalendar();
+        }
+
+        document.addEventListener('turbo:load', safeInit);
+        
         if (document.readyState === 'interactive' || document.readyState === 'complete') {
-            initAppointmentCalendar();
+            safeInit();
         }
     </script>
 {% endblock %}

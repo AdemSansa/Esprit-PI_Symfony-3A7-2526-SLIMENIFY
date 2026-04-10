@@ -3,7 +3,13 @@
 {% block title %}Appointment Details{% endblock %}
 
 {% block app_content %}
-    <h1 style="margin-top:0; color:#334155;">Appointment Details</h1>
+    <meta name="turbo-cache-control" content="no-cache">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h1 style="margin:0; color:#334155;">Appointment Details</h1>
+        <a href="{{ path('app_appointments_calendar') }}" style="text-decoration:none; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; padding:0.4rem 0.8rem; font-size:0.9rem; font-weight:500; transition:all 0.15s; display:inline-flex; align-items:center; gap:0.4rem;">
+            &larr; Back to Calendar
+        </a>
+    </div>
 
     {% for label, messages in app.flashes %}
         {% for message in messages %}
@@ -30,20 +36,27 @@
             {% if next_statuses is empty %}
                 <p style="color:#64748b; margin-bottom:0;">No further status transitions available.</p>
             {% else %}
-                <form method="post" action="{{ path('app_appointments_status', {id: appointment.id}) }}" style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                <form id="status-form" method="post" action="{{ path('app_appointments_status', {id: appointment.id}) }}" style="display:flex; gap:0.6rem; flex-wrap:wrap;">
                     {% for status in next_statuses %}
-                        <button
-                            type="submit"
-                            name="status"
-                            value="{{ status }}"
-                            style="border:none; background:{{
-                                status == 'confirmed' ? '#22c55e' :
-                                (status == 'completed' ? '#3b82f6' :
-                                (status == 'cancelled' ? '#ef4444' : '#eab308'))
-                            }}; color:#fff; border-radius:8px; padding:0.5rem 0.75rem; cursor:pointer;"
-                        >
-                            {{ status == 'confirmed' ? 'Confirm' : (status == 'completed' ? 'Mark Completed' : (status == 'cancelled' ? 'Cancel' : status|capitalize)) }}
-                        </button>
+                        {% if status == 'cancelled' %}
+                            <button
+                                type="button"
+                                onclick="Swal.fire({title:'Cancel Appointment?', text:'This action cannot be undone and will delete the appointment.', icon:'warning', showCancelButton:true, confirmButtonColor:'#d33', confirmButtonText:'Yes, cancel it!'}).then(r => { if(r.isConfirmed){ const f = document.getElementById('status-form'); const i = document.createElement('input'); i.type='hidden'; i.name='status'; i.value='cancelled'; f.appendChild(i); f.submit(); } })"
+                                style="border:none; background:#ef4444; color:#fff; border-radius:8px; padding:0.5rem 0.75rem; cursor:pointer;"
+                            >Cancel</button>
+                        {% else %}
+                            <button
+                                type="submit"
+                                name="status"
+                                value="{{ status }}"
+                                style="border:none; background:{{
+                                    status == 'confirmed' ? '#22c55e' :
+                                    (status == 'completed' ? '#3b82f6' : '#eab308')
+                                }}; color:#fff; border-radius:8px; padding:0.5rem 0.75rem; cursor:pointer;"
+                            >
+                                {{ status == 'confirmed' ? 'Confirm' : (status == 'completed' ? 'Mark Completed' : status|capitalize) }}
+                            </button>
+                        {% endif %}
                     {% endfor %}
                 </form>
             {% endif %}
@@ -72,13 +85,13 @@
                     </div>
                     <p style="margin:0; color:#334155; white-space:pre-wrap;">{{ note.content }}</p>
 
-                    {% if can_manage_status %}
+                    {% if can_manage_notes %}
                         <form method="post" action="{{ path('app_appointments_edit_note', {noteId: note.id}) }}" style="display:grid; gap:0.45rem; margin-top:0.6rem;">
                             <textarea name="content" rows="2" style="border:1px solid #cbd5e1; border-radius:8px; padding:0.5rem;">{{ note.content }}</textarea>
                             <input type="text" name="mood" value="{{ note.mood }}" placeholder="Mood (optional)" style="border:1px solid #cbd5e1; border-radius:8px; padding:0.45rem;">
                             <div style="display:flex; gap:0.45rem;">
                                 <button type="submit" style="border:none; background:#627255; color:#fff; border-radius:8px; padding:0.35rem 0.7rem; cursor:pointer;">Update</button>
-                                <button formaction="{{ path('app_appointments_delete_note', {noteId: note.id}) }}" style="border:none; background:#ef4444; color:#fff; border-radius:8px; padding:0.35rem 0.7rem; cursor:pointer;">Delete</button>
+                                <button type="button" onclick="const form=this.closest('form'); Swal.fire({title:'Are you sure?', text:'This will permanently delete this note.', icon:'warning', showCancelButton:true, confirmButtonColor:'#d33', confirmButtonText:'Yes, delete!'}).then(r => { if(r.isConfirmed){ form.action='{{ path('app_appointments_delete_note', {noteId: note.id}) }}'; form.submit(); } })" style="border:none; background:#ef4444; color:#fff; border-radius:8px; padding:0.35rem 0.7rem; cursor:pointer;">Delete</button>
                             </div>
                         </form>
                     {% endif %}
@@ -86,4 +99,9 @@
             {% endfor %}
         {% endif %}
     </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}

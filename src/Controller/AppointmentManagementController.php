@@ -35,10 +35,13 @@ class AppointmentManagementController extends AbstractController
         $therapists = $this->therapistRepository->findActive();
 
         $selectedTherapistId = $request->query->getInt('therapist_id');
-        $selectedTherapist = $selectedTherapistId ? $this->therapistRepository->find($selectedTherapistId) : null;
-        if ($this->isGranted('ROLE_THERAPIST')) {
-            $selectedTherapist = $this->resolveTherapistForCurrentUser() ?? $selectedTherapist;
+        $selectedTherapist = null;
+
+        if ($this->isGranted('ROLE_THERAPIST') && !$selectedTherapistId) {
+            $selectedTherapist = $this->resolveTherapistForCurrentUser();
             $selectedTherapistId = $selectedTherapist?->getId() ?? 0;
+        } elseif ($selectedTherapistId) {
+            $selectedTherapist = $this->therapistRepository->find($selectedTherapistId);
         }
 
         return $this->render('appointment/calendar.html.twig', [
@@ -79,7 +82,7 @@ class AppointmentManagementController extends AbstractController
                 'extendedProps' => [
                     'status' => $status,
                     'type' => $appointment->getType(),
-                    'detailUrl' => $this->generateUrl('app_appointments_detail_readonly', ['id' => $appointment->getId()]),
+                    'detailUrl' => $this->generateUrl('app_appointments_detail', ['id' => $appointment->getId()]),
                     'canEditTime' => $this->isGranted('ROLE_THERAPIST'),
                 ],
             ];
@@ -152,6 +155,11 @@ class AppointmentManagementController extends AbstractController
             return $this->json(['error' => 'Invalid date/time range'], Response::HTTP_BAD_REQUEST);
         }
         $end = (clone $start)->modify('+60 minutes');
+
+        $fullStart = (clone $date)->setTime((int) $start->format('H'), (int) $start->format('i'));
+        if ($fullStart < new \DateTime()) {
+            return $this->json(['error' => 'You cannot book appointments in the past.'], Response::HTTP_BAD_REQUEST);
+        }
 
         if (!$this->isAppointmentTypeAllowed($therapist, $type)) {
             return $this->json(['error' => 'Appointment type not allowed for this therapist'], Response::HTTP_BAD_REQUEST);
@@ -302,7 +310,7 @@ class AppointmentManagementController extends AbstractController
             'appointment' => $appointment,
             'notes' => $this->noteRepository->findBy(['appointment' => $appointment], ['createdAt' => 'DESC']),
             'can_manage_status' => $this->isGranted('ROLE_THERAPIST'),
-            'can_manage_notes' => $this->isGranted('ROLE_THERAPIST') && $this->canCreateNoteNow($appointment),
+            'can_manage_notes' => $this->isGranted('ROLE_THERAPIST') && strtolower((string) $appointment->getStatus()) === 'completed',
             'next_statuses' => $this->getNextStatuses(strtolower((string) ($appointment->getStatus() ?: 'pending'))),
             'readonly' => false,
         ]);
@@ -316,8 +324,8 @@ class AppointmentManagementController extends AbstractController
         if ($appointment === null || !$this->canAccessAppointment($appointment)) {
             throw $this->createNotFoundException('Appointment not found.');
         }
-        if (!$this->canCreateNoteNow($appointment)) {
-            $this->addFlash('error', 'You can only add notes after the appointment start time.');
+        if (strtolower((string) $appointment->getStatus()) !== 'completed') {
+            $this->addFlash('error', 'You can only add notes when the appointment status is completed.');
             return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
         }
 
@@ -382,11 +390,16 @@ class AppointmentManagementController extends AbstractController
 
     private function resolveTherapistFromRequest(Request $request): ?Therapist
     {
+        $id = $request->query->getInt('therapist_id');
+        if ($id > 0) {
+            return $this->therapistRepository->find($id);
+        }
+
         if ($this->isGranted('ROLE_THERAPIST')) {
             return $this->resolveTherapistForCurrentUser();
         }
 
-        return $this->therapistRepository->find($request->query->getInt('therapist_id'));
+        return null;
     }
 
     private function resolveTherapistForCurrentUser(): ?Therapist
@@ -484,30 +497,17 @@ class AppointmentManagementController extends AbstractController
         };
     }
 
-    private function getStatusRank(string $status): int
-    {
-        return match ($status) {
-            'pending' => 1,
-            'confirmed' => 2,
-            'completed' => 3,
-            'cancelled' => 4,
-            default => 0,
-        };
-    }
-
     private function isValidStatusProgression(string $current, string $next): bool
     {
-        return $this->getStatusRank($next) > $this->getStatusRank($current);
+        return in_array($next, $this->getNextStatuses($current), true);
     }
 
     private function getNextStatuses(string $current): array
     {
-        $ordered = ['pending', 'confirmed', 'completed', 'cancelled'];
-        $currentRank = $this->getStatusRank($current);
-
-        return array_values(array_filter(
-            $ordered,
-            fn (string $status): bool => $this->getStatusRank($status) > $currentRank
-        ));
+        return match ($current) {
+            'pending' => ['confirmed', 'completed', 'cancelled'],
+            'confirmed' => ['completed', 'cancelled'],
+            default => [],
+        };
     }
 }
