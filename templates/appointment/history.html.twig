@@ -1,0 +1,54 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Appointment History{% endblock %}
+
+{% block app_content %}
+    <meta name="turbo-cache-control" content="no-cache">
+    <h1 style="margin-top:0; color:#334155;">Appointment History</h1>
+
+    {% if appointments is empty %}
+        <p style="color:#64748b;">No appointments found.</p>
+    {% else %}
+        <div style="display:grid; gap:1rem;">
+            {% for appointment in appointments %}
+                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:0.5rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="margin:0; color:#334155; font-size:1.15rem;">
+                            {{ appointment.type|default('General')|capitalize }} Session
+                        </h3>
+                        <span style="font-weight:600; padding:0.25rem 0.6rem; border-radius:6px; font-size:0.8rem; background:{{
+                            appointment.status == 'confirmed' ? '#dcfce7' :
+                            (appointment.status == 'completed' ? '#dbeafe' :
+                            (appointment.status == 'cancelled' ? '#fee2e2' : '#fef9c3'))
+                        }}; color:{{
+                            appointment.status == 'confirmed' ? '#166534' :
+                            (appointment.status == 'completed' ? '#1e40af' :
+                            (appointment.status == 'cancelled' ? '#991b1b' : '#854d0e'))
+                        }};">
+                            {{ appointment.status|default('pending')|capitalize }}
+                        </span>
+                    </div>
+
+                    <p style="margin:0; color:#64748b; font-size:0.95rem;">
+                        <strong>Date:</strong> {{ appointment.appointmentDate|date('Y-m-d') }}<br>
+                        <strong>Time:</strong> {{ appointment.startTime|date('H:i') }} - {{ appointment.endTime|date('H:i') }}
+                    </p>
+
+                    <div style="margin-top:0.4rem; color:#475569; font-size:0.9rem;">
+                        {% if is_therapist %}
+                            <strong>Client:</strong> {{ appointment.patient.firstName }} {{ appointment.patient.lastName }}
+                        {% else %}
+                            <strong>Therapist:</strong> {{ appointment.therapist.firstName }} {{ appointment.therapist.lastName }}
+                        {% endif %}
+                    </div>
+
+                    <div style="margin-top:1rem;">
+                        <a href="{{ path('app_appointments_detail', {id: appointment.id}) }}" style="display:inline-block; text-decoration:none; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; padding:0.4rem 0.8rem; font-size:0.9rem; font-weight:500; transition:all 0.15s;">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}
