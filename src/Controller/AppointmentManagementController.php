@@ -111,8 +111,19 @@ class AppointmentManagementController extends AbstractController
         ];
 
         $businessHours = [];
+        $exceptions = [];
         foreach ($availabilities as $availability) {
-            if ($availability->getSpecificDate() !== null || !$availability->isAvailable()) {
+            if ($availability->getSpecificDate() !== null) {
+                if (!$availability->isAvailable()) {
+                    $exceptions[] = [
+                        'date' => $availability->getSpecificDate()->format('Y-m-d'),
+                        'startTime' => $availability->getStartTime()->format('H:i:s'),
+                        'endTime' => $availability->getEndTime()->format('H:i:s'),
+                    ];
+                }
+                continue;
+            }
+            if (!$availability->isAvailable()) {
                 continue;
             }
             $businessHours[] = [
@@ -124,6 +135,7 @@ class AppointmentManagementController extends AbstractController
 
         $response = $this->json([
             'businessHours' => $businessHours,
+            'exceptions' => $exceptions,
             'consultationType' => strtoupper((string) ($therapist->getConsultationType() ?: 'BOTH')),
             'therapistName' => trim($therapist->getFirstName() . ' ' . $therapist->getLastName()),
         ]);
@@ -203,6 +215,10 @@ class AppointmentManagementController extends AbstractController
         }
         $end = (clone $start)->modify('+60 minutes');
 
+        if ($appointment->getStatus() === 'completed') {
+            return $this->json(['error' => 'Completed appointments cannot be moved.'], Response::HTTP_BAD_REQUEST);
+        }
+
         if (!$this->isSlotInsideBusinessHours($appointment->getTherapist(), $date, $start, $end)) {
             return $this->json(['error' => 'Slot is outside business hours or blocked by exception'], Response::HTTP_BAD_REQUEST);
         }
@@ -222,7 +238,7 @@ class AppointmentManagementController extends AbstractController
     #[Route('/{id}/status', name: 'status', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function status(int $id, Request $request): RedirectResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_THERAPIST');
+        $this->denyAccessUnlessGranted('ROLE_PATIENT');
         $appointment = $this->appointmentRepository->find($id);
         if ($appointment === null || !$this->canAccessAppointment($appointment)) {
             throw $this->createNotFoundException('Appointment not found.');
@@ -235,7 +251,17 @@ class AppointmentManagementController extends AbstractController
         }
 
         $currentStatus = strtolower((string) ($appointment->getStatus() ?: 'pending'));
-        if (!$this->isValidStatusProgression($currentStatus, $status)) {
+        if ($currentStatus === 'completed') {
+            $this->addFlash('error', 'Cannot change status of a completed appointment.');
+            return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
+        }
+
+        if (!$this->isGranted('ROLE_THERAPIST')) {
+            if ($status !== 'cancelled') {
+                $this->addFlash('error', 'Patients can only cancel appointments.');
+                return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
+            }
+        } elseif (!$this->isValidStatusProgression($currentStatus, $status)) {
             $this->addFlash('error', 'Status can only move forward: pending -> confirmed -> completed -> cancelled.');
             return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
         }
@@ -306,12 +332,21 @@ class AppointmentManagementController extends AbstractController
             throw $this->createNotFoundException('Appointment not found.');
         }
 
+        $currentStatus = strtolower((string) ($appointment->getStatus() ?: 'pending'));
+        $canManageStatus = $this->isGranted('ROLE_THERAPIST') || ($this->isGranted('ROLE_PATIENT') && $currentStatus !== 'completed');
+        $nextStatuses = [];
+        if ($this->isGranted('ROLE_THERAPIST')) {
+            $nextStatuses = $this->getNextStatuses($currentStatus);
+        } elseif ($this->isGranted('ROLE_PATIENT') && $currentStatus !== 'completed') {
+            $nextStatuses = ['cancelled'];
+        }
+
         return $this->render('appointment/detail.html.twig', [
             'appointment' => $appointment,
             'notes' => $this->noteRepository->findBy(['appointment' => $appointment], ['createdAt' => 'DESC']),
-            'can_manage_status' => $this->isGranted('ROLE_THERAPIST'),
-            'can_manage_notes' => $this->isGranted('ROLE_THERAPIST') && strtolower((string) $appointment->getStatus()) === 'completed',
-            'next_statuses' => $this->getNextStatuses(strtolower((string) ($appointment->getStatus() ?: 'pending'))),
+            'can_manage_status' => $canManageStatus,
+            'can_manage_notes' => $this->isGranted('ROLE_THERAPIST') && $currentStatus === 'completed',
+            'next_statuses' => $nextStatuses,
             'readonly' => false,
         ]);
     }
