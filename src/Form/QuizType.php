@@ -23,13 +23,13 @@ class QuizType extends AbstractType
                 'attr' => ['class' => 'auth-input', 'placeholder' => 'Enter the quiz title'],
             ])
             ->add('description', TextareaType::class, [
-                'label' => 'Description (Optional)',
-                'required' => false,
+                'label' => 'Description',
+                'required' => true,
                 'attr' => ['class' => 'auth-input', 'rows' => 4, 'placeholder' => 'A short summary...'],
             ])
             ->add('category', TextType::class, [
-                'label' => 'Category (Optional)',
-                'required' => false,
+                'label' => 'Category',
+                'required' => true,
                 'attr' => ['class' => 'auth-input', 'placeholder' => 'e.g., General Psychology'],
             ])
 
@@ -45,7 +45,7 @@ class QuizType extends AbstractType
                 'multiple' => true,
                 'expanded' => true,
                 'label' => 'Select Questions',
-                'required' => false,
+                'required' => true,
             ])
         ;
     }

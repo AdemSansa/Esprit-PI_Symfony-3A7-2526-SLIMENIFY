@@ -6,6 +6,7 @@ use App\Repository\QuestionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: QuestionRepository::class)]
 #[ORM\Table(name: 'question')]
@@ -17,6 +18,8 @@ class Question
     private ?int $id = null;
 
     #[ORM\Column(name: 'question_text', type: 'string', length: 255)]
+    #[Assert\NotBlank(message: 'The question text cannot be empty.')]
+    #[Assert\Length(min: 3, max: 255, minMessage: 'The question text must be at least {{ limit }} characters long.', maxMessage: 'The question text cannot be longer than {{ limit }} characters.')]
     private string $questionText;
 
     #[ORM\Column(type: 'boolean', options: ['default' => true])]
@@ -26,6 +29,7 @@ class Question
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(name: 'image_path', type: 'string', length: 255)]
+    #[Assert\Length(max: 255, maxMessage: 'The image path cannot be longer than {{ limit }} characters.')]
     private string $imagePath;
 
     #[ORM\ManyToMany(targetEntity: Quiz::class, mappedBy: 'questions')]
