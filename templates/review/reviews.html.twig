@@ -168,7 +168,7 @@
                 </div>
                 {% endfor %}
 
-                {% if is_granted('ROLE_THERAPIST') %}
+                {% if is_granted('ROLE_THERAPIST') and not is_granted('ROLE_ADMIN') %}
                 <form class="reply-form" action="{{ path('app_reviews_reply', {'id': review.id}) }}" method="POST">
                     <textarea name="content" required minlength="11" class="reply-input" placeholder="Write a reply..."></textarea>
                     <button type="submit" class="btn btn-submit">Reply</button>
