@@ -102,8 +102,25 @@ class AvailabilityManagementController extends AbstractController
             return $this->redirectToRoute('app_availability_manage');
         }
 
-        $existing = $this->availabilityRepository->findByTherapistId($therapist->getId());
-        foreach ($existing as $row) {
+        $availabilityRows = $this->availabilityRepository->findByTherapistId($therapist->getId());
+        $day = strtoupper($specificDate->format('l'));
+        $isWithinBusinessHours = false;
+        foreach ($availabilityRows as $row) {
+            if ($row->getSpecificDate() === null && $row->isAvailable() && $row->getDay() === $day) {
+                if ($row->getStartTime()->format('H:i:s') <= $startTime->format('H:i:s')
+                    && $row->getEndTime()->format('H:i:s') >= $endTime->format('H:i:s')) {
+                    $isWithinBusinessHours = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$isWithinBusinessHours) {
+            $this->addFlash('error', 'Exceptions must be within your recurring business hours for that day.');
+            return $this->redirectToRoute('app_availability_manage');
+        }
+
+        foreach ($availabilityRows as $row) {
             if ($row->getSpecificDate() && $row->getSpecificDate()->format('Y-m-d') === $specificDate->format('Y-m-d')) {
                 // Overlap check: (start1 < end2) && (end1 > start2)
                 if ($startTime->format('H:i:s') < $row->getEndTime()->format('H:i:s') &&
@@ -194,7 +211,24 @@ class AvailabilityManagementController extends AbstractController
         }
 
         // Overlap check against others
-        $existing = $this->availabilityRepository->findByTherapistId($therapist->getId());
+        // If updating an exception, check if it's within business hours
+        if ($availability->getSpecificDate() !== null && !$availability->isAvailable()) {
+            $isWithinBusinessHours = false;
+            foreach ($existing as $row) {
+                if ($row->getSpecificDate() === null && $row->isAvailable() && $row->getDay() === $availability->getDay()) {
+                    if ($row->getStartTime()->format('H:i:s') <= $startTime->format('H:i:s')
+                        && $row->getEndTime()->format('H:i:s') >= $endTime->format('H:i:s')) {
+                        $isWithinBusinessHours = true;
+                        break;
+                    }
+                }
+            }
+            if (!$isWithinBusinessHours) {
+                $this->addFlash('error', 'Exceptions must be within your recurring business hours.');
+                return $this->redirectToRoute('app_availability_manage');
+            }
+        }
+
         foreach ($existing as $row) {
             if ($row->getId() === $availability->getId()) continue;
             
