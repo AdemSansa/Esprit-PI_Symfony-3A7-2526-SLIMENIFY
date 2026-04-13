@@ -151,4 +151,41 @@
     <div class="form-submit-row">
         <button type="submit" class="btn-save">{{ button_label|default('Save Product') }}</button>
     </div>
+
+    <script>
+        const initFormLogic = () => {
+            const qtyInput = document.getElementById('{{ form.stockQuantity.vars.id }}');
+            const statusSelect = document.getElementById('{{ form.status.vars.id }}');
+            
+            if (qtyInput && statusSelect) {
+                // Remove previous event listener to avoid duplicates from turbo
+                const newQtyInput = qtyInput.cloneNode(true);
+                qtyInput.parentNode.replaceChild(newQtyInput, qtyInput);
+
+                newQtyInput.addEventListener('input', function() {
+                    const qty = parseInt(this.value, 10);
+                    if (!isNaN(qty) && qty > 0) {
+                        statusSelect.value = 'available';
+                    } else if (qty === 0) {
+                        statusSelect.value = 'out_of_stock';
+                    }
+                });
+
+                statusSelect.addEventListener('change', function() {
+                    const qty = parseInt(newQtyInput.value, 10);
+                    if (!isNaN(qty) && qty > 0 && this.value === 'out_of_stock') {
+                        // Prevent setting out of stock if we have quantity
+                        this.value = 'available';
+                    }
+                });
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFormLogic);
+        } else {
+            initFormLogic();
+        }
+        document.addEventListener('turbo:load', initFormLogic);
+    </script>
 {{ form_end(form) }}
