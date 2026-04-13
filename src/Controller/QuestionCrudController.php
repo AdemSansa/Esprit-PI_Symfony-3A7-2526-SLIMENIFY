@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Question;
+use App\Enum\PsychologyCategory;
 use App\Form\QuestionType;
 use App\Repository\QuestionRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,18 +19,36 @@ class QuestionCrudController extends AbstractController
     #[Route('', name: 'app_question_index', methods: ['GET'])]
     public function index(Request $request, QuestionRepository $questionRepository): Response
     {
-        $query = $request->query->get('q');
-        $questions = $query ? $questionRepository->findBySearchQuery($query) : $questionRepository->findAll();
+        $query = trim((string) $request->query->get('q', ''));
+        $category = trim((string) $request->query->get('category', ''));
+        $page = max(1, (int) $request->query->get('page', 1));
+
+        $result = $questionRepository->findForManagement(
+            $query !== '' ? $query : null,
+            $category !== '' ? $category : null,
+            $page
+        );
 
         return $this->render('question/index.html.twig', [
-            'questions' => $questions,
+            'questions' => $result['questions'],
             'searchQuery' => $query,
+            'selectedCategory' => $category,
+            'categoryOptions' => PsychologyCategory::choices(),
+            'currentPage' => $result['currentPage'],
+            'totalPages' => $result['totalPages'],
+            'totalQuestions' => $result['total'],
         ]);
     }
 
     #[Route('/new', name: 'app_question_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        if (!$user || $user->getRole() !== 'therapist') {
+            throw $this->createAccessDeniedException('Only therapists can add questions.');
+        }
+
         $question = new Question();
         $form = $this->createForm(QuestionType::class, $question);
         $form->handleRequest($request);
@@ -50,6 +69,12 @@ class QuestionCrudController extends AbstractController
     #[Route('/{id}/edit', name: 'app_question_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Question $question, EntityManagerInterface $entityManager): Response
     {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        if (!$user || $user->getRole() !== 'therapist') {
+            throw $this->createAccessDeniedException('Only therapists can edit questions.');
+        }
+
         $form = $this->createForm(QuestionType::class, $question);
         $form->handleRequest($request);
 
@@ -68,6 +93,12 @@ class QuestionCrudController extends AbstractController
     #[Route('/{id}', name: 'app_question_delete', methods: ['POST'])]
     public function delete(Request $request, Question $question, EntityManagerInterface $entityManager): Response
     {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        if (!$user || $user->getRole() !== 'therapist') {
+            throw $this->createAccessDeniedException('Only therapists can delete questions.');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$question->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($question);
             $entityManager->flush();

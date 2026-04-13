@@ -15,11 +15,40 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/quiz')]
 class QuizCrudController extends AbstractController
 {
+    private function normalizeCategory(?string $value): string
+    {
+        return mb_strtolower(trim((string) $value));
+    }
+
+    private function hasCategoryMismatch(Quiz $quiz): bool
+    {
+        $quizCategory = $this->normalizeCategory($quiz->getCategory());
+        if ($quizCategory === '') {
+            return true;
+        }
+
+        foreach ($quiz->getQuestions() as $question) {
+            if ($this->normalizeCategory($question->getCategory()) !== $quizCategory) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     #[Route('', name: 'app_quiz_index', methods: ['GET'])]
     public function index(Request $request, QuizRepository $quizRepository): Response
     {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        if (!$user || $user->getRole() !== 'therapist') {
+            throw $this->createAccessDeniedException('Only therapists can manage quizzes.');
+        }
+
         $query = $request->query->get('q');
-        $quizzes = $query ? $quizRepository->findBySearchQuery($query) : $quizRepository->findAll();
+        $quizzes = $query
+            ? $quizRepository->findByAuthorAndSearchQuery($user->getId(), $query)
+            : $quizRepository->findByAuthor($user->getId());
 
         return $this->render('quiz/index.html.twig', [
             'quizzes' => $quizzes,
@@ -30,11 +59,27 @@ class QuizCrudController extends AbstractController
     #[Route('/new', name: 'app_quiz_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        if (!$user || $user->getRole() !== 'therapist') {
+            throw $this->createAccessDeniedException('Only therapists can create quizzes.');
+        }
+
         $quiz = new Quiz();
+        $quiz->setAuthor($user);
+        $quiz->setActive(Quiz::STATUS_UNDER_REVIEW);
         $form = $this->createForm(QuizType::class, $quiz);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if ($this->hasCategoryMismatch($quiz)) {
+                $this->addFlash('error', 'All selected questions must belong to the same category as the quiz.');
+                return $this->render('quiz/new.html.twig', [
+                    'quiz' => $quiz,
+                    'form' => $form,
+                ]);
+            }
+
             $quiz->setTotalQuestions(count($quiz->getQuestions()));
             $entityManager->persist($quiz);
             $entityManager->flush();
@@ -51,10 +96,24 @@ class QuizCrudController extends AbstractController
     #[Route('/{id}/edit', name: 'app_quiz_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Quiz $quiz, EntityManagerInterface $entityManager): Response
     {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        if (!$user || $user->getRole() !== 'therapist') {
+            throw $this->createAccessDeniedException('Only therapists can edit quizzes.');
+        }
+
         $form = $this->createForm(QuizType::class, $quiz);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if ($this->hasCategoryMismatch($quiz)) {
+                $this->addFlash('error', 'All selected questions must belong to the same category as the quiz.');
+                return $this->render('quiz/edit.html.twig', [
+                    'quiz' => $quiz,
+                    'form' => $form,
+                ]);
+            }
+
             $quiz->setTotalQuestions(count($quiz->getQuestions()));
             $quiz->setUpdatedAt(new \DateTimeImmutable());
             $entityManager->flush();
@@ -71,6 +130,12 @@ class QuizCrudController extends AbstractController
     #[Route('/{id}', name: 'app_quiz_delete', methods: ['POST'])]
     public function delete(Request $request, Quiz $quiz, EntityManagerInterface $entityManager): Response
     {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        if (!$user || $user->getRole() !== 'therapist') {
+            throw $this->createAccessDeniedException('Only therapists can delete quizzes.');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$quiz->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($quiz);
             $entityManager->flush();

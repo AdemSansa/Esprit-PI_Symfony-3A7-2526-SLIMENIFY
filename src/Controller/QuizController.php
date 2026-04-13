@@ -48,7 +48,7 @@ class QuizController extends AbstractController
         $q->setDescription($data['description'] ?? null);
         $q->setCategory($data['category'] ?? null);
         $q->setTotalQuestions($data['total_questions'] ?? 0);
-        $q->setActive($data['active'] ?? true);
+        $q->setActive(isset($data['active']) ? (int) $data['active'] : Quiz::STATUS_UNDER_REVIEW);
         $q->setMinScore($data['min_score'] ?? 0);
         $q->setMaxScore($data['max_score'] ?? 0);
 
@@ -72,7 +72,7 @@ class QuizController extends AbstractController
         if (isset($data['description']))     $q->setDescription($data['description']);
         if (isset($data['category']))        $q->setCategory($data['category']);
         if (isset($data['total_questions'])) $q->setTotalQuestions($data['total_questions']);
-        if (isset($data['active']))          $q->setActive($data['active']);
+        if (isset($data['active']))          $q->setActive((int) $data['active']);
         if (isset($data['min_score']))       $q->setMinScore($data['min_score']);
         if (isset($data['max_score']))       $q->setMaxScore($data['max_score']);
         $q->setUpdatedAt(new \DateTimeImmutable());
@@ -97,7 +97,7 @@ class QuizController extends AbstractController
             'description'     => $q->getDescription(),
             'category'        => $q->getCategory(),
             'total_questions' => $q->getTotalQuestions(),
-            'active'          => $q->isActive(),
+            'active'          => $q->getActive(),
             'min_score'       => $q->getMinScore(),
             'max_score'       => $q->getMaxScore(),
             'created_at'      => $q->getCreatedAt()->format('Y-m-d H:i:s'),
