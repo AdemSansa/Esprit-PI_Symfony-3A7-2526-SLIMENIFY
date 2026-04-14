@@ -92,7 +92,6 @@
     .btn-interact.is-active {
         color: #b2936a;
     }
-    /* Comments section */
     .comments-section {
         margin-top: 3rem;
     }
@@ -103,7 +102,8 @@
         border-radius: 12px;
         box-shadow: 0 2px 12px rgba(0,0,0,0.05);
     }
-    .comment-input {
+    .comment-form .comment-input,
+    .comment-form textarea {
         width: 100%;
         min-height: 100px;
         border: 1px solid #e2e8f0;
@@ -140,6 +140,15 @@
     .comment-content {
         color: #242424;
         line-height: 1.5;
+        white-space: pre-wrap;
+    }
+    .comment-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .comment-actions form {
+        margin: 0;
     }
 </style>
 {% endblock %}
@@ -169,44 +178,52 @@
         {% set userLiked = false %}
         {% if app.user %}
             {% for like in blog.likes %}
-                {% if (like.user and like.user == app.user) or (like.therapist and like.therapist == app.user) %}
+                {% if (like.user and like.user is same as(app.user)) or (like.therapist and like.therapist.email == app.user.userIdentifier) %}
                     {% set userLiked = true %}
                 {% endif %}
             {% endfor %}
         {% endif %}
-        
-        <button id="likeBtn" class="btn-interact {{ userLiked ? 'is-active' : '' }}" onclick="toggleLike()">
+
+        <button type="button" id="likeBtn" class="btn-interact {{ userLiked ? 'is-active' : '' }}" onclick="toggleLike()">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="{{ userLiked ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2">
                 <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
             </svg>
             <span id="likeCount">{{ blog.likes|length }}</span>
         </button>
 
-        <button class="btn-interact">
+        <span class="btn-interact" style="cursor: default;">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
             </svg>
             {{ blog.comments|length }}
-        </button>
+        </span>
     </div>
 
     <section class="comments-section" id="comments">
         <h3 style="margin-bottom: 1.5rem;">Comments ({{ blog.comments|length }})</h3>
-        
-        {% if app.user %}
-        <div class="comment-form">
-            <textarea id="commentInput" class="comment-input" placeholder="What are your thoughts?"></textarea>
-            <div style="display: flex; justify-content: flex-end;">
-                <button class="btn-comment" onclick="submitComment()">Respond</button>
+
+        {% if app.user and not editingCommentId %}
+            <div class="comment-form">
+                {{ form_start(commentForm) }}
+                    {{ form_errors(commentForm) }}
+                    {{ form_row(commentForm.content, {
+                        label: false,
+                        attr: { class: 'comment-input', placeholder: 'What are your thoughts?' }
+                    }) }}
+                    <div style="display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn-comment">Respond</button>
+                    </div>
+                {{ form_end(commentForm) }}
             </div>
-        </div>
+        {% elseif app.user and editingCommentId %}
+            <p style="color: #757575; margin-bottom: 1.5rem;"><a href="{{ path('app_blog_web_show', { id: blog.id }) }}#comments">Cancel editing</a> to write a new comment.</p>
         {% else %}
-        <p style="color: #757575;">Please <a href="{{ path('app_login') }}">login</a> to leave a comment.</p>
+            <p style="color: #757575;">Please <a href="{{ path('app_login') }}">login</a> to leave a comment.</p>
         {% endif %}
 
-        <div class="comment-list" id="commentList">
+        <div class="comment-list">
             {% for comment in blog.comments|reverse %}
-                {% set isAuthor = (comment.user and comment.user == app.user) or (comment.therapist and comment.therapist == app.user) %}
+                {% set isAuthor = app.user and ((comment.user and comment.user is same as(app.user)) or (comment.therapist and comment.therapist.email == app.user.userIdentifier)) %}
                 <div class="comment-item" id="comment-{{ comment.id }}">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div class="comment-author-info">
@@ -228,30 +245,42 @@
                                 <span style="font-size: 0.75rem; color: #757575;">{{ comment.createdAt|date('M d, Y') }}</span>
                             </div>
                         </div>
-                        
-                        {% if isAuthor or is_granted('ROLE_ADMIN') %}
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn-interact" onclick="toggleEdit('{{ comment.id }}')" style="padding: 4px;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path></svg>
-                            </button>
-                            <button class="btn-interact" onclick="deleteComment('{{ comment.id }}')" style="padding: 4px; color: #ef4444;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
-                        </div>
+                        {% if app.user and (isAuthor or is_granted('ROLE_ADMIN')) %}
+                            <div class="comment-actions">
+                                <a href="{{ path('app_blog_web_show', { id: blog.id, editComment: comment.id }) }}#comment-{{ comment.id }}" class="btn-interact" style="padding: 4px 10px; font-size: 0.8rem; text-decoration: none;">
+                                    Edit
+                                </a>
+                                <form method="post"
+                                      action="{{ path('app_blog_comment_delete', { blogId: blog.id, commentId: comment.id }) }}"
+                                      onsubmit="return confirm('Delete this comment?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_comment' ~ comment.id) }}">
+                                    <button type="submit" class="btn-interact" style="padding: 4px 10px; font-size: 0.8rem; color: #ef4444;">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
                         {% endif %}
                     </div>
 
-                    <div class="comment-content" id="content-{{ comment.id }}">
-                        {{ comment.content }}
-                    </div>
-
-                    <div id="edit-form-{{ comment.id }}" style="display: none; margin-top: 1rem;">
-                        <textarea class="comment-input" id="edit-input-{{ comment.id }}" style="min-height: 60px;">{{ comment.content }}</textarea>
-                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                            <button class="btn-interact" onclick="toggleEdit('{{ comment.id }}')">Cancel</button>
-                            <button class="btn-comment" style="padding: 6px 12px; font-size: 0.85rem;" onclick="saveEdit('{{ comment.id }}')">Save</button>
+                    {% if editCommentForm and editingCommentId == comment.id %}
+                        <div class="comment-form" style="margin-top: 0.75rem;">
+                            {{ form_start(editCommentForm) }}
+                                {{ form_errors(editCommentForm) }}
+                                {{ form_row(editCommentForm.content, {
+                                    label: false,
+                                    attr: { class: 'comment-input', rows: 6 }
+                                }) }}
+                                <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center;">
+                                    <a href="{{ path('app_blog_web_show', { id: blog.id }) }}#comment-{{ comment.id }}" class="btn-interact" style="text-decoration: none; padding: 8px 14px;">Cancel</a>
+                                    <button type="submit" class="btn-comment">Save</button>
+                                </div>
+                            {{ form_end(editCommentForm) }}
                         </div>
-                    </div>
+                    {% else %}
+                        <div class="comment-content">
+                            {{ comment.content }}
+                        </div>
+                    {% endif %}
                 </div>
             {% endfor %}
         </div>
@@ -266,12 +295,12 @@ async function toggleLike() {
             headers: { 'Content-Type': 'application/json' }
         });
         const data = await response.json();
-        
+
         if (data.count !== undefined) {
             document.getElementById('likeCount').innerText = data.count;
             const btn = document.getElementById('likeBtn');
             const svg = btn.querySelector('svg');
-            
+
             if (data.liked) {
                 btn.classList.add('is-active');
                 svg.setAttribute('fill', 'currentColor');
@@ -282,78 +311,6 @@ async function toggleLike() {
         }
     } catch (e) {
         console.error("Like failed", e);
-    }
-}
-
-async function submitComment() {
-    const input = document.getElementById('commentInput');
-    const content = input.value.trim();
-    if (content.length < 2) return;
-
-    try {
-        const response = await fetch('{{ path('api_blog_comment_add', {id: blog.id}) }}', {
-            method: 'POST',
-            body: JSON.stringify({ content }),
-            headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await response.json();
-
-        if (data.success) {
-            window.location.reload(); // Simple reload to show new comment with full action buttons
-        }
-    } catch (e) {
-        console.error("Comment failed", e);
-    }
-}
-
-function toggleEdit(id) {
-    const content = document.getElementById(`content-${id}`);
-    const form = document.getElementById(`edit-form-${id}`);
-    if (form.style.display === 'none') {
-        form.style.display = 'block';
-        content.style.display = 'none';
-    } else {
-        form.style.display = 'none';
-        content.style.display = 'block';
-    }
-}
-
-async function saveEdit(id) {
-    const input = document.getElementById(`edit-input-${id}`);
-    const content = input.value.trim();
-    if (content.length < 2) return;
-
-    try {
-        const response = await fetch(`/api/comment/${id}/edit`, {
-            method: 'POST',
-            body: JSON.stringify({ content }),
-            headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await response.json();
-
-        if (data.success) {
-            document.getElementById(`content-${id}`).innerText = content;
-            toggleEdit(id);
-        }
-    } catch (e) {
-        console.error("Edit failed", e);
-    }
-}
-
-async function deleteComment(id) {
-    if (!confirm("Delete this comment?")) return;
-
-    try {
-        const response = await fetch(`/api/comment/${id}/delete`, {
-            method: 'DELETE'
-        });
-        const data = await response.json();
-
-        if (data.success) {
-            document.getElementById(`comment-${id}`).remove();
-        }
-    } catch (e) {
-        console.error("Delete failed", e);
     }
 }
 </script>

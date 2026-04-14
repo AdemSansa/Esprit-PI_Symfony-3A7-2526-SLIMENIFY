@@ -20,4 +20,13 @@ class BlogRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    public function searchByTitle(?string $query): array
+    {
+    return $this->createQueryBuilder('b')
+        ->where('b.title LIKE :q')
+        ->setParameter('q', '%' . $query . '%')
+        ->orderBy('b.createdAt', 'DESC')
+        ->getQuery()
+        ->getResult();
+    }
 }

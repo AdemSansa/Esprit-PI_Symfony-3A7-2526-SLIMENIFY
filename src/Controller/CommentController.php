@@ -3,146 +3,138 @@
 namespace App\Controller;
 
 use App\Entity\Comment;
-use App\Entity\Blog;
+use App\Form\CommentType;
 use App\Repository\CommentRepository;
-use App\Repository\BlogRepository;
+use App\Repository\TherapistRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use App\Service\ModerationService;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/api/comments')]
+#[Route('/comment')]
 class CommentController extends AbstractController
 {
-    private EntityManagerInterface $em;
-    private CommentRepository $commentRepository;
-    private BlogRepository $blogRepository;
+    #[Route('/', name: 'comment_list')]
+    public function index(CommentRepository $commentRepository): Response
+    {
+        $comments = $commentRepository->findBy([], ['id' => 'DESC']);
 
-    public function __construct(
+        return $this->render('comment/index.html.twig', [
+            'comments' => $comments
+        ]);
+    }
+
+    #[Route('/new', name: 'comment_new')]
+    public function new(
+        Request $request,
         EntityManagerInterface $em,
-        CommentRepository $commentRepository,
-        BlogRepository $blogRepository
-    ) {
-        $this->em = $em;
-        $this->commentRepository = $commentRepository;
-        $this->blogRepository = $blogRepository;
-    }
-
-    // 🔹 GET ALL COMMENTS BY BLOG
-    #[Route('/blog/{blogId}', methods: ['GET'])]
-    public function getByBlog($blogId): JsonResponse
-    {
-        $comments = $this->commentRepository->findByBlog($blogId);
-
-        $data = [];
-        foreach ($comments as $comment) {
-            $data[] = [
-                'id' => $comment->getId(),
-                'content' => $comment->getContent(),
-                'createdAt' => $comment->getCreatedAt()?->format('Y-m-d H:i:s'),
-                'blog_id' => $comment->getBlog()?->getId(),
-                'user_id' => $comment->getUser()?->getId(),
-                'therapist_id' => $comment->getTherapist()?->getId(),
-                'parent_id' => $comment->getParent()?->getId()
-            ];
-        }
-
-        return new JsonResponse($data);
-    }
-
-    // 🔹 CREATE COMMENT
-    #[Route('', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true);
-
-        if (!$data) {
-            return new JsonResponse(['error' => 'Invalid JSON'], 400);
-        }
-
-        $blog = $this->blogRepository->find($data['blog_id'] ?? null);
-
-        if (!$blog) {
-            return new JsonResponse(['error' => 'Blog not found'], 404);
-        }
-
+        TherapistRepository $therapistRepository,
+        ModerationService $moderationService,
+    ): Response {
         $comment = new Comment();
-        $comment->setContent($data['content'] ?? null);
-        $comment->setBlog($blog);
+        $form = $this->createForm(CommentType::class, $comment);
+        $form->handleRequest($request);
 
-        // assign user or therapist
-        if ($this->getUser() instanceof \App\Entity\User) {
-            $comment->setUser($this->getUser());
-        } else {
-            $comment->setTherapist($this->getUser());
+        $user = $this->getUser();
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+
+           $content = $form->get('content')->getData();
+
+        if ($moderationService->checkText($content)) {
+            $this->addFlash('error', 'Your comment contains inappropriate language and was not published.');
+
+            return $this->redirectToRoute('comment_new');
         }
+            // Set user
+            $comment->setUser($user);
 
-        // reply
-        if (!empty($data['parent_id'])) {
-            $parent = $this->commentRepository->find($data['parent_id']);
-            if ($parent) {
-                $comment->setParent($parent);
+            // If user is therapist
+            if (in_array('ROLE_THERAPIST', $user->getRoles())) {
+                $therapist = $therapistRepository->findOneBy([
+                    'email' => $user->getUserIdentifier()
+                ]);
+                $comment->setTherapist($therapist);
             }
+
+            $em->persist($comment);
+            $em->flush();
+
+            return $this->redirectToRoute('comment_list');
         }
 
-        $this->em->persist($comment);
-        $this->em->flush();
-
-        return new JsonResponse([
-            'message' => 'Comment created',
-            'id' => $comment->getId()
-        ], 201);
+        return $this->render('comment/new.html.twig', [
+            'form' => $form->createView()
+        ]);
     }
 
-    // 🔹 UPDATE COMMENT
-    #[Route('/{id}', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, $id): JsonResponse
-    {
-        $comment = $this->commentRepository->find($id);
+    #[Route('/{id}/edit', name: 'comment_edit')]
+    public function edit(
+        Comment $comment,
+        Request $request,
+        EntityManagerInterface $em,
+        TherapistRepository $therapistRepository
+    ): Response {
 
-        if (!$comment) {
-            return new JsonResponse(['error' => 'Comment not found'], 404);
-        }
+        $user = $this->getUser();
 
+        // If user is therapist
+        $therapist = in_array('ROLE_THERAPIST', $user->getRoles())
+            ? $therapistRepository->findOneBy(['email' => $user->getUserIdentifier()])
+            : null;
+
+        // Check permission
         if (
-            $comment->getUser() !== $this->getUser() &&
-            $comment->getTherapist() !== $this->getUser()
+            $comment->getUser() !== $user &&
+            $comment->getTherapist() !== $therapist &&
+            !$this->isGranted('ROLE_ADMIN')
         ) {
-            return new JsonResponse(['error' => 'Access denied'], 403);
+            throw $this->createAccessDeniedException();
         }
 
-        $data = json_decode($request->getContent(), true);
+        $form = $this->createForm(CommentType::class, $comment);
+        $form->handleRequest($request);
 
-        if (isset($data['content'])) {
-            $comment->setContent($data['content']);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            return $this->redirectToRoute('comment_list');
         }
 
-        $this->em->flush();
-
-        return new JsonResponse(['message' => 'Comment updated']);
+        return $this->render('comment/edit.html.twig', [
+            'form' => $form->createView(),
+            'comment' => $comment
+        ]);
     }
 
-    // 🔹 DELETE COMMENT
-    #[Route('/{id}', methods: ['DELETE'])]
-    public function delete($id): JsonResponse
-    {
-        $comment = $this->commentRepository->find($id);
+    #[Route('/{id}/delete', name: 'comment_delete')]
+    public function delete(
+        Comment $comment,
+        EntityManagerInterface $em,
+        TherapistRepository $therapistRepository
+    ): Response {
 
-        if (!$comment) {
-            return new JsonResponse(['error' => 'Comment not found'], 404);
-        }
+        $user = $this->getUser();
 
+        // If user is therapist
+        $therapist = in_array('ROLE_THERAPIST', $user->getRoles())
+            ? $therapistRepository->findOneBy(['email' => $user->getUserIdentifier()])
+            : null;
+
+        // Check permission
         if (
-            $comment->getUser() !== $this->getUser() &&
-            $comment->getTherapist() !== $this->getUser()
+            $comment->getUser() !== $user &&
+            $comment->getTherapist() !== $therapist &&
+            !$this->isGranted('ROLE_ADMIN')
         ) {
-            return new JsonResponse(['error' => 'Access denied'], 403);
+            throw $this->createAccessDeniedException();
         }
 
-        $this->em->remove($comment);
-        $this->em->flush();
+        $em->remove($comment);
+        $em->flush();
 
-        return new JsonResponse(['message' => 'Comment deleted']);
+        return $this->redirectToRoute('comment_list');
     }
 }

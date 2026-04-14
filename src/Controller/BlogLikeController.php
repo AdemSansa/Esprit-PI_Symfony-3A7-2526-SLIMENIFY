@@ -8,12 +8,10 @@ use App\Entity\Comment;
 use App\Entity\CommentLike;
 use App\Repository\BlogLikeRepository;
 use App\Repository\CommentLikeRepository;
-use App\Repository\CommentRepository;
 use App\Repository\TherapistRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -35,7 +33,9 @@ class BlogLikeController extends AbstractController
         if ($existingLike) {
             $em->remove($existingLike);
             $em->flush();
-            return new JsonResponse(['liked' => false, 'count' => count($blog->getLikes())]);
+            $em->refresh($blog);
+
+            return new JsonResponse(['liked' => false, 'count' => $blog->getLikes()->count()]);
         }
 
         $like = new BlogLike();
@@ -48,8 +48,9 @@ class BlogLikeController extends AbstractController
 
         $em->persist($like);
         $em->flush();
+        $em->refresh($blog);
 
-        return new JsonResponse(['liked' => true, 'count' => count($blog->getLikes())]);
+        return new JsonResponse(['liked' => true, 'count' => $blog->getLikes()->count()]);
     }
 
     #[Route('/comment/{id}/like', name: 'api_comment_like', methods: ['POST'])]
@@ -66,7 +67,9 @@ class BlogLikeController extends AbstractController
         if ($existingLike) {
             $em->remove($existingLike);
             $em->flush();
-            return new JsonResponse(['liked' => false, 'count' => count($comment->getLikes())]);
+            $em->refresh($comment);
+
+            return new JsonResponse(['liked' => false, 'count' => $comment->getLikes()->count()]);
         }
 
         $like = new CommentLike();
@@ -79,46 +82,8 @@ class BlogLikeController extends AbstractController
 
         $em->persist($like);
         $em->flush();
+        $em->refresh($comment);
 
-        return new JsonResponse(['liked' => true, 'count' => count($comment->getLikes())]);
-    }
-
-    #[Route('/blog/{id}/comment', name: 'api_blog_comment_add', methods: ['POST'])]
-    #[IsGranted('ROLE_USER')]
-    public function addComment(Blog $blog, Request $request, EntityManagerInterface $em, TherapistRepository $therapistRepository): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true);
-        $content = $data['content'] ?? '';
-
-        if (strlen($content) < 2) {
-            return new JsonResponse(['error' => 'Comment too short'], 400);
-        }
-
-        $user = $this->getUser();
-        $isTherapist = in_array('ROLE_THERAPIST', $user->getRoles());
-        $therapist = $isTherapist ? $therapistRepository->findOneBy(['email' => $user->getUserIdentifier()]) : null;
-
-        $comment = new Comment();
-        $comment->setBlog($blog);
-        $comment->setContent($content);
-        
-        if ($isTherapist && $therapist) {
-            $comment->setTherapist($therapist);
-        } else {
-            $comment->setUser($user);
-        }
-
-        $em->persist($comment);
-        $em->flush();
-
-        return new JsonResponse([
-            'success' => true,
-            'comment' => [
-                'id' => $comment->getId(),
-                'content' => $comment->getContent(),
-                'author' => $user->getFirstName(),
-                'createdAt' => $comment->getCreatedAt()->format('M d, Y')
-            ]
-        ]);
+        return new JsonResponse(['liked' => true, 'count' => $comment->getLikes()->count()]);
     }
 }
