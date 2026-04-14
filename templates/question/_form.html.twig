@@ -27,9 +27,27 @@
         box-shadow: 0 4px 15px rgba(98, 114, 85, 0.3); display: inline-flex; align-items: center; gap: 0.5rem;
     }
     .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(98, 114, 85, 0.4); }
+
+    /* Custom form errors styling */
+    .custom-form-container > ul, .form-group ul, .switch-wrap ul {
+        list-style: none;
+        padding: 0;
+        margin: 0.3rem 0 1rem 0;
+        color: #dc3545;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .custom-form-container > ul li, .form-group ul li, .switch-wrap ul li {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .custom-form-container > ul li::before, .form-group ul li::before, .switch-wrap ul li::before {
+        content: '⚠';
+    }
 </style>
 
-{{ form_start(form, {'attr': {'class': 'custom-form-container'}}) }}
+{{ form_start(form, {'attr': {'class': 'custom-form-container', 'novalidate': 'novalidate'}}) }}
     {{ form_errors(form) }}
 
     <div class="form-group">
@@ -39,9 +57,22 @@
     </div>
 
     <div class="form-group">
-        {{ form_label(form.imagePath, null, {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.imagePath, {'attr': {'class': 'form-control', 'placeholder': 'Optional: URL for an associated image'}}) }}
-        {{ form_errors(form.imagePath) }}
+        {{ form_label(form.imageFile, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.imageFile) }}
+        {% if question.imagePath %}
+            <div style="margin-top: 0.6rem;">
+                <a href="{{ question.imagePath }}" target="_blank" style="font-size: 0.85rem; color: #627255; font-weight: 600; text-decoration: none;">
+                    Preview current image
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.category, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.category, {'attr': {'class': 'form-control', 'placeholder': 'e.g., Anxiety, Depression, Behavior'}}) }}
+        {{ form_errors(form.category) }}
     </div>
 
     <div class="switch-wrap">

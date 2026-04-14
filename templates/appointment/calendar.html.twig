@@ -25,6 +25,7 @@
 {% endblock %}
 
 {% block app_content %}
+    <meta name="turbo-cache-control" content="no-cache">
     <h1 style="margin-top:0; font-size:1.7rem; color:#334155;">Appointment Calendar</h1>
     <p style="color:#64748b; max-width:70ch;">
         {% if is_therapist %}
@@ -63,10 +64,11 @@
         <div style="background:#fff; width:100%; max-width:440px; border-radius:14px; border:1px solid #e2e8f0; padding:1rem;">
             <h3 style="margin-top:0; color:#334155;">Book Appointment</h3>
             <p id="booking-range" style="margin:0 0 0.8rem; color:#64748b; font-size:0.9rem;"></p>
-            <div style="display:grid; gap:0.6rem;">
+            <div id="booking-type-wrapper" style="display:grid; gap:0.6rem;">
                 <label style="font-size:0.88rem; color:#475569;">Type</label>
                 <select id="booking-type" style="border:1px solid #cbd5e1; border-radius:8px; padding:0.55rem;"></select>
             </div>
+            <p id="booking-type-info" style="margin:0.4rem 0 0; color:#475569; font-size:0.9rem; font-weight:600;"></p>
             <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;">
                 <button type="button" id="booking-cancel" style="border:1px solid #cbd5e1; background:#fff; color:#334155; border-radius:8px; padding:0.45rem 0.7rem; cursor:pointer;">Cancel</button>
                 <button type="button" id="booking-save" style="border:none; background:#627255; color:#fff; border-radius:8px; padding:0.45rem 0.8rem; cursor:pointer;">Confirm Booking</button>
@@ -152,14 +154,23 @@
             const selectedTherapistFromBackend = {{ selected_therapist_id ?: 0 }};
             const modalEl = document.getElementById('booking-modal');
             const modalTypeEl = document.getElementById('booking-type');
+            const modalTypeWrapper = document.getElementById('booking-type-wrapper');
+            const modalTypeInfo = document.getElementById('booking-type-info');
             const modalRangeEl = document.getElementById('booking-range');
             const modalCancelEl = document.getElementById('booking-cancel');
             const modalSaveEl = document.getElementById('booking-save');
 
             let selectedSlot = null;
             let consultationType = 'BOTH';
-            let activeTherapistId = isTherapist ? selectedTherapistFromBackend : parseInt((therapistSelect && therapistSelect.value) || 0, 10);
+            let activeTherapistId = parseInt(selectedTherapistFromBackend, 10) || (therapistSelect && parseInt(therapistSelect.value, 10)) || 0;
+            if (isNaN(activeTherapistId)) activeTherapistId = 0;
+
+            if (therapistSelect && activeTherapistId > 0 && therapistSelect.value != activeTherapistId) {
+                therapistSelect.value = activeTherapistId;
+            }
+
             let businessHoursCache = [];
+            let exceptionsCache = [];
 
             const formatTime = (dateObj) => dateObj.toTimeString().slice(0, 5);
             const formatDate = (dateObj) => dateObj.toISOString().slice(0, 10);
@@ -185,11 +196,29 @@
                 return (dateObj.getHours() * 60) + dateObj.getMinutes();
             }
 
+            function isBlockedByException(startDate, endDate) {
+                const dateStr = formatDate(startDate);
+                const startMins = toMinuteOfDay(startDate);
+                const endMins = toMinuteOfDay(endDate);
+
+                return exceptionsCache.some((ex) => {
+                    if (ex.date !== dateStr) return false;
+                    const [exS_H, exS_M] = ex.startTime.split(':').map(Number);
+                    const [exE_H, exE_M] = ex.endTime.split(':').map(Number);
+                    const exStart = (exS_H * 60) + exS_M;
+                    const exEnd = (exE_H * 60) + exE_M;
+
+                    // Overlap: (start1 < end2) && (end1 > start2)
+                    return startMins < exEnd && endMins > exStart;
+                });
+            }
+
             function isWithinBusinessHours(startDate, endDate) {
                 const day = startDate.getDay();
                 const startMinutes = toMinuteOfDay(startDate);
                 const endMinutes = toMinuteOfDay(endDate);
-                return businessHoursCache.some((block) => {
+
+                const inRecurring = businessHoursCache.some((block) => {
                     if (!Array.isArray(block.daysOfWeek) || !block.daysOfWeek.includes(day)) {
                         return false;
                     }
@@ -199,20 +228,35 @@
                     const bhEnd = (bhEndHour * 60) + bhEndMinute;
                     return startMinutes >= bhStart && endMinutes <= bhEnd;
                 });
+
+                if (!inRecurring) return false;
+                return !isBlockedByException(startDate, endDate);
             }
 
             async function openBookingModal(slotInfo) {
                 const fixedEnd = new Date(slotInfo.start.getTime() + (60 * 60 * 1000));
                 selectedSlot = { start: slotInfo.start, end: fixedEnd };
-                modalRangeEl.textContent = `${formatDate(slotInfo.start)} ${formatTime(slotInfo.start)} - ${formatTime(slotInfo.end)}`;
                 modalRangeEl.textContent = `${formatDate(selectedSlot.start)} ${formatTime(selectedSlot.start)} - ${formatTime(selectedSlot.end)} (60 min)`;
+                
                 modalTypeEl.innerHTML = '';
-                typeOptionsByConsultation(consultationType).forEach((option) => {
+                const options = typeOptionsByConsultation(consultationType);
+                options.forEach((option) => {
                     const el = document.createElement('option');
                     el.value = option.value;
                     el.textContent = option.label;
                     modalTypeEl.appendChild(el);
                 });
+
+                if (options.length === 1) {
+                    modalTypeWrapper.style.display = 'none';
+                    modalTypeInfo.textContent = `Type: ${options[0].label} appointment`;
+                    modalTypeInfo.style.display = 'block';
+                    modalTypeEl.value = options[0].value;
+                } else {
+                    modalTypeWrapper.style.display = 'grid';
+                    modalTypeInfo.style.display = 'none';
+                }
+
                 modalEl.style.display = 'flex';
             }
 
@@ -275,8 +319,16 @@
                 selectMirror: true,
                 nowIndicator: true,
                 eventOverlap: false,
+                eventAllow: (dropInfo, draggedEvent) => {
+                    return dropInfo.start >= new Date();
+                },
                 eventClick: (info) => { window.location.href = info.event.extendedProps.detailUrl; },
                 eventDrop: async (info) => {
+                    if (info.event.extendedProps.status === 'completed') {
+                        info.revert();
+                        await showErrorAlert('Completed appointments cannot be moved.');
+                        return;
+                    }
                     if (!isWithinBusinessHours(info.event.start, info.event.end)) {
                         info.revert();
                         await showErrorAlert('This move is outside therapist business hours.');
@@ -312,6 +364,14 @@
                         showErrorAlert('Please select a therapist first.');
                         return;
                     }
+                    if (selectionInfo.start < new Date()) {
+                        showErrorAlert('You cannot book appointments in the past.');
+                        return;
+                    }
+                    if (isBlockedByException(selectionInfo.start, selectionInfo.end)) {
+                        showErrorAlert('This therapist is unavailable at this specific time (exception).');
+                        return;
+                    }
                     if (!isWithinBusinessHours(selectionInfo.start, selectionInfo.end)) {
                         showErrorAlert('You cannot book outside therapist business hours.');
                         return;
@@ -320,7 +380,15 @@
                 },
                 dateClick: (info) => {
                     if (isTherapist || !activeTherapistId) return;
+                    if (info.date < new Date()) {
+                        showErrorAlert('You cannot book appointments in the past.');
+                        return;
+                    }
                     const end = new Date(info.date.getTime() + (30 * 60 * 1000));
+                    if (isBlockedByException(info.date, end)) {
+                        showErrorAlert('The therapist has blocked this specific time.');
+                        return;
+                    }
                     if (!isWithinBusinessHours(info.date, end)) {
                         showErrorAlert('This slot is outside therapist business hours.');
                     }
@@ -343,6 +411,7 @@
                 const data = await loadBusinessHours();
                 consultationType = data.consultationType || 'BOTH';
                 businessHoursCache = data.businessHours || [];
+                exceptionsCache = data.exceptions || [];
                 appointmentCalendarInstance.setOption('businessHours', businessHoursCache);
                 appointmentCalendarInstance.render();
                 appointmentCalendarInstance.refetchEvents();
@@ -365,23 +434,22 @@
                 appointmentCalendarInstance = null;
             }
         });
-        document.addEventListener('turbo:load', initAppointmentCalendar);
-        document.addEventListener('turbo:render', async () => {
-            if (appointmentCalendarInstance) {
+        
+        let hasInitialized = false;
+
+        async function safeInit() {
+            if (hasInitialized && appointmentCalendarInstance) {
                 appointmentCalendarInstance.refetchEvents();
-            } else {
-                await initAppointmentCalendar();
+                return;
             }
-        });
-        window.addEventListener('pageshow', async () => {
-            if (appointmentCalendarInstance) {
-                appointmentCalendarInstance.refetchEvents();
-            } else {
-                await initAppointmentCalendar();
-            }
-        });
+            hasInitialized = true;
+            await initAppointmentCalendar();
+        }
+
+        document.addEventListener('turbo:load', safeInit);
+        
         if (document.readyState === 'interactive' || document.readyState === 'complete') {
-            initAppointmentCalendar();
+            safeInit();
         }
     </script>
 {% endblock %}

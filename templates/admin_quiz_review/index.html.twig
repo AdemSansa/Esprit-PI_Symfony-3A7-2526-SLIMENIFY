@@ -1,0 +1,228 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Quiz Review Requests{% endblock %}
+
+{% block app_content %}
+    <style>
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+        .review-sub {
+            margin: 0.35rem 0 0;
+            color: #7a5b49;
+            font-size: 0.95rem;
+        }
+        .review-count {
+            background: rgba(168, 134, 110, 0.15);
+            color: #5D4A3E;
+            padding: 0.45rem 0.9rem;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .review-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        .review-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid rgba(122, 91, 73, 0.12);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .review-card-head {
+            padding: 1.1rem 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(122, 91, 73, 0.08);
+        }
+        .review-title {
+            margin: 0 0 0.45rem;
+            font-size: 1.2rem;
+            color: #5D4A3E;
+        }
+        .review-meta {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin: 0;
+        }
+        .chip {
+            background: #f6f5ed;
+            border: 1px solid rgba(122, 91, 73, 0.12);
+            color: #7a5b49;
+            border-radius: 999px;
+            padding: 0.25rem 0.65rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .chip-review {
+            background: rgba(168, 134, 110, 0.15);
+            color: #8a6d58;
+            border-color: rgba(168, 134, 110, 0.25);
+        }
+        .review-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 0.55rem 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .btn-approve {
+            background: #627255;
+            color: #fff;
+        }
+        .btn-reject {
+            background: #ef4444;
+            color: #fff;
+        }
+        .btn-toggle {
+            background: #fff;
+            color: #627255;
+            border: 1px solid #627255;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .review-body {
+            padding: 1.1rem 1.2rem 1.2rem;
+            background: linear-gradient(to bottom, #fff, #fcfcfa);
+        }
+        .review-section-label {
+            margin: 0 0 0.35rem;
+            font-size: 0.82rem;
+            color: #A8866E;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 800;
+        }
+        .review-desc {
+            margin: 0 0 1rem;
+            color: #5D4A3E;
+            line-height: 1.55;
+        }
+        .question-list {
+            display: grid;
+            gap: 0.55rem;
+            margin-top: 0.6rem;
+        }
+        .question-item {
+            background: #fff;
+            border: 1px solid rgba(122, 91, 73, 0.12);
+            border-radius: 10px;
+            padding: 0.65rem 0.8rem;
+            color: #5D4A3E;
+        }
+        .question-index {
+            font-weight: 800;
+            color: #748764;
+            margin-right: 0.35rem;
+        }
+        .collapsible {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease;
+        }
+        .collapsible.open {
+            max-height: 1000px;
+        }
+    </style>
+
+    <div class="review-header">
+        <div>
+            <h1 style="margin:0;font-size:2rem;font-weight:800;color:#5D4A3E;">Quiz <span style="color:#A8866E;font-weight:400;">Review Requests</span></h1>
+            <p class="review-sub">Check full quiz content before approving publication.</p>
+        </div>
+        <div class="review-count">{{ quizzes|length }} pending</div>
+    </div>
+
+    {% if quizzes is empty %}
+        <div style="background:rgba(255,255,255,0.75);border-radius:14px;padding:2rem;border:1px dashed rgba(122,91,73,0.2);">
+            <p style="margin:0;color:#6b7280;">No quiz creation requests are currently pending review.</p>
+        </div>
+    {% else %}
+        <div class="review-grid">
+            {% for quiz in quizzes %}
+                <article class="review-card">
+                    <div class="review-card-head">
+                        <div>
+                            <h3 class="review-title">{{ quiz.title }}</h3>
+                            <p class="review-meta">
+                                <span class="chip chip-review">Under review</span>
+                                <span class="chip">{{ quiz.questions|length }} questions</span>
+                                {% if quiz.category %}
+                                    <span class="chip">{{ quiz.category }}</span>
+                                {% endif %}
+                                <span class="chip">By {{ quiz.author ? quiz.author.firstName ~ ' ' ~ quiz.author.lastName : 'Unknown therapist' }}</span>
+                                <span class="chip">{{ quiz.createdAt|date('d M Y H:i') }}</span>
+                            </p>
+                        </div>
+                        <div class="review-actions">
+                            <button type="button" class="btn btn-toggle" data-toggle-target="quiz-details-{{ quiz.id }}">
+                                View content
+                            </button>
+                            <form method="post" action="{{ path('app_admin_quiz_approve', {'id': quiz.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('approve_quiz_' ~ quiz.id) }}">
+                                <button type="submit" class="btn btn-approve">Approve</button>
+                            </form>
+                            <form method="post" action="{{ path('app_admin_quiz_reject', {'id': quiz.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('reject_quiz_' ~ quiz.id) }}">
+                                <button type="submit" class="btn btn-reject">Reject</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="review-body collapsible" id="quiz-details-{{ quiz.id }}">
+                        <p class="review-section-label">Description</p>
+                        <p class="review-desc">{{ quiz.description ?: 'No description provided.' }}</p>
+
+                        <p class="review-section-label">Questions</p>
+                        <div class="question-list">
+                            {% for question in quiz.questions %}
+                                <div class="question-item">
+                                    <span class="question-index">Q{{ loop.index }}.</span> {{ question.questionText }}
+                                </div>
+                            {% else %}
+                                <div class="question-item">No questions attached to this quiz.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <script>
+        document.querySelectorAll('[data-toggle-target]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const targetId = button.getAttribute('data-toggle-target');
+                const content = document.getElementById(targetId);
+                const isOpen = content.classList.contains('open');
+
+                content.classList.toggle('open');
+                button.textContent = isOpen ? 'View content' : 'Hide content';
+            });
+        });
+    </script>
+{% endblock %}

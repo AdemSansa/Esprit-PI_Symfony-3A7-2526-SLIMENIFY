@@ -6,35 +6,50 @@ use App\Repository\QuizRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: QuizRepository::class)]
 #[ORM\Table(name: 'quiz')]
 class Quiz
 {
+    public const STATUS_INACTIVE = 0;
+    public const STATUS_ACTIVE = 1;
+    public const STATUS_UNDER_REVIEW = 2;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'bigint')]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 150)]
+    #[Assert\NotBlank(message: 'The quiz title cannot be empty.')]
+    #[Assert\Length(max: 150, maxMessage: 'The title cannot be longer than {{ limit }} characters.')]
     private string $title;
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\NotBlank(message: 'Please provide a description for the quiz.')]
+    #[Assert\Length(max: 5000, maxMessage: 'The description cannot be longer than {{ limit }} characters.')]
     private ?string $description = null;
 
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    #[Assert\NotBlank(message: 'Please provide a category for the quiz.')]
+    #[Assert\Length(max: 50, maxMessage: 'The category cannot be longer than {{ limit }} characters.')]
     private ?string $category = null;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    #[Assert\PositiveOrZero(message: 'Total questions must be zero or a positive number.')]
     private int $totalQuestions = 0;
 
-    #[ORM\Column(type: 'boolean', options: ['default' => true])]
-    private bool $active = true;
+    #[ORM\Column(type: 'smallint', options: ['default' => self::STATUS_UNDER_REVIEW])]
+    private int $active = self::STATUS_UNDER_REVIEW;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    #[Assert\PositiveOrZero(message: 'Minimum score must be zero or a positive number.')]
     private int $minScore = 0;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    #[Assert\Type(type: 'integer')]
+    #[Assert\PositiveOrZero(message: 'Maximum score must be zero or a positive number.')]
     private int $maxScore = 0;
 
     #[ORM\Column(type: 'datetime_immutable')]
@@ -49,10 +64,15 @@ class Quiz
         joinColumns: [new ORM\JoinColumn(name: 'quiz_id', referencedColumnName: 'id')],
         inverseJoinColumns: [new ORM\JoinColumn(name: 'question_id', referencedColumnName: 'id')]
     )]
+    #[Assert\Count(min: 1, minMessage: 'You must select at least one question for this quiz.')]
     private Collection $questions;
 
     #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: QuizResult::class)]
     private Collection $results;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $author = null;
 
     public function __construct()
     {
@@ -71,8 +91,11 @@ class Quiz
     public function setCategory(?string $v): static { $this->category = $v; return $this; }
     public function getTotalQuestions(): int { return $this->totalQuestions; }
     public function setTotalQuestions(int $v): static { $this->totalQuestions = $v; return $this; }
-    public function isActive(): bool { return $this->active; }
-    public function setActive(bool $v): static { $this->active = $v; return $this; }
+    public function getActive(): int { return $this->active; }
+    public function isActive(): bool { return $this->active === self::STATUS_ACTIVE; }
+    public function isUnderReview(): bool { return $this->active === self::STATUS_UNDER_REVIEW; }
+    public function isInactive(): bool { return $this->active === self::STATUS_INACTIVE; }
+    public function setActive(int $v): static { $this->active = $v; return $this; }
     public function getMinScore(): int { return $this->minScore; }
     public function setMinScore(int $v): static { $this->minScore = $v; return $this; }
     public function getMaxScore(): int { return $this->maxScore; }
@@ -115,4 +138,7 @@ class Quiz
     public function addQuestion(Question $q): static { if (!$this->questions->contains($q)) { $this->questions->add($q); } return $this; }
     public function removeQuestion(Question $q): static { $this->questions->removeElement($q); return $this; }
     public function getResults(): Collection { return $this->results; }
+    
+    public function getAuthor(): ?User { return $this->author; }
+    public function setAuthor(?User $author): static { $this->author = $author; return $this; }
 }

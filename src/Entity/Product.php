@@ -5,9 +5,11 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: \App\Repository\ProductRepository::class)]
 #[ORM\Table(name: 'products')]
+#[UniqueEntity(fields: ['name'], message: 'A product with this name already exists in the inventory.')]
 class Product
 {
     #[ORM\Id]

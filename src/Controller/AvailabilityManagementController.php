@@ -91,9 +91,44 @@ class AvailabilityManagementController extends AbstractController
         $specificDate = \DateTime::createFromFormat('Y-m-d', $date);
         $startTime = \DateTime::createFromFormat('H:i', $start) ?: \DateTime::createFromFormat('H:i:s', $start);
         $endTime = \DateTime::createFromFormat('H:i', $end) ?: \DateTime::createFromFormat('H:i:s', $end);
+
         if (!$specificDate || !$startTime || !$endTime || $endTime <= $startTime) {
             $this->addFlash('error', 'Please provide a valid exception date/time range.');
             return $this->redirectToRoute('app_availability_manage');
+        }
+
+        if ($specificDate < new \DateTime('today')) {
+            $this->addFlash('error', 'You cannot add exceptions in the past.');
+            return $this->redirectToRoute('app_availability_manage');
+        }
+
+        $availabilityRows = $this->availabilityRepository->findByTherapistId($therapist->getId());
+        $day = strtoupper($specificDate->format('l'));
+        $isWithinBusinessHours = false;
+        foreach ($availabilityRows as $row) {
+            if ($row->getSpecificDate() === null && $row->isAvailable() && $row->getDay() === $day) {
+                if ($row->getStartTime()->format('H:i:s') <= $startTime->format('H:i:s')
+                    && $row->getEndTime()->format('H:i:s') >= $endTime->format('H:i:s')) {
+                    $isWithinBusinessHours = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$isWithinBusinessHours) {
+            $this->addFlash('error', 'Exceptions must be within your recurring business hours for that day.');
+            return $this->redirectToRoute('app_availability_manage');
+        }
+
+        foreach ($availabilityRows as $row) {
+            if ($row->getSpecificDate() && $row->getSpecificDate()->format('Y-m-d') === $specificDate->format('Y-m-d')) {
+                // Overlap check: (start1 < end2) && (end1 > start2)
+                if ($startTime->format('H:i:s') < $row->getEndTime()->format('H:i:s') &&
+                    $endTime->format('H:i:s') > $row->getStartTime()->format('H:i:s')) {
+                    $this->addFlash('error', 'This exception overlaps with an existing one on the same day.');
+                    return $this->redirectToRoute('app_availability_manage');
+                }
+            }
         }
 
         $exception = new Availability();
@@ -165,8 +200,49 @@ class AvailabilityManagementController extends AbstractController
                 $this->addFlash('error', 'Please provide a valid specific date.');
                 return $this->redirectToRoute('app_availability_manage');
             }
+
+            if ($specificDate < new \DateTime('today')) {
+                $this->addFlash('error', 'You cannot update exceptions to dates in the past.');
+                return $this->redirectToRoute('app_availability_manage');
+            }
+
             $availability->setSpecificDate($specificDate);
             $availability->setDay(strtoupper($specificDate->format('l')));
+        }
+
+        // Overlap check against others
+        // If updating an exception, check if it's within business hours
+        if ($availability->getSpecificDate() !== null && !$availability->isAvailable()) {
+            $isWithinBusinessHours = false;
+            foreach ($existing as $row) {
+                if ($row->getSpecificDate() === null && $row->isAvailable() && $row->getDay() === $availability->getDay()) {
+                    if ($row->getStartTime()->format('H:i:s') <= $startTime->format('H:i:s')
+                        && $row->getEndTime()->format('H:i:s') >= $endTime->format('H:i:s')) {
+                        $isWithinBusinessHours = true;
+                        break;
+                    }
+                }
+            }
+            if (!$isWithinBusinessHours) {
+                $this->addFlash('error', 'Exceptions must be within your recurring business hours.');
+                return $this->redirectToRoute('app_availability_manage');
+            }
+        }
+
+        foreach ($existing as $row) {
+            if ($row->getId() === $availability->getId()) continue;
+            
+            // If both are recurring on the same day or both are exceptions on the same specific date
+            $sameDay = ($availability->getSpecificDate() === null && $row->getSpecificDate() === null && $availability->getDay() === $row->getDay());
+            $sameDate = ($availability->getSpecificDate() !== null && $row->getSpecificDate() !== null && $availability->getSpecificDate()->format('Y-m-d') === $row->getSpecificDate()->format('Y-m-d'));
+            
+            if ($sameDay || $sameDate) {
+                if ($startTime->format('H:i:s') < $row->getEndTime()->format('H:i:s') &&
+                    $endTime->format('H:i:s') > $row->getStartTime()->format('H:i:s')) {
+                    $this->addFlash('error', 'Update failed: it overlaps with another existing entry.');
+                    return $this->redirectToRoute('app_availability_manage');
+                }
+            }
         }
 
         $availability->setStartTime($startTime);

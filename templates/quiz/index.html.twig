@@ -49,6 +49,7 @@
         }
         .badge-active { background: rgba(98, 114, 85, 0.1); color: #627255; }
         .badge-inactive { background: #f1f5f9; color: #94a3b8; }
+        .badge-review { background: rgba(168, 134, 110, 0.15); color: #A8866E; }
         .badge-category { background: rgba(168, 134, 110, 0.1); color: #A8866E; }
         
         .quiz-title { font-size: 1.3rem; font-weight: 800; color: #5D4A3E; margin: 1rem 0 0.5rem 0; line-height: 1.3; }
@@ -101,9 +102,9 @@
             {% for quiz in quizzes %}
                 <div class="quiz-card">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <span class="quiz-badge {{ quiz.active ? 'badge-active' : 'badge-inactive' }}">
+                        <span class="quiz-badge {{ quiz.active == 1 ? 'badge-active' : (quiz.active == 2 ? 'badge-review' : 'badge-inactive') }}">
                             <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
-                            {{ quiz.active ? 'Active' : 'Inactive' }}
+                            {{ quiz.active == 1 ? 'Active' : (quiz.active == 2 ? 'Under review' : 'Inactive') }}
                         </span>
                         {% if quiz.category %}
                             <span class="quiz-badge badge-category">
@@ -128,6 +129,11 @@
                             <div class="stat-label">Taken By</div>
                             <div class="stat-value">{{ quiz.participantCount }}</div>
                         </div>
+                    </div>
+
+                    <div style="font-size: 0.85rem; color: #7a5b49; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.4rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        Hosted by: <strong>{{ quiz.author ? quiz.author.firstName ~ ' ' ~ quiz.author.lastName : 'Unknown Therapist' }}</strong>
                     </div>
 
                     <div class="action-bar">

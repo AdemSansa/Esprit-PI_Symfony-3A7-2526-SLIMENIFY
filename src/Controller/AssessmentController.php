@@ -18,11 +18,20 @@ class AssessmentController extends AbstractController
     #[Route('/', name: 'app_assessment_index', methods: ['GET'])]
     public function index(QuizRepository $quizRepository): Response
     {
-        // Only show active quizzes
-        $quizzes = $quizRepository->findBy(['active' => true]);
+        $quizzes = $quizRepository->findBy(['active' => Quiz::STATUS_ACTIVE]);
+        usort($quizzes, static fn (Quiz $a, Quiz $b) => $b->getParticipantCount() <=> $a->getParticipantCount());
+
+        $mostTakenQuiz = $quizzes[0] ?? null;
+        $totalAttempts = array_reduce(
+            $quizzes,
+            static fn (int $carry, Quiz $quiz): int => $carry + $quiz->getParticipantCount(),
+            0
+        );
 
         return $this->render('assessment/index.html.twig', [
             'quizzes' => $quizzes,
+            'mostTakenQuiz' => $mostTakenQuiz,
+            'totalAttempts' => $totalAttempts,
         ]);
     }
 

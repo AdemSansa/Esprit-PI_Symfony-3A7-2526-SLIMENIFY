@@ -3,6 +3,7 @@
 {% block title %}Availability Management{% endblock %}
 
 {% block app_content %}
+    <meta name="turbo-cache-control" content="no-cache">
     <h1 style="margin-top:0; font-size:1.7rem; color:#334155;">Availability Management</h1>
     <p style="color:#64748b; max-width:70ch;">
         Set recurring business hours and one-off unavailable exceptions.
@@ -23,8 +24,11 @@
                 <div style="display:grid; gap:0.75rem;">
                     <label style="font-size:0.9rem; color:#475569;">Weekday</label>
                     <select name="day" required style="border:1px solid #cbd5e1; border-radius:8px; padding:0.55rem;">
+                        {% set used_days = business_hours ? business_hours|map(r => r.day) : [] %}
                         {% for day in ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'] %}
-                            <option value="{{ day }}">{{ day|title }}</option>
+                            {% if day not in used_days %}
+                                <option value="{{ day }}">{{ day|title }}</option>
+                            {% endif %}
                         {% endfor %}
                     </select>
                     <label style="font-size:0.9rem; color:#475569;">Start Time</label>
@@ -41,7 +45,7 @@
             <form method="post" action="{{ path('app_availability_add_exception') }}">
                 <div style="display:grid; gap:0.75rem;">
                     <label style="font-size:0.9rem; color:#475569;">Specific Date</label>
-                    <input type="date" name="specific_date" required style="border:1px solid #cbd5e1; border-radius:8px; padding:0.55rem;">
+                    <input type="date" name="specific_date" required min="{{ "now"|date("Y-m-d") }}" style="border:1px solid #cbd5e1; border-radius:8px; padding:0.55rem;">
                     <label style="font-size:0.9rem; color:#475569;">Blocked From</label>
                     <input type="time" name="start_time" required style="border:1px solid #cbd5e1; border-radius:8px; padding:0.55rem;">
                     <label style="font-size:0.9rem; color:#475569;">Blocked To</label>
@@ -76,7 +80,7 @@
                                 </form>
                             </details>
                             <form method="post" action="{{ path('app_availability_delete', {id: row.id}) }}">
-                                <button type="submit" style="border:none; background:#fee2e2; color:#991b1b; border-radius:8px; padding:0.35rem 0.6rem; cursor:pointer;">Delete</button>
+                                <button type="button" onclick="const form=this.closest('form'); Swal.fire({title:'Are you sure?', text:'This will permanently delete this availability.', icon:'warning', showCancelButton:true, confirmButtonColor:'#d33', confirmButtonText:'Yes, delete!'}).then(r => { if(r.isConfirmed) { form.submit(); } })" style="border:none; background:#fee2e2; color:#991b1b; border-radius:8px; padding:0.35rem 0.6rem; cursor:pointer;">Delete</button>
                             </form>
                         </div>
                     </div>
@@ -96,14 +100,14 @@
                             <details>
                                 <summary style="list-style:none; cursor:pointer; border:none; background:#dbeafe; color:#1e40af; border-radius:8px; padding:0.35rem 0.6rem; font-size:0.85rem;">Edit</summary>
                                 <form method="post" action="{{ path('app_availability_update', {id: row.id}) }}" style="margin-top:0.5rem; padding:0.6rem; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; display:grid; gap:0.45rem;">
-                                    <input type="date" name="specific_date" required value="{{ row.specificDate|date('Y-m-d') }}" style="border:1px solid #cbd5e1; border-radius:7px; padding:0.4rem;">
+                                    <input type="date" name="specific_date" required value="{{ row.specificDate|date('Y-m-d') }}" min="{{ "now"|date("Y-m-d") }}" style="border:1px solid #cbd5e1; border-radius:7px; padding:0.4rem;">
                                     <input type="time" name="start_time" required value="{{ row.startTime|date('H:i') }}" style="border:1px solid #cbd5e1; border-radius:7px; padding:0.4rem;">
                                     <input type="time" name="end_time" required value="{{ row.endTime|date('H:i') }}" style="border:1px solid #cbd5e1; border-radius:7px; padding:0.4rem;">
                                     <button type="submit" style="border:none; background:#627255; color:#fff; border-radius:7px; padding:0.35rem 0.55rem; cursor:pointer;">Save</button>
                                 </form>
                             </details>
                             <form method="post" action="{{ path('app_availability_delete', {id: row.id}) }}">
-                                <button type="submit" style="border:none; background:#fee2e2; color:#991b1b; border-radius:8px; padding:0.35rem 0.6rem; cursor:pointer;">Delete</button>
+                                <button type="button" onclick="const form=this.closest('form'); Swal.fire({title:'Are you sure?', text:'This will permanently delete this availability exception.', icon:'warning', showCancelButton:true, confirmButtonColor:'#d33', confirmButtonText:'Yes, delete!'}).then(r => { if(r.isConfirmed) { form.submit(); } })" style="border:none; background:#fee2e2; color:#991b1b; border-radius:8px; padding:0.35rem 0.6rem; cursor:pointer;">Delete</button>
                             </form>
                         </div>
                     </div>
@@ -111,4 +115,9 @@
             {% endif %}
         </section>
     </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}
