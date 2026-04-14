@@ -436,7 +436,10 @@
 							</svg>
 						{% endif %}
 						<span>{{ message }}</span>
+					
 					</div>
+				{% endfor %}
+			{% endfor %}
 		<div class="app-main__inner" data-turbo-cache="false">
 			{% for label, messages in app.flashes %}
 				{% for message in messages %}
