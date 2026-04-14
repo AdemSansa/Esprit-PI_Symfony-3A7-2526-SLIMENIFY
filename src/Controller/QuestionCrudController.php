@@ -6,8 +6,10 @@ use App\Entity\Question;
 use App\Enum\PsychologyCategory;
 use App\Form\QuestionType;
 use App\Repository\QuestionRepository;
+use App\Service\CloudinaryUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -41,7 +43,7 @@ class QuestionCrudController extends AbstractController
     }
 
     #[Route('/new', name: 'app_question_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, CloudinaryUploader $cloudinaryUploader): Response
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
@@ -54,6 +56,20 @@ class QuestionCrudController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var UploadedFile|null $imageFile */
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $uploadedUrl = $cloudinaryUploader->uploadQuestionImage($imageFile);
+                if ($uploadedUrl === '') {
+                    $this->addFlash('error', 'Image upload failed. Please try again.');
+                    return $this->render('question/new.html.twig', [
+                        'question' => $question,
+                        'form' => $form,
+                    ]);
+                }
+                $question->setImagePath($uploadedUrl);
+            }
+
             $entityManager->persist($question);
             $entityManager->flush();
 
@@ -67,7 +83,7 @@ class QuestionCrudController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_question_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Question $question, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Question $question, EntityManagerInterface $entityManager, CloudinaryUploader $cloudinaryUploader): Response
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
@@ -79,6 +95,20 @@ class QuestionCrudController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var UploadedFile|null $imageFile */
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $uploadedUrl = $cloudinaryUploader->uploadQuestionImage($imageFile);
+                if ($uploadedUrl === '') {
+                    $this->addFlash('error', 'Image upload failed. Please try again.');
+                    return $this->render('question/edit.html.twig', [
+                        'question' => $question,
+                        'form' => $form,
+                    ]);
+                }
+                $question->setImagePath($uploadedUrl);
+            }
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_question_index', [], Response::HTTP_SEE_OTHER);
