@@ -1,0 +1,341 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Payment & Delivery | Slimenify Wellness{% endblock %}
+
+{% block app_content %}
+<style>
+    .checkout-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem 0;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .checkout-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .checkout-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #3d4a32, #748764);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+    }
+
+    .checkout-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+    }
+
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 3rem;
+        align-items: start;
+    }
+
+    /* Form Side */
+    .checkout-form-card {
+        background: #fff;
+        border-radius: 30px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.04);
+        border: 1px solid #f1f5f9;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .checkout-form-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 6px;
+        background: linear-gradient(90deg, #748764, #b2936a);
+    }
+
+    .form-section-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .input-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .input-label {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 0.5rem;
+    }
+
+    .premium-input {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border-radius: 15px;
+        border: 2px solid #f1f5f9;
+        font-size: 1rem;
+        transition: all 0.3s;
+        box-sizing: border-box;
+        background: #f8fafc;
+    }
+
+    .premium-input:focus {
+        outline: none;
+        border-color: #748764;
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(116, 135, 100, 0.1);
+    }
+
+    .method-selector {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .method-option {
+        position: relative;
+    }
+
+    .method-option input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .method-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        border: 2px solid #f1f5f9;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+        background: #f8fafc;
+    }
+
+    .method-option input:checked + .method-label {
+        border-color: #748764;
+        background: #fff;
+        box-shadow: 0 10px 20px rgba(116, 135, 100, 0.1);
+    }
+
+    .method-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .method-name {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #1e293b;
+    }
+
+    /* Summary Side */
+    .summary-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 30px;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+        position: sticky;
+        top: 2rem;
+    }
+
+    .summary-item {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .summary-item:last-child { border-bottom: none; }
+
+    .summary-img {
+        width: 60px; height: 60px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 5px;
+        flex-shrink: 0;
+    }
+    .summary-img img { width: 100%; height: 100%; object-fit: contain; }
+
+    .summary-info { flex: 1; }
+    .summary-name { font-weight: 700; font-size: 0.95rem; color: #334155; }
+    .summary-qty-price { font-size: 0.85rem; color: #64748b; margin-top: 2px; }
+
+    .totals-area {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #f1f5f9;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+        color: #64748b;
+    }
+
+    .total-final {
+        margin-top: 1rem;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1e293b;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .btn-confirm {
+        width: 100%;
+        background: linear-gradient(135deg, #748764, #5a6b4d);
+        color: #fff;
+        border: none;
+        padding: 1.25rem;
+        border-radius: 20px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 2rem;
+        box-shadow: 0 10px 20px rgba(116, 135, 100, 0.3);
+    }
+
+    .btn-confirm:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(116, 135, 100, 0.4);
+    }
+
+    @media (max-width: 900px) {
+        .checkout-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="checkout-container">
+    <div class="checkout-header">
+        <h1 class="checkout-title">Complete Your Order</h1>
+        <p class="checkout-subtitle">A small step towards your daily well-being.</p>
+    </div>
+
+    <div class="checkout-grid">
+        <!-- Form Side -->
+        <div class="checkout-form-side">
+            <div class="checkout-form-card">
+                <form action="{{ path('app_cart_confirm') }}" method="POST">
+                    
+                    <div class="form-section">
+                        <h2 class="form-section-title">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            Where should we deliver?
+                        </h2>
+                        
+                        <div class="input-group">
+                            <label class="input-label">Full Delivery Address</label>
+                            <input type="text" name="address" class="premium-input" placeholder="Ex: 45 Liberty Street, Tunis" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Phone Number</label>
+                            <input type="tel" name="phone" class="premium-input" placeholder="Ex: 21 000 000" required>
+                        </div>
+                    </div>
+
+                    <div class="form-section" style="margin-top: 3rem;">
+                        <h2 class="form-section-title">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                            Payment Method
+                        </h2>
+
+                        <div class="method-selector">
+                            <div class="method-option">
+                                <input type="radio" id="cod" name="payment_method" value="cash_on_delivery" checked>
+                                <label for="cod" class="method-label">
+                                    <span class="method-icon">🚚</span>
+                                    <span class="method-name">Cash on Delivery</span>
+                                </label>
+                            </div>
+                            <div class="method-option">
+                                <input type="radio" id="card" name="payment_method" value="bank_card">
+                                <label for="card" class="method-label">
+                                    <span class="method-icon">💳</span>
+                                    <span class="method-name">Bank Card</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-confirm">
+                        Confirm My Purchase
+                    </button>
+                    
+                    <a href="{{ path('app_cart_index') }}" style="display: block; text-align: center; margin-top: 1.5rem; color: #64748b; text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+                        ← Edit my cart
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary Side -->
+        <div class="checkout-summary-side">
+            <div class="summary-card">
+                <h2 class="form-section-title" style="margin-bottom: 2rem;">Order Summary</h2>
+                
+                <div class="summary-items">
+                    {% for item in items %}
+                        <div class="summary-item">
+                            <div class="summary-img">
+                                <img src="{{ item.product.photoUrl ?: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=100&q=80' }}" alt="">
+                            </div>
+                            <div class="summary-info">
+                                <div class="summary-name">{{ item.product.name }}</div>
+                                <div class="summary-qty-price">{{ item.quantity }} x {{ item.product.price|number_format(2) }} TND</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="totals-area">
+                    <div class="total-row">
+                        <span>Subtotal</span>
+                        <span>{{ total|number_format(2) }} TND</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Shipping</span>
+                        <span style="color: #748764; font-weight: 700;">FREE</span>
+                    </div>
+                    <div class="total-final">
+                        <span>Total</span>
+                        <span>{{ total|number_format(2) }} TND</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; background: rgba(116, 135, 100, 0.05); padding: 1rem; border-radius: 15px; border: 1px dashed rgba(116, 135, 100, 0.2); display: flex; gap: 0.75rem; align-items: center;">
+                    <div style="font-size: 1.5rem;">✨</div>
+                    <div style="font-size: 0.8rem; color: #5a6b4d; font-weight: 500;">
+                        Each order is prepared with care by our experts.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

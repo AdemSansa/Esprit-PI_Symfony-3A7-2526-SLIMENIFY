@@ -10,6 +10,7 @@ use App\Repository\AvailabilityRepository;
 use App\Repository\NoteRepository;
 use App\Repository\TherapistRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Service\GeminiAIService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -25,7 +26,8 @@ class AppointmentManagementController extends AbstractController
         private TherapistRepository $therapistRepository,
         private AvailabilityRepository $availabilityRepository,
         private NoteRepository $noteRepository,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private GeminiAIService $aiService
     ) {}
 
     #[Route('/calendar', name: 'calendar', methods: ['GET'])]
@@ -341,6 +343,11 @@ class AppointmentManagementController extends AbstractController
             $nextStatuses = ['cancelled'];
         }
 
+        $jitsiUrl = null;
+        if (strtolower((string) $appointment->getType()) === 'video') {
+            $jitsiUrl = $this->generateJitsiUrl($appointment);
+        }
+
         return $this->render('appointment/detail.html.twig', [
             'appointment' => $appointment,
             'notes' => $this->noteRepository->findBy(['appointment' => $appointment], ['createdAt' => 'DESC']),
@@ -348,7 +355,39 @@ class AppointmentManagementController extends AbstractController
             'can_manage_notes' => $this->isGranted('ROLE_THERAPIST') && $currentStatus === 'completed',
             'next_statuses' => $nextStatuses,
             'readonly' => false,
+            'jitsi_url' => $jitsiUrl,
         ]);
+    }
+
+    #[Route('/{id}/summarize', name: 'summarize', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function summarize(int $id): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_THERAPIST');
+        $appointment = $this->appointmentRepository->find($id);
+        
+        if ($appointment === null || !$this->canAccessAppointment($appointment)) {
+            return $this->json(['error' => 'Appointment not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $notes = $this->noteRepository->findBy(['appointment' => $appointment]);
+        if (empty($notes)) {
+            return $this->json(['error' => 'No notes found for this appointment.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $noteTexts = array_map(fn($n) => $n->getContent(), $notes);
+        
+        // Performance: We can use fastcgi_finish_request here if we wanted to push results via WebSockets,
+        // but for a simple AJAX call, we just return the result.
+        $summary = $this->aiService->summarizeNotes($noteTexts);
+
+        return $this->json(['summary' => $summary]);
+    }
+
+    private function generateJitsiUrl(Appointment $appointment): string
+    {
+        // Unique room name based on ID and a secret salt
+        $roomName = 'PsychologySession_' . $appointment->getId() . '_' . substr(md5($appointment->getCreatedAt()->format('YmdHis')), 0, 8);
+        return 'https://meet.jit.si/' . $roomName;
     }
 
     #[Route('/{id}/notes', name: 'add_note', requirements: ['id' => '\d+'], methods: ['POST'])]

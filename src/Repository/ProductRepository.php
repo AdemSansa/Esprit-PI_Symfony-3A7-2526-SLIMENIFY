@@ -23,7 +23,10 @@ class ProductRepository extends ServiceEntityRepository
         ?float $priceMin = null,
         ?float $priceMax = null
     ): array {
-        $qb = $this->createQueryBuilder('p');
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.supplier', 's')
+            ->andWhere('s.id IS NULL OR s.status = :activeStatus')
+            ->setParameter('activeStatus', 'active');
 
         // Search by name or description
         if (!empty($search)) {
