@@ -7,6 +7,7 @@ use App\Enum\PsychologyCategory;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -33,11 +34,11 @@ class QuestionType extends AbstractType
                 'attr' => ['class' => 'auth-checkbox'],
                 'label_attr' => ['class' => 'auth-checkbox-label'],
             ])
-            ->add('imagePath', TextType::class, [
-                'label' => 'Image Path/URL',
+            ->add('imageFile', FileType::class, [
+                'label' => 'Question Image',
+                'mapped' => false,
                 'required' => false,
-                'empty_data' => '',
-                'attr' => ['class' => 'auth-input', 'placeholder' => 'https://example.com/image.jpg'],
+                'attr' => ['class' => 'auth-input', 'accept' => 'image/*'],
             ])
         ;
     }

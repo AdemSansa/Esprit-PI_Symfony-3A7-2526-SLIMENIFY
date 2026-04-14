@@ -30,7 +30,7 @@ class Question
 
     #[ORM\Column(name: 'image_path', type: 'string', length: 255)]
     #[Assert\Length(max: 255, maxMessage: 'The image path cannot be longer than {{ limit }} characters.')]
-    private string $imagePath;
+    private string $imagePath = '';
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     #[Assert\NotBlank(message: 'Please select a psychology category for this question.')]
