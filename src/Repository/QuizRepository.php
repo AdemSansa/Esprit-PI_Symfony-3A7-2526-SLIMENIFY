@@ -27,7 +27,7 @@ class QuizRepository extends ServiceEntityRepository
 
     public function findActive(): array
     {
-        return $this->findBy(['active' => true]);
+        return $this->findBy(['active' => Quiz::STATUS_ACTIVE]);
     }
 
     public function findByCategory(string $category): array
@@ -45,4 +45,24 @@ class QuizRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    public function findByAuthor(int $author): array
+    {
+        return $this->createQueryBuilder('q')
+            ->where('q.author = :author')
+            ->setParameter('author', $author)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByAuthorAndSearchQuery(int $author, string $query): array
+    {
+        return $this->createQueryBuilder('q')
+            ->where('q.author = :author')
+            ->andWhere('q.title LIKE :query OR q.description LIKE :query OR q.category LIKE :query')
+            ->setParameter('author', $author)
+            ->setParameter('query', '%' . $query . '%')
+            ->getQuery()
+            ->getResult();
+    }
+    
 }

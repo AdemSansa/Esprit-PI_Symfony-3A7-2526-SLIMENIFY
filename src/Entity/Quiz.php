@@ -12,6 +12,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'quiz')]
 class Quiz
 {
+    public const STATUS_INACTIVE = 0;
+    public const STATUS_ACTIVE = 1;
+    public const STATUS_UNDER_REVIEW = 2;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'bigint')]
@@ -36,8 +40,8 @@ class Quiz
     #[Assert\PositiveOrZero(message: 'Total questions must be zero or a positive number.')]
     private int $totalQuestions = 0;
 
-    #[ORM\Column(type: 'boolean', options: ['default' => true])]
-    private bool $active = true;
+    #[ORM\Column(type: 'smallint', options: ['default' => self::STATUS_UNDER_REVIEW])]
+    private int $active = self::STATUS_UNDER_REVIEW;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     #[Assert\PositiveOrZero(message: 'Minimum score must be zero or a positive number.')]
@@ -66,6 +70,10 @@ class Quiz
     #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: QuizResult::class)]
     private Collection $results;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $author = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -83,8 +91,11 @@ class Quiz
     public function setCategory(?string $v): static { $this->category = $v; return $this; }
     public function getTotalQuestions(): int { return $this->totalQuestions; }
     public function setTotalQuestions(int $v): static { $this->totalQuestions = $v; return $this; }
-    public function isActive(): bool { return $this->active; }
-    public function setActive(bool $v): static { $this->active = $v; return $this; }
+    public function getActive(): int { return $this->active; }
+    public function isActive(): bool { return $this->active === self::STATUS_ACTIVE; }
+    public function isUnderReview(): bool { return $this->active === self::STATUS_UNDER_REVIEW; }
+    public function isInactive(): bool { return $this->active === self::STATUS_INACTIVE; }
+    public function setActive(int $v): static { $this->active = $v; return $this; }
     public function getMinScore(): int { return $this->minScore; }
     public function setMinScore(int $v): static { $this->minScore = $v; return $this; }
     public function getMaxScore(): int { return $this->maxScore; }
@@ -127,4 +138,7 @@ class Quiz
     public function addQuestion(Question $q): static { if (!$this->questions->contains($q)) { $this->questions->add($q); } return $this; }
     public function removeQuestion(Question $q): static { $this->questions->removeElement($q); return $this; }
     public function getResults(): Collection { return $this->results; }
+    
+    public function getAuthor(): ?User { return $this->author; }
+    public function setAuthor(?User $author): static { $this->author = $author; return $this; }
 }
