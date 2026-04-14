@@ -314,6 +314,7 @@
                 <span class="old-price">{{ (product.price * 1.12)|number_format(2) }} TND</span>
             </div>
 
+            {% if (is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST')) and not is_granted('ROLE_ADMIN') and app.user.role|lower != 'admin' %}
             <div class="interaction-island">
                 <form action="{{ path('app_cart_add', {'id': product.id}) }}" method="POST" id="cart-form">
                     <div class="qty-control">
@@ -337,6 +338,7 @@
                     </button>
                 </form>
             </div>
+            {% endif %}
 
             <div class="highlights-mini">
                 <div class="h-item">
@@ -361,7 +363,7 @@
             {{ product.description ?: 'A carefully selected choice for your mental well-being. This product meets Slimenify quality standards, designed to support you in your healing journey.' }}
         </p>
         
-        {% if not is_granted('ROLE_PATIENT') %}
+        {% if is_granted('ROLE_ADMIN') %}
             <div style="margin-top: 1.5rem; font-size: 0.8rem; color: #94a3b8;">
                 Ref: PH-{{ product.id }} | Stock: {{ product.stockQuantity }} units
             </div>
