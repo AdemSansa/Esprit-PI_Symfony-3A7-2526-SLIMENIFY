@@ -25,6 +25,17 @@ class AppointmentRepository extends ServiceEntityRepository
         if ($flush) $this->getEntityManager()->flush();
     }
 
+    public function findByDate(\DateTimeInterface $date): array
+    {
+        return $this->createQueryBuilder('a')
+            ->where('a.appointmentDate = :date')
+            ->setParameter('date', $date->format('Y-m-d'))
+            ->andWhere('a.status != :cancelled')
+            ->setParameter('cancelled', 'cancelled')
+            ->orderBy('a.startTime', 'ASC')
+            ->getQuery()->getResult();
+    }
+
     public function findByTherapist(int $therapistId): array
     {
         return $this->createQueryBuilder('a')
