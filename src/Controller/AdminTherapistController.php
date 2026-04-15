@@ -17,15 +17,30 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class AdminTherapistController extends AbstractController
 {
     #[Route('/', name: 'app_admin_therapist_index', methods: ['GET'])]
-    public function index(TherapistRepository $therapistRepository): Response
+    public function index(Request $request, TherapistRepository $therapistRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
+        $searchQuery = $request->query->get('q');
+        $specialty = $request->query->get('specialty');
+        $mode = $request->query->get('mode');
+
+        $query = $therapistRepository->searchAndSortQuery($searchQuery, $specialty, $mode);
+
+        $therapists = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            4 // items per page
+        );
+
         return $this->render('admin_therapist/index.html.twig', [
-            'therapists' => $therapistRepository->findAll(),
+            'therapists' => $therapists,
+            'searchQuery' => $searchQuery,
+            'specialty' => $specialty,
+            'mode' => $mode,
         ]);
     }
 
     #[Route('/new', name: 'app_admin_therapist_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, \Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface $passwordHasher): Response
     {
         $therapist = new Therapist();
         $form = $this->createForm(AdminTherapistType::class, $therapist);
@@ -39,7 +54,24 @@ class AdminTherapistController extends AbstractController
                 $therapist->setDiplomaPath('default_diploma.pdf');
             }
             
+            // Generate a default hash for the Therapist
+            $hashedPassword = $passwordHasher->hashPassword(new \App\Entity\User(), '12345678');
+            $therapist->setPassword($hashedPassword);
+
             $entityManager->persist($therapist);
+            
+            // Autocreate the User entity to allow the therapist to login
+            $user = new \App\Entity\User();
+            $user->setFirstName($therapist->getFirstName());
+            $user->setLastName($therapist->getLastName());
+            $user->setEmail($therapist->getEmail());
+            $user->setPhone($therapist->getPhoneNumber());
+            $user->setRole('therapist');
+            $user->setPassword($hashedPassword);
+            $user->setIsVerified(true);
+            $user->setPhotoUrl($therapist->getPhotoUrl());
+
+            $entityManager->persist($user);
             $entityManager->flush();
 
             return $this->redirectToRoute('app_admin_therapist_index', [], Response::HTTP_SEE_OTHER);

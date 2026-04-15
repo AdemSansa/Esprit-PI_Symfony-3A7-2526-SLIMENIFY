@@ -32,6 +32,35 @@ class RegistrationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // reCAPTCHA validation
+            $recaptchaResponse = $request->request->get('g-recaptcha-response');
+            if (!$this->verifyRecaptcha($recaptchaResponse)) {
+                $this->addFlash('error', 'Please complete the CAPTCHA correctly.');
+                return $this->render('registration/register.html.twig', [
+                    'registrationForm' => $form,
+                    'recaptcha_site_key' => $_ENV['RECAPTCHA_SITE_KEY'] ?? '',
+                ]);
+            }
+
+            // Validate age for therapists
+            $role = $form->get('role')->getData();
+            $dateNaissance = $user->getDateNaissance();
+            if ($role === 'therapist') {
+                if (!$dateNaissance) {
+                    $form->get('dateNaissance')->addError(new \Symfony\Component\Form\FormError('Please provide your date of birth.'));
+                    return $this->render('registration/register.html.twig', [
+                        'registrationForm' => $form,
+                    ]);
+                }
+                $age = $dateNaissance->diff(new \DateTime())->y;
+                if ($age < 18) {
+                    $form->get('dateNaissance')->addError(new \Symfony\Component\Form\FormError('A therapist must be at least 18 years old.'));
+                    return $this->render('registration/register.html.twig', [
+                        'registrationForm' => $form,
+                    ]);
+                }
+            }
+
             /** @var string $plainPassword */
             $plainPassword = $form->get('plainPassword')->getData();
 
@@ -109,9 +138,9 @@ class RegistrationController extends AbstractController
             // generate a signed url and email it to the user
             $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
                 (new TemplatedEmail())
-                    ->from(new Address('adem.sansa7@gmail.com', 'Slimenify Team'))
+                    ->from(new Address('Slimenify.team@gmail.com', 'Slimenify Team'))
                     ->to((string) $user->getEmail())
-                    ->subject('Please Confirm your Email')
+                    ->subject('Veuillez confirmer votre e-mail - Slimenify')
                     ->htmlTemplate('registration/confirmation_email.html.twig')
             );
 
@@ -122,8 +151,40 @@ class RegistrationController extends AbstractController
 
         return $this->render('registration/register.html.twig', [
             'registrationForm' => $form,
+            'recaptcha_site_key' => $_ENV['RECAPTCHA_SITE_KEY'] ?? '',
         ]);
     }
+
+    private function verifyRecaptcha(?string $response): bool
+    {
+        if (!$response) {
+            return false;
+        }
+
+        $secret = $_ENV['RECAPTCHA_SECRET_KEY'] ?? '';
+        $verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
+        
+        $data = [
+            'secret' => $secret,
+            'response' => $response,
+            'remoteip' => $_SERVER['REMOTE_ADDR']
+        ];
+
+        $options = [
+            'http' => [
+                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+                'method'  => 'POST',
+                'content' => http_build_query($data)
+            ]
+        ];
+
+        $context  = stream_context_create($options);
+        $result = file_get_contents($verifyUrl, false, $context);
+        $resultJson = json_decode($result);
+
+        return $resultJson->success ?? false;
+    }
+
 
     #[Route('/verify/email', name: 'app_verify_email')]
     public function verifyUserEmail(Request $request, TranslatorInterface $translator): Response

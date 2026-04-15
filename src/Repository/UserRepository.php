@@ -30,9 +30,9 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return User[] Returns an array of User objects
+     * @return \Doctrine\ORM\Query
      */
-    public function searchAndSort(?string $searchQuery, ?string $roleFilter): array
+    public function searchAndSortQuery(?string $searchQuery, ?string $roleFilter): \Doctrine\ORM\Query
     {
         $qb = $this->createQueryBuilder('u');
 
@@ -48,6 +48,14 @@ class UserRepository extends ServiceEntityRepository
 
         $qb->orderBy('u.id', 'ASC');
 
-        return $qb->getQuery()->getResult();
+        return $qb->getQuery();
+    }
+
+    /**
+     * @return User[] Returns an array of User objects
+     */
+    public function searchAndSort(?string $searchQuery, ?string $roleFilter): array
+    {
+        return $this->searchAndSortQuery($searchQuery, $roleFilter)->getResult();
     }
 }

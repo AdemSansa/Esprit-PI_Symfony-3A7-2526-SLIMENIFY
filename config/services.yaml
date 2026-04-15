@@ -7,7 +7,9 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-
+    oauth_google_client_id: '%env(OAUTH_GOOGLE_CLIENT_ID)%'
+    oauth_google_client_secret: '%env(OAUTH_GOOGLE_CLIENT_SECRET)%'
+    gemini_api_key: '%env(GEMINI_API_KEY)%'
 services:
     # default configuration for services in *this* file
     _defaults:
