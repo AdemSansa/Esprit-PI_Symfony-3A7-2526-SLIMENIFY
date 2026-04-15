@@ -52,6 +52,7 @@ security:
         - { path: ^/product, roles: [ROLE_PATIENT, ROLE_THERAPIST, ROLE_ADMIN] }
         - { path: ^/supplier, roles: [ROLE_ADMIN] }
 
+
 when@test:
     security:
         password_hashers:

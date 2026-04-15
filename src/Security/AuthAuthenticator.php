@@ -16,15 +16,20 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mime\Address;
+
 class AuthAuthenticator extends AbstractLoginFormAuthenticator
 {
     use TargetPathTrait;
 
     public const LOGIN_ROUTE = 'app_login';
 
-    public function __construct(private UrlGeneratorInterface $urlGenerator)
-    {
-    }
+    public function __construct(
+        private UrlGeneratorInterface $urlGenerator,
+        private MailerInterface $mailer
+    ) {}
 
     public function authenticate(Request $request): Passport
     {
@@ -44,6 +49,24 @@ class AuthAuthenticator extends AbstractLoginFormAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
+        $user = $token->getUser();
+        
+        try {
+            $email = (new TemplatedEmail())
+                ->from(new Address('Slimenify.team@gmail.com', 'Slimenify Security'))
+                ->to($user->getUserIdentifier())
+                ->subject('Nouvelle connexion à votre compte Slimenify')
+                ->htmlTemplate('notification/login_alert.html.twig')
+                ->context([
+                    'user' => $user,
+                ]);
+
+            $this->mailer->send($email);
+        } catch (\Exception $e) {
+            // Silently ignore mailer failure to not block login
+            error_log('Mailer error on login: ' . $e->getMessage());
+        }
+
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
             return new RedirectResponse($targetPath);
         }
