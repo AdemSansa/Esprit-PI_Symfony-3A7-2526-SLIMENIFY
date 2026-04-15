@@ -9,7 +9,7 @@
 parameters:
     oauth_google_client_id: '%env(OAUTH_GOOGLE_CLIENT_ID)%'
     oauth_google_client_secret: '%env(OAUTH_GOOGLE_CLIENT_SECRET)%'
-    gemini_api_key: '%env(GEMINI_API_KEY)%'
+    app.gemini_api_key: '%env(GEMINI_API_KEY)%'
 
     stripe.secret_key: '%env(STRIPE_SECRET_KEY)%'
     env(PROFANITY_CHECK_ENABLED): '1'
