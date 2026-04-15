@@ -1,0 +1,90 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Edit Story{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .form-container {
+        max-width: 680px;
+        margin: 2rem auto;
+        background: white;
+        padding: 3rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    .form-group {
+        margin-bottom: 2rem;
+    }
+    .form-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #1e293b;
+    }
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #627255;
+        box-shadow: 0 0 0 3px rgba(98,114,85,0.1);
+    }
+    .btn-submit {
+        background: #627255;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        width: 100%;
+        font-size: 1.1rem;
+    }
+    .btn-submit:hover {
+        background: #4f5d44;
+    }
+    .form-error {
+        color: #ef4444;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block app_content %}
+<div class="form-container">
+    <h1 style="margin-bottom: 0.5rem; font-weight: 800;">Edit your story</h1>
+    <p style="color: #64748b; margin-bottom: 2.5rem;">Refine your thoughts. Ensure quality content for your readers.</p>
+
+    {{ form_start(form) }}
+        <div class="form-group">
+            {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+            <div class="form-error">{{ form_errors(form.title) }}</div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.photo, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.photo, {'attr': {'class': 'form-control'}}) }}
+            <div class="form-error">{{ form_errors(form.photo) }}</div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.content, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.content, {'attr': {'class': 'form-control'}}) }}
+            <div class="form-error">{{ form_errors(form.content) }}</div>
+        </div>
+
+        <button type="submit" class="btn-submit">Update Story</button>
+    {{ form_end(form) }}
+    <div style="margin-top: 1.5rem; text-align: center;">
+        <a href="{{ path('app_blog_web_my_blogs') }}" style="color: #64748b; text-decoration: none; font-size: 0.9rem;">Cancel and go back</a>
+    </div>
+</div>
+{% endblock %}
