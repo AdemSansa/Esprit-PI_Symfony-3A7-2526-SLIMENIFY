@@ -3,24 +3,30 @@
 namespace App\Controller;
 
 use App\Repository\TherapistRepository;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-
-use Symfony\Component\HttpFoundation\Request;
 
 #[Route('/patient', name: 'app_patient_')]
 #[IsGranted('ROLE_PATIENT')]
 class PatientDashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'dashboard')]
-    public function dashboard(Request $request, TherapistRepository $therapistRepository): Response
+    public function dashboard(Request $request, TherapistRepository $therapistRepository, PaginatorInterface $paginator): Response
     {
         $searchQuery = $request->query->get('q');
         $specialty = $request->query->get('specialty', 'all');
 
-        $therapists = $therapistRepository->searchAndSort($searchQuery, $specialty);
+        $query = $therapistRepository->searchAndSortQuery($searchQuery, $specialty);
+
+        $therapists = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            4 // Limit per page
+        );
 
         return $this->render('patient_portal/dashboard.html.twig', [
             'therapists' => $therapists,

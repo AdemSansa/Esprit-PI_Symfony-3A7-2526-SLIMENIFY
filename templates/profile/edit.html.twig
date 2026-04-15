@@ -152,6 +152,9 @@
         </div>
 
         <div class="action-bar">
+            <!-- Added reset password link next to Edit Profile actions -->
+            <a href="{{ path('app_forgot_password') }}" class="btn-cancel" style="margin-right: auto; background-color: #f7e1d7; color: #d00000;">Reset Password</a>
+            
             <a href="{{ path('app_profile_index') }}" class="btn-cancel">Cancel</a>
             <button type="submit" class="btn-save">Save Changes</button>
         </div>

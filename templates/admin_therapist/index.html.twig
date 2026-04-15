@@ -309,38 +309,40 @@
         </div>
     </div>
 
-    <div class="filter-toolbar">
+    <form method="GET" action="{{ path('app_admin_therapist_index') }}" class="filter-toolbar">
         <div class="filter-group" style="flex: 1; min-width: 200px;">
             <div class="filter-label">Search</div>
-            <input type="text" id="searchInput" class="filter-input" placeholder="Name, surname...">
+            <input type="text" name="q" id="searchInput" class="filter-input" placeholder="Name, surname..." value="{{ searchQuery }}">
         </div>
         
         <div class="filter-group" style="width: 160px;">
             <div class="filter-label">Specialty</div>
-            <select id="specialtyFilter" class="filter-input filter-select">
+            <select name="specialty" id="specialtyFilter" class="filter-input filter-select">
                 <option value="">All specialties</option>
-                {# We could dynamically populate this, but keeping it simple for now #}
-                <option value="Psychologie">Psychologie</option>
-                <option value="Sexologie">Sexologie</option>
-                <option value="Thérapie de couple">Thérapie de couple</option>
+                <option value="Psychologie" {% if specialty == 'Psychologie' %}selected{% endif %}>Psychologie</option>
+                <option value="Sexologie" {% if specialty == 'Sexologie' %}selected{% endif %}>Sexologie</option>
+                <option value="Thérapie de couple" {% if specialty == 'Thérapie de couple' %}selected{% endif %}>Thérapie de couple</option>
             </select>
         </div>
 
         <div class="filter-group" style="width: 140px;">
             <div class="filter-label">Mode</div>
-            <select id="modeFilter" class="filter-input filter-select">
+            <select name="mode" id="modeFilter" class="filter-input filter-select">
                 <option value="">All modes</option>
-                <option value="ONLINE">Online</option>
-                <option value="IN_PERSON">In Person</option>
-                <option value="BOTH">Both</option>
+                <option value="ONLINE" {% if mode == 'ONLINE' %}selected{% endif %}>Online</option>
+                <option value="IN_PERSON" {% if mode == 'IN_PERSON' %}selected{% endif %}>In Person</option>
+                <option value="BOTH" {% if mode == 'BOTH' %}selected{% endif %}>Both</option>
             </select>
         </div>
 
-        <button class="btn-reset" onclick="resetFilters()">
+        <button type="submit" class="btn-reset" style="background:#687560; color:white; border:none;">
+            Filter
+        </button>
+        <a href="{{ path('app_admin_therapist_index') }}" class="btn-reset" style="text-decoration:none;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
             Reset
-        </button>
-    </div>
+        </a>
+    </form>
 
     <div class="therapist-grid" id="therapistGrid">
         {% for therapist in therapists %}
@@ -412,46 +414,10 @@
         {% endfor %}
     </div>
 
+    <div style="margin-top: 30px; display: flex; justify-content: center;">
+        {{ knp_pagination_render(therapists) }}
+    </div>
+
 </div>
 
-<script>
-    const searchInput = document.getElementById('searchInput');
-    const specialtyFilter = document.getElementById('specialtyFilter');
-    const modeFilter = document.getElementById('modeFilter');
-    const cards = document.querySelectorAll('.therapist-card');
-
-    function filterCards() {
-        const searchText = searchInput.value.toLowerCase();
-        const specialtySearch = specialtyFilter.value.toLowerCase();
-        const modeSearch = modeFilter.value.toLowerCase();
-
-        cards.forEach(card => {
-            const name = (card.getAttribute('data-name') || '').toLowerCase();
-            const spec = (card.getAttribute('data-specialty') || '').toLowerCase();
-            const mode = (card.getAttribute('data-mode') || '').toLowerCase();
-
-            const matchesSearch = name.includes(searchText);
-            const matchesSpec = specialtySearch === '' || spec.includes(specialtySearch);
-            // Since Mode isn't perfectly clean, do a substring check
-            const matchesMode = modeSearch === '' || mode.includes(modeSearch);
-
-            if (matchesSearch && matchesSpec && matchesMode) {
-                card.style.display = 'flex';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
-
-    function resetFilters() {
-        searchInput.value = '';
-        specialtyFilter.value = '';
-        modeFilter.value = '';
-        filterCards();
-    }
-
-    searchInput.addEventListener('keyup', filterCards);
-    specialtyFilter.addEventListener('change', filterCards);
-    modeFilter.addEventListener('change', filterCards);
-</script>
 {% endblock %}

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvelle connexion à votre compte</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F9F8F5; font-family: 'Inter', Helvetica, Arial, sans-serif; color: #5D4A3E;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(122, 91, 73, 0.1);">
+        <tr>
+            <td style="padding: 40px; text-align: center; border-bottom: 3px solid #687560;">
+                <h1 style="color: #687560; margin: 0; font-size: 26px;">Alerte de connexion</h1>
+                <p style="color: #A8866E; margin-top: 10px; font-size: 16px;">Bon retour sur Slimenify !</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 40px 30px; line-height: 1.6; font-size: 16px;">
+                <p>Bonjour {{ user.firstName|default('Cher utilisateur') }},</p>
+                <p>Nous avons détecté une nouvelle connexion à votre compte Slimenify le <strong>{{ "now"|date("d/m/Y à H:i") }}</strong>.</p>
+                
+                <p style="margin-top: 25px;">Si c'est bien vous, vous pouvez ignorer cet e-mail tranquillement. Profitez bien de votre espace !</p>
+                
+                <div style="background-color: #FEF2F2; border-left: 4px solid #DC2626; padding: 15px; margin: 30px 0; border-radius: 0 8px 8px 0;">
+                    <p style="margin: 0; color: #991B1B; font-size: 14px;"><strong>Ce n'était pas vous ?</strong><br>Si vous n'êtes pas à l'origine de cette connexion, nous vous recommandons vivement de modifier votre mot de passe immédiatement pour sécuriser votre compte.</p>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color: #EBE6DF; padding: 20px; text-align: center; font-size: 14px; color: #7A5B49;">
+                <p style="margin: 0;">© {{ "now"|date("Y") }} Slimenify Team. Tous droits réservés.</p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

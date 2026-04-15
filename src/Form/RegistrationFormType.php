@@ -67,8 +67,8 @@ class RegistrationFormType extends AbstractType
                 'constraints' => [
                     new NotBlank(['message' => 'Phone number cannot be blank']),
                     new Regex([
-                        'pattern' => '/^\+?[0-9]{8,15}$/',
-                        'message' => 'Please enter a valid phone number (8 to 15 digits).'
+                        'pattern' => '/^[0-9]{8}$/',
+                        'message' => 'Please enter a valid phone number (exactly 8 digits).'
                     ])
                 ]
             ])
