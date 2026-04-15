@@ -1,0 +1,151 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}My Writing{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    .btn-primary {
+        background: #627255;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .blog-table {
+        width: 100%;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        border-collapse: collapse;
+    }
+    .blog-table th {
+        background: #f8fafc;
+        text-align: left;
+        padding: 1rem;
+        font-size: 0.875rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .blog-table td {
+        padding: 1.25rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+    .blog-row:hover {
+        background: #f8fafc;
+    }
+    .blog-thumb {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+    .btn-action {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        background: white;
+    }
+    .btn-action:hover {
+        background: #f1f5f9;
+    }
+    .btn-delete {
+        color: #ef4444;
+        border-color: #fee2e2;
+    }
+    .btn-delete:hover {
+        background: #fef2f2;
+    }
+</style>
+{% endblock %}
+
+{% block app_content %}
+<div class="admin-header">
+    <div>
+        <h1 style="font-size: 1.875rem; font-weight: 700;">My Writing</h1>
+        <p style="color: #64748b;">Manage your thoughts and shared knowledge.</p>
+    </div>
+    <a href="{{ path('app_blog_web_new') }}" class="btn-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        New Story
+    </a>
+</div>
+
+<div class="table-container">
+    <table class="blog-table">
+        <thead>
+            <tr>
+                <th>Article</th>
+                <th>Published</th>
+                <th>Interactions</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for blog in blogs %}
+                <tr class="blog-row">
+                    <td>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <img src="{{ asset('uploads/blogs/' ~ blog.photo) }}" class="blog-thumb" alt="">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 600; color: #1e293b;">{{ blog.title }}</span>
+                                <span style="font-size: 0.8rem; color: #64748b;">{{ blog.content|length }} characters</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ blog.createdAt|date('M d, Y') }}</td>
+                    <td>
+                        <div style="display: flex; gap: 1rem; font-size: 0.85rem; color: #64748b;">
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                                {{ blog.likes|length }}
+                            </span>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="{{ path('app_blog_web_edit', {id: blog.id}) }}" class="btn-action">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path></svg>
+                                Edit
+                            </a>
+                            <form method="post" action="{{ path('app_blog_web_delete', {id: blog.id}) }}" style="display: inline;" onsubmit="return confirm('Delete this story?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ blog.id) }}">
+                                <button class="btn-action btn-delete">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 3rem; color: #64748b;">
+                        You haven't written anything yet.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

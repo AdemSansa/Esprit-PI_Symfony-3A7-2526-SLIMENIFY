@@ -12,6 +12,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[ORM\Entity(repositoryClass: \App\Repository\SupplierRepository::class)]
 #[ORM\Table(name: 'suppliers')]
 #[UniqueEntity(fields: ['email'], message: 'This email is already in use by another supplier.')]
+#[UniqueEntity(fields: ['name'], message: 'A supplier with this name already exists.')]
 class Supplier
 {
     #[ORM\Id]
@@ -47,11 +48,9 @@ class Supplier
     private ?string $address = null;
 
     #[ORM\Column(length: 100, nullable: true)]
-    #[Assert\NotBlank(message: "The city name is required.")]
     private ?string $city = null;
 
     #[ORM\Column(length: 100, nullable: true)]
-    #[Assert\NotBlank(message: "The country name is required.")]
     private ?string $country = null;
 
     #[ORM\Column(length: 20, options: ['default' => 'active'])]

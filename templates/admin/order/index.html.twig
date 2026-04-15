@@ -1,0 +1,278 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Order Management | Admin{% endblock %}
+
+{% block app_content %}
+<style>
+    .admin-orders-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        animation: fadeIn 0.8s ease-out;
+    }
+    .admin-orders-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+    .admin-orders-card {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        border: 1px solid #f1f5f9;
+        overflow: hidden;
+        animation: slideUp 0.8s ease-out;
+    }
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .orders-table th {
+        background: #f8fafc;
+        padding: 1.25rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .orders-table td {
+        padding: 1.25rem;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+    .orders-table tr:last-child td { border-bottom: none; }
+    
+    .client-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .client-avatar {
+        width: 32px; height: 32px;
+        background: #e2e8f0;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+    .client-name {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.9rem;
+    }
+
+    .order-id-badge {
+        font-family: monospace;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: capitalize;
+    }
+    .status-en-attente { background: #fef3c7; color: #d97706; }
+    .status-completee { background: #dcfce7; color: #166534; }
+    .status-annulee { background: #fee2e2; color: #991b1b; }
+
+    .status-select {
+        padding: 0.4rem;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        font-size: 0.85rem;
+        background: #f8fafc;
+        cursor: pointer;
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .btn-icon {
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+    .btn-icon:hover {
+        background: #f8fafc;
+        color: #1e293b;
+        border-color: #cbd5e1;
+    }
+    .btn-delete:hover {
+        background: #fee2e2;
+        color: #dc2626;
+        border-color: #fecaca;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>
+
+<div class="admin-orders-header">
+    <div>
+        <h1 class="admin-orders-title">Order Management</h1>
+        <p style="color: #64748b; margin-top: 0.25rem;">Supervise and fulfill client wellness purchases.</p>
+    </div>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+        <input type="text" id="orderSearch" placeholder="Search ID or Client..." style="padding: 0.6rem 1rem; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 0.85rem; width: 220px;">
+        <div style="font-size: 0.85rem; color: #64748b; font-weight: 500; background: #f1f5f9; padding: 0.5rem 1rem; border-radius: 10px;">
+            {{ orders|length }} total orders
+        </div>
+    </div>
+</div>
+
+<div class="admin-orders-card">
+    <table class="orders-table" id="ordersTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Client</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                <tr class="order-main-row" data-search="{{ order.id }} {{ order.user.firstName }} {{ order.user.lastName }}">
+                    <td><span class="order-id-badge">#{{ order.id }}</span></td>
+                    <td>
+                        <div class="client-info">
+                            <div class="client-avatar">{{ order.user.firstName|first|upper }}</div>
+                            <div class="client-name">{{ order.user.firstName }} {{ order.user.lastName }}</div>
+                        </div>
+                    </td>
+                    <td style="font-size: 0.85rem; color: #64748b;">
+                        {{ order.createdAt|date('M d, Y H:i') }}
+                    </td>
+                    <td>
+                        <div style="font-weight: 700; color: #1e293b;">{{ order.totalAmount|number_format(2) }} TND</div>
+                    </td>
+                    <td>
+                        <select name="status" class="status-select" onchange="updateOrderStatus({{ order.id }}, this.value)">
+                            <option value="pending" {{ order.status == 'pending' or order.status == 'en_attente' ? 'selected' : '' }}>Pending</option>
+                            <option value="validated" {{ order.status == 'validated' or order.status == 'validée' ? 'selected' : '' }}>Validated</option>
+                            <option value="delivered" {{ order.status == 'delivered' or order.status == 'livrée' ? 'selected' : '' }}>Delivered</option>
+                            <option value="cancelled" {{ order.status == 'cancelled' or order.status == 'annulée' ? 'selected' : '' }}>Cancelled</option>
+                        </select>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-icon" onclick="toggleDetails({{ order.id }})" title="View Items">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                            <form action="{{ path('app_admin_orders_delete', {id: order.id}) }}" method="POST" class="swal-delete-form" data-name="Order #{{ order.id }}">
+                                <button type="submit" class="btn-icon btn-delete" title="Delete">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <tr id="details-{{ order.id }}" style="display: none; background: #fbfcfd;">
+                    <td colspan="6" style="padding: 1.5rem 2.5rem;">
+                        <div style="background: #fff; border-radius: 12px; border: 1px solid #edf2f7; padding: 1.5rem;">
+                            <h4 style="margin: 0 0 1rem 0; font-size: 0.9rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#748764" stroke-width="2.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                                Ordered Items
+                            </h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                    {% for item in order.itemsDetails %}
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px dashed #f1f5f9;">
+                                            <div style="display: flex; flex-direction: column;">
+                                                <span style="font-weight: 700; font-size: 0.85rem; color: #334155;">{{ item.name }}</span>
+                                                <span style="font-size: 0.75rem; color: #94a3b8;">{{ item.quantity }} x {{ item.unit_price|number_format(2) }} TND</span>
+                                            </div>
+                                            <span style="font-weight: 800; color: #627255; font-size: 0.85rem;">{{ item.total_price|number_format(2) }} TND</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div style="background: #f8fafc; border-radius: 10px; padding: 1rem; font-size: 0.85rem;">
+                                    <div style="margin-bottom: 0.5rem;"><strong>Shipping Address:</strong> {{ order.shippingAddress }}</div>
+                                    <div style="margin-bottom: 0.5rem;"><strong>Contact:</strong> {{ order.contactPhone }}</div>
+                                    <div><strong>Payment:</strong> {{ order.paymentMethod|replace({'cash_on_delivery': 'Cash on Delivery', 'bank_card': 'Bank Card'})|capitalize }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 4rem; color: #94a3b8;">
+                        No orders have been placed yet.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function updateOrderStatus(id, newStatus) {
+        const formData = new FormData();
+        formData.append('status', newStatus);
+
+        fetch(`/admin/orders/${id}/status`, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Status updated successfully',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }
+        });
+    }
+
+    function toggleDetails(id) {
+        const el = document.getElementById('details-' + id);
+        el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+    }
+
+    document.getElementById('orderSearch')?.addEventListener('input', function(e) {
+        const text = e.target.value.toLowerCase();
+        document.querySelectorAll('.order-main-row').forEach(row => {
+            const rowText = row.getAttribute('data-search').toLowerCase();
+            row.style.display = rowText.includes(text) ? 'table-row' : 'none';
+            
+            // Also hide details row if main row is hidden
+            if (!rowText.includes(text)) {
+                const id = row.getAttribute('data-search').split(' ')[0];
+                const detailRow = document.getElementById('details-' + id);
+                if (detailRow) detailRow.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

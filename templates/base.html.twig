@@ -9,10 +9,11 @@
 		<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>"> {% block stylesheets %}{% endblock %}
 
 		{% block javascripts %}
-			{% block importmap %}
+            {% block importmap %}{{ importmap('app') }}{% endblock %}
 				{{ importmap('app') }}
 			{% endblock %}
-		{% endblock %}
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	
 
 		{% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
 		{% if frankenphpHotReload %}
@@ -22,64 +23,6 @@
 		{% endif %}
 	</head>
 	<body>
-		<!-- Page Loader -->
-		<div id="page-loader" class="page-loader">
-			<div class="loader-content">
-				<div class="loader-logo">
-					<img src="{{ asset('logo.jpg') }}" alt="Slimenify Logo" class="loader-logo-img">
-				</div>
-				<div class="loader-spinner"></div>
-			</div>
-		</div>
-
-		<script>
-			(function () {
-function hideLoader() {
-var loader = document.getElementById('page-loader');
-if (loader) {
-loader.classList.add('hidden');
-setTimeout(function () {
-if (loader) {
-loader.style.display = 'none';
-}
-}, 500);
-}
-}
-
-function showLoader() {
-var loader = document.getElementById('page-loader');
-if (loader) {
-loader.style.display = 'flex';
-loader.classList.remove('hidden');
-}
-}
-
-if (!window.loaderEventsAttached) { // Standard page load/unload
-window.addEventListener('load', hideLoader);
-window.addEventListener('beforeunload', showLoader);
-
-// Turbo events
-document.addEventListener('turbo:load', hideLoader);
-document.addEventListener('turbo:before-visit', showLoader);
-
-// Handle bfcache (back/forward navigation)
-window.addEventListener('pageshow', function (event) {
-if (event.persisted) {
-hideLoader();
-}
-});
-
-window.loaderEventsAttached = true;
-}
-
-// Ensure loader is hidden on subsequent Turbo visits because
-// turbo:load could fire before script execution on some setups.
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-hideLoader();
-}
-})();
-		</script>
-
 		{% block body %}
 			<a href="{{ path('app_home') }}">Home</a>
 			<a href="{{ path('app_login') }}">Login</a>

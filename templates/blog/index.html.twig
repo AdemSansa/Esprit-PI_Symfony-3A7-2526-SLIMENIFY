@@ -1,0 +1,440 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Explore Blogs{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .blog-feed {
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+        padding: 2rem 0;
+    }
+    .blog-card-outer {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding-bottom: 2rem;
+    }
+    .blog-card {
+        display: grid;
+        grid-template-columns: 1fr 200px;
+        gap: 2rem;
+        align-items: flex-start;
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.2s;
+    }
+    .blog-card:hover {
+        transform: translateY(-2px);
+    }
+    .blog-card__content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .blog-card__meta {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.85rem;
+        color: #757575;
+    }
+    .blog-card__author {
+        font-weight: 600;
+        color: #242424;
+    }
+    .blog-card__title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #242424;
+        line-height: 1.2;
+        margin: 0.25rem 0;
+    }
+    .blog-card__excerpt {
+        font-size: 1rem;
+        color: #757575;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.5;
+    }
+    .blog-card__footer {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-top: 1rem;
+        font-size: 0.85rem;
+        color: #757575;
+    }
+    .blog-card__image {
+        width: 100%;
+        aspect-ratio: 4/3;
+        object-fit: cover;
+        border-radius: 4px;
+        background: #f0f0f0;
+    }
+    .badge-premium {
+        background: #f2f2f2;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+    }
+    .icon-inline {
+        vertical-align: middle;
+        margin-right: 4px;
+    }
+    .blog-search-form {
+        max-width: 480px;
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .blog-search-form .form-control {
+        flex: 1;
+        min-width: 200px;
+    }
+    .blog-card-translate {
+        margin-top: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .blog-card-translate button {
+        font-size: 0.85rem;
+    }
+    .blog-translation-result {
+        margin-top: 0.5rem;
+        font-size: 14px;
+        color: #333;
+    }
+    .blog-pager-wrap .pagination {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        align-items: center;
+        justify-content: center;
+        list-style: none;
+        padding: 0;
+        margin: 1.5rem 0 0;
+    }
+    .blog-pager-wrap .pagination span {
+        display: inline-flex;
+    }
+    .blog-pager-wrap .pagination a,
+    .blog-pager-wrap .pagination .current {
+        display: inline-flex;
+        min-width: 2.25rem;
+        justify-content: center;
+        padding: 0.4rem 0.65rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+    .blog-pager-wrap .pagination a {
+        color: #627255;
+        background: #fff;
+        border: 1px solid rgba(98, 114, 85, 0.28);
+    }
+    .blog-pager-wrap .pagination a:hover {
+        background: #eef1e9;
+    }
+    .blog-pager-wrap .pagination .current {
+        font-weight: 700;
+        background: #627255;
+        color: #fff;
+        border: 1px solid #627255;
+    }
+    .blog-live-search-status.is-loading {
+        color: #627255;
+    }
+</style>
+{% endblock %}
+
+{% block app_content %}
+<div class="blog-header" style="margin-bottom: 3rem;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em;">Human stories & ideas</h1>
+    <p style="color: #757575; font-size: 1.1rem;">A place to read, write, and deepen your understanding.</p>
+</div>
+<form method="GET" action="{{ path('app_blog_web_index') }}" class="blog-search-form" id="blogSearchForm">
+    <input
+        type="text"
+        name="q"
+        id="blogSearchInput"
+        value="{{ search }}"
+        class="form-control"
+        placeholder="Search blog by title…"
+        autocomplete="off"
+        aria-describedby="blogLiveSearchStatus"
+    >
+    <button type="submit" class="btn btn-outline-secondary">Search</button>
+</form>
+<p id="blogLiveSearchStatus" class="blog-live-search-status" style="display:none; color:#757575; font-size:0.9rem; margin:-1rem 0 1rem;" role="status" aria-live="polite"></p>
+<div class="blog-feed" id="blogList">
+    {% for blog in pagination %}
+        <div class="blog-card-outer">
+            <script type="application/json" id="blog-translate-data-{{ blog.id }}">{{ { title: blog.title, content: blog.content }|json_encode(constant('JSON_HEX_TAG'))|raw }}</script>
+            <a href="{{ path('app_blog_web_show', {id: blog.id}) }}" class="blog-card">
+                <div class="blog-card__content">
+                    <div class="blog-card__meta">
+                        <span class="blog-card__author">
+                            {{ blog.therapist.firstName }} {{ blog.therapist.lastName }}
+                        </span>
+                        <span>·</span>
+                        <span>{{ blog.createdAt|date('M d, Y') }}</span>
+                        {% if loop.index < 3 %}
+                            <span class="badge-premium">Featured</span>
+                        {% endif %}
+                    </div>
+                    <h2 class="blog-card__title">{{ blog.title }}</h2>
+                    <div class="blog-card__excerpt">{{ blog.content }}</div>
+                    <div class="blog-card__footer">
+                        <span>
+                            <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                            {{ blog.likes|length }}
+                        </span>
+                        <span>
+                            <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                            Comments
+                        </span>
+                    </div>
+                </div>
+                <div class="blog-card__visual">
+                    <img src="{{ asset('uploads/blogs/' ~ blog.photo) }}" class="blog-card__image" alt="Article image">
+                </div>
+            </a>
+            <div class="blog-card-translate">
+                <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="translateBlog({{ blog.id }}, 'fr')">
+                        🇫🇷 Traduire en Français
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="translateBlog({{ blog.id }}, 'ar')">
+                        🇸🇦 Traduire en Arabe
+                    </button>
+                </div>
+                <div id="translation-{{ blog.id }}" class="blog-translation-result" aria-live="polite"></div>
+            </div>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 4rem; color: #757575;">
+            <p>No stories found yet. Be the first to share your thoughts!</p>
+        </div>
+    {% endfor %}
+</div>
+<div id="blogPagerBlock">
+    <div class="blog-pager-wrap">
+        {{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/sliding.html.twig', app.request.query.all|default({})) }}
+    </div>
+    {% if pagination.getTotalItemCount() > 0 %}
+        <p class="blog-pager-stats" style="text-align: center; color: #757575; font-size: 0.85rem; margin-top: 0.75rem;">
+            {{ pagination.getTotalItemCount() }} article(s)
+            {% if pagination.getPageCount() > 1 %}
+                · page {{ pagination.getCurrentPageNumber() }} / {{ pagination.getPageCount() }}
+            {% endif %}
+        </p>
+    {% endif %}
+</div>
+<script>
+const translateUrl = {{ path('blog_translate')|json_encode|raw }};
+const blogSearchJsonUrl = {{ path('app_blog_search_json')|json_encode|raw }};
+const blogIndexUrl = {{ path('app_blog_web_index')|json_encode|raw }};
+const uploadsBlogsBase = {{ (asset('uploads/blogs') ~ '/')|json_encode|raw }};
+
+window.__blogTranslateCache = window.__blogTranslateCache || {};
+
+function blogShowUrlFor(id) {
+    return blogSearchJsonUrl.replace(/\/?search-json\/?$/i, '') + '/' + encodeURIComponent(id);
+}
+
+function escapeHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text == null ? '' : String(text);
+    return d.innerHTML;
+}
+
+function buildBlogCardHtml(b, index) {
+    const featured = index < 3 ? '<span class="badge-premium">Featured</span>' : '';
+    return (
+        '<div class="blog-card-outer">' +
+        '<a href="' + escapeHtml(blogShowUrlFor(b.id)) + '" class="blog-card">' +
+        '<div class="blog-card__content">' +
+        '<div class="blog-card__meta">' +
+        '<span class="blog-card__author">' + escapeHtml(b.author) + '</span>' +
+        '<span>·</span>' +
+        '<span>' + escapeHtml(b.date) + '</span>' +
+        featured +
+        '</div>' +
+        '<h2 class="blog-card__title">' + escapeHtml(b.title) + '</h2>' +
+        '<div class="blog-card__excerpt">' + escapeHtml(b.content) + '</div>' +
+        '<div class="blog-card__footer">' +
+        '<span><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg> ' + Number(b.likesCount) + '</span>' +
+        '<span><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> Comments</span>' +
+        '</div></div>' +
+        '<div class="blog-card__visual">' +
+        '<img src="' + escapeHtml(uploadsBlogsBase + b.photo) + '" class="blog-card__image" alt="">' +
+        '</div></a>' +
+        '<div class="blog-card-translate">' +
+        '<div style="display:flex; gap:10px; flex-wrap: wrap;">' +
+        '<button type="button" class="btn btn-sm btn-outline-secondary" onclick="translateBlog(' + b.id + ', \'fr\')">🇫🇷 Traduire en Français</button>' +
+        '<button type="button" class="btn btn-sm btn-outline-secondary" onclick="translateBlog(' + b.id + ', \'ar\')">🇸🇦 Traduire en Arabe</button>' +
+        '</div>' +
+        '<div id="translation-' + b.id + '" class="blog-translation-result" aria-live="polite"></div>' +
+        '</div></div>'
+    );
+}
+
+(function () {
+    const input = document.getElementById('blogSearchInput');
+    const listEl = document.getElementById('blogList');
+    const pagerBlock = document.getElementById('blogPagerBlock');
+    const statusEl = document.getElementById('blogLiveSearchStatus');
+    if (!input || !listEl || !pagerBlock) {
+        return;
+    }
+
+    let debounceTimer = null;
+    let fetchGeneration = 0;
+    let liveMode = false;
+
+    function setStatus(msg, loading) {
+        if (!statusEl) {
+            return;
+        }
+        if (!msg) {
+            statusEl.style.display = 'none';
+            statusEl.textContent = '';
+            statusEl.classList.remove('is-loading');
+            return;
+        }
+        statusEl.style.display = 'block';
+        statusEl.textContent = msg;
+        statusEl.classList.toggle('is-loading', !!loading);
+    }
+
+    function applyLiveResults(blogs) {
+        liveMode = true;
+        pagerBlock.style.display = 'none';
+        window.__blogTranslateCache = {};
+        if (!blogs.length) {
+            listEl.innerHTML = '<div style="text-align: center; padding: 4rem; color: #757575;"><p>Aucun article ne correspond à ta recherche.</p></div>';
+            setStatus('0 résultat', false);
+            return;
+        }
+        blogs.forEach(function (b) {
+            window.__blogTranslateCache[b.id] = { title: b.title, content: b.content };
+        });
+        listEl.innerHTML = blogs.map(function (b, i) { return buildBlogCardHtml(b, i); }).join('');
+        setStatus(blogs.length + ' résultat' + (blogs.length > 1 ? 's' : '') + ' (recherche instantanée, max. 80)', false);
+    }
+
+    function reloadFullIndex() {
+        window.location.assign(blogIndexUrl);
+    }
+
+    function runSearch(q) {
+        const gen = ++fetchGeneration;
+        setStatus('Recherche…', true);
+        const url = blogSearchJsonUrl + '?q=' + encodeURIComponent(q);
+        fetch(url, { headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (gen !== fetchGeneration) {
+                    return;
+                }
+                if (!Array.isArray(data)) {
+                    return;
+                }
+                applyLiveResults(data);
+            })
+            .catch(function () {
+                if (gen !== fetchGeneration) {
+                    return;
+                }
+                setStatus('Erreur réseau. Réessaie ou utilise le bouton Search.', false);
+            });
+    }
+
+    input.addEventListener('input', function () {
+        const q = input.value.trim();
+        clearTimeout(debounceTimer);
+
+        if (q.length === 0) {
+            setStatus('', false);
+            let hasQParam = false;
+            try {
+                hasQParam = new URLSearchParams(window.location.search).has('q');
+            } catch (e) { /* ignore */ }
+            if (liveMode || hasQParam) {
+                debounceTimer = setTimeout(reloadFullIndex, 280);
+            }
+            return;
+        }
+
+        debounceTimer = setTimeout(function () {
+            runSearch(q.slice(0, 200));
+        }, 320);
+
+        try {
+            const url = new URL(window.location.href);
+            url.searchParams.set('q', q);
+            url.searchParams.delete('page');
+            window.history.replaceState({}, '', url.pathname + url.search);
+        } catch (e) { /* ignore */ }
+    });
+
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            input.value = '';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    });
+})();
+
+function translateBlog(id, lang) {
+    let payload = { title: '', content: '' };
+    if (window.__blogTranslateCache && window.__blogTranslateCache[id]) {
+        payload = window.__blogTranslateCache[id];
+    } else {
+        const dataEl = document.getElementById('blog-translate-data-' + id);
+        if (dataEl) {
+            try {
+                payload = JSON.parse(dataEl.textContent);
+            } catch (e) { /* ignore */ }
+        }
+    }
+
+    fetch(translateUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            title: payload.title || '',
+            content: payload.content || '',
+            lang: lang
+        })
+    })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.error) {
+                return;
+            }
+            const el = document.getElementById('translation-' + id);
+            if (!el) {
+                return;
+            }
+            el.textContent = '';
+            const box = document.createElement('div');
+            box.style.cssText = 'padding:10px; border-left:3px solid #ccc; margin-top:10px;';
+            const h4 = document.createElement('h4');
+            h4.textContent = data.title || '';
+            const p = document.createElement('p');
+            p.style.whiteSpace = 'pre-wrap';
+            p.textContent = data.content || '';
+            box.appendChild(h4);
+            box.appendChild(p);
+            el.appendChild(box);
+        });
+}
+</script>
+{% endblock %}

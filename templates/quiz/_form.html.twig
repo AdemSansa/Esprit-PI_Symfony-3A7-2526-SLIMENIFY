@@ -106,15 +106,23 @@
             </div>
             <input type="text" id="questionSearch" placeholder="Search questions..." class="q-search-input">
         </div>
+        <p id="categoryHelpText" style="margin: 0 0 0.8rem; color: #7a5b49; font-size: 0.9rem;">
+            Select a quiz category to display matching questions.
+        </p>
         
         <div class="q-items-container">
             {% for child in form.questions %}
-                <label class="q-item-card">
+                {% set qCategory = child.vars.attr['data-question-category'] ?? '' %}
+                {% set qCategoryLabel = child.vars.attr['data-question-category-label'] ?? '' %}
+                <label class="q-item-card" data-question-category="{{ qCategory }}">
                     <div style="margin-right: 1.2rem; display: flex; align-items: center;">
                         {{ form_widget(child, {'attr': {'class': 'modern-checkbox'}}) }}
                     </div>
                     <div style="flex-grow: 1; font-size: 1rem; color: #5D4A3E; font-weight: 500; line-height: 1.5;" class="question-text">
                         {{ child.vars.label }}
+                        <div style="margin-top: 0.3rem; font-size: 0.75rem; color: #748764; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">
+                            {{ qCategoryLabel ?: 'No category' }}
+                        </div>
                     </div>
                 </label>
             {% else %}
@@ -128,36 +136,54 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('questionSearch');
+            const categoryInput = document.getElementById('{{ form.category.vars.id }}');
             const questionCards = document.querySelectorAll('.q-item-card');
             const noResults = document.getElementById('noResults');
+            const categoryHelpText = document.getElementById('categoryHelpText');
 
-            if (searchInput) {
-                searchInput.addEventListener('input', function(e) {
-                    const text = e.target.value.toLowerCase();
-                    let hasVisible = false;
+            const refreshVisibleQuestions = () => {
+                const text = (searchInput?.value || '').toLowerCase().trim();
+                const selectedCategory = (categoryInput?.value || '').toLowerCase().trim();
+                let hasVisible = false;
 
-                    questionCards.forEach(card => {
-                        const questionText = card.querySelector('.question-text').textContent.toLowerCase();
-                        if (questionText.includes(text)) {
-                            card.style.display = 'flex';
-                            hasVisible = true;
-                        } else {
-                            card.style.display = 'none';
+                if (categoryHelpText) {
+                    categoryHelpText.textContent = selectedCategory
+                        ? 'Only questions from "' + categoryInput.value + '" are shown.'
+                        : 'Select a quiz category to display matching questions.';
+                }
+
+                questionCards.forEach(card => {
+                    const questionText = card.querySelector('.question-text').textContent.toLowerCase();
+                    const questionCategory = (card.getAttribute('data-question-category') || '').toLowerCase();
+                    const matchesSearch = questionText.includes(text);
+                    const matchesCategory = selectedCategory !== '' && questionCategory === selectedCategory;
+                    const visible = matchesSearch && matchesCategory;
+
+                    card.style.display = visible ? 'flex' : 'none';
+                    if (!visible) {
+                        const input = card.querySelector('input[type="checkbox"]');
+                        if (input) {
+                            input.checked = false;
                         }
-                    });
-
-                    if (noResults) {
-                        noResults.style.display = hasVisible ? 'none' : 'block';
                     }
+                    hasVisible = hasVisible || visible;
                 });
-            }
+
+                if (noResults) {
+                    noResults.style.display = hasVisible ? 'none' : 'block';
+                }
+            };
+
+            searchInput?.addEventListener('input', refreshVisibleQuestions);
+            categoryInput?.addEventListener('change', refreshVisibleQuestions);
+            refreshVisibleQuestions();
         });
     </script>
 
     <div class="switch-wrap">
-        {{ form_widget(form.active, {'attr': {'class': 'modern-checkbox'}}) }}
-        {{ form_label(form.active, 'Make this quiz Active (Visible)', {'label_attr': {'class': 'form-label', 'style': 'cursor: pointer; margin: 0;'}}) }}
-        {{ form_errors(form.active) }}
+        <span style="font-size: 0.95rem; color: #5D4A3E;">
+            New quizzes are submitted for admin review before becoming visible.
+        </span>
     </div>
 
     <div class="form-actions">

@@ -57,9 +57,22 @@
     </div>
 
     <div class="form-group">
-        {{ form_label(form.imagePath, null, {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.imagePath, {'attr': {'class': 'form-control', 'placeholder': 'Optional: URL for an associated image'}}) }}
-        {{ form_errors(form.imagePath) }}
+        {{ form_label(form.imageFile, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.imageFile) }}
+        {% if question.imagePath %}
+            <div style="margin-top: 0.6rem;">
+                <a href="{{ question.imagePath }}" target="_blank" style="font-size: 0.85rem; color: #627255; font-weight: 600; text-decoration: none;">
+                    Preview current image
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.category, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.category, {'attr': {'class': 'form-control', 'placeholder': 'e.g., Anxiety, Depression, Behavior'}}) }}
+        {{ form_errors(form.category) }}
     </div>
 
     <div class="switch-wrap">

@@ -30,7 +30,12 @@ class Question
 
     #[ORM\Column(name: 'image_path', type: 'string', length: 255)]
     #[Assert\Length(max: 255, maxMessage: 'The image path cannot be longer than {{ limit }} characters.')]
-    private string $imagePath;
+    private string $imagePath = '';
+
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    #[Assert\NotBlank(message: 'Please select a psychology category for this question.')]
+    #[Assert\Length(max: 100, maxMessage: 'The category cannot be longer than {{ limit }} characters.')]
+    private ?string $category = null;
 
     #[ORM\ManyToMany(targetEntity: Quiz::class, mappedBy: 'questions')]
     private Collection $quizzes;
@@ -50,5 +55,7 @@ class Question
     public function setCreatedAt(\DateTimeImmutable $v): static { $this->createdAt = $v; return $this; }
     public function getImagePath(): string { return $this->imagePath; }
     public function setImagePath(string $v): static { $this->imagePath = $v; return $this; }
+    public function getCategory(): ?string { return $this->category; }
+    public function setCategory(?string $v): static { $this->category = $v; return $this; }
     public function getQuizzes(): Collection { return $this->quizzes; }
 }

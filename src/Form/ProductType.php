@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Product;
 use App\Entity\Supplier;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -58,10 +59,18 @@ class ProductType extends AbstractType
                 'label' => 'Expiration Date',
                 'required' => false,
                 'widget' => 'single_text',
-                'attr' => ['class' => 'form-input']
+                'attr' => [
+                    'class' => 'form-input',
+                    'min' => (new \DateTime())->format('Y-m-d')
+                ]
             ])
             ->add('supplier', EntityType::class, [
                 'class' => Supplier::class,
+                'query_builder' => function (EntityRepository $er) {
+                    return $er->createQueryBuilder('s')
+                        ->where('s.status = :status')
+                        ->setParameter('status', 'active');
+                },
                 'label' => 'Supplier',
                 'choice_label' => 'name',
                 'required' => false,
