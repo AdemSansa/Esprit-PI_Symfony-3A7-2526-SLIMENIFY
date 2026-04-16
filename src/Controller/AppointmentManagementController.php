@@ -28,12 +28,13 @@ class AppointmentManagementController extends AbstractController
         private NoteRepository $noteRepository,
         private EntityManagerInterface $entityManager,
         private GeminiAIService $aiService
-    ) {}
+    ) {
+    }
 
     #[Route('/calendar', name: 'calendar', methods: ['GET'])]
     public function calendar(Request $request): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_PATIENT');
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $therapists = $this->therapistRepository->findActive();
 
         $selectedTherapistId = $request->query->getInt('therapist_id');
@@ -108,8 +109,13 @@ class AppointmentManagementController extends AbstractController
 
         $availabilities = $this->availabilityRepository->findByTherapistId($therapist->getId());
         $dayMap = [
-            'SUNDAY' => 0, 'MONDAY' => 1, 'TUESDAY' => 2, 'WEDNESDAY' => 3,
-            'THURSDAY' => 4, 'FRIDAY' => 5, 'SATURDAY' => 6,
+            'SUNDAY' => 0,
+            'MONDAY' => 1,
+            'TUESDAY' => 2,
+            'WEDNESDAY' => 3,
+            'THURSDAY' => 4,
+            'FRIDAY' => 5,
+            'SATURDAY' => 6,
         ];
 
         $businessHours = [];
@@ -142,9 +148,51 @@ class AppointmentManagementController extends AbstractController
             'therapistName' => trim($therapist->getFirstName() . ' ' . $therapist->getLastName()),
         ]);
         $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-        $response->headers->set('Pragma', 'no-cache');
         $response->headers->set('Expires', '0');
         return $response;
+    }
+
+    #[Route('/available-therapists', name: 'available_therapists', methods: ['GET'])]
+    public function availableTherapists(Request $request): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_PATIENT');
+
+        $dateStr = $request->query->get('date');
+        $startStr = $request->query->get('start_time');
+        $type = strtolower((string) $request->query->get('type', ''));
+
+        if (!$dateStr || !$startStr) {
+            return $this->json(['error' => 'Missing date or time'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $date = \DateTime::createFromFormat('Y-m-d', $dateStr);
+        $start = \DateTime::createFromFormat('H:i', $startStr);
+        if (!$date || !$start) {
+            return $this->json(['error' => 'Invalid date/time format'], Response::HTTP_BAD_REQUEST);
+        }
+        $end = (clone $start)->modify('+60 minutes');
+
+        $activeTherapists = $this->therapistRepository->findActive();
+        $available = [];
+
+        foreach ($activeTherapists as $therapist) {
+            if ($type && !$this->isAppointmentTypeAllowed($therapist, $type)) {
+                continue;
+            }
+            if (!$this->isSlotInsideBusinessHours($therapist, $date, $start, $end)) {
+                continue;
+            }
+            if ($this->appointmentRepository->hasOverlapForTherapist($therapist->getId(), $date, $start, $end)) {
+                continue;
+            }
+            $available[] = [
+                'id' => $therapist->getId(),
+                'name' => trim($therapist->getFirstName() . ' ' . $therapist->getLastName()),
+                'consultationType' => $therapist->getConsultationType(),
+            ];
+        }
+
+        return $this->json(['therapists' => $available]);
     }
 
     #[Route('/book', name: 'book', methods: ['POST'])]
@@ -258,6 +306,16 @@ class AppointmentManagementController extends AbstractController
             return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
         }
 
+        if ($status === 'completed') {
+            $now = new \DateTime();
+            $appointTimeStr = $appointment->getAppointmentDate()->format('Y-m-d') . ' ' . $appointment->getStartTime()->format('H:i:s');
+            $appointDateTime = \DateTime::createFromFormat('Y-m-d H:i:s', $appointTimeStr);
+            if ($now < $appointDateTime) {
+                $this->addFlash('error', 'Cannot mark appointment as completed before its scheduled time.');
+                return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
+            }
+        }
+
         if (!$this->isGranted('ROLE_THERAPIST')) {
             if ($status !== 'cancelled') {
                 $this->addFlash('error', 'Patients can only cancel appointments.');
@@ -267,7 +325,7 @@ class AppointmentManagementController extends AbstractController
             $this->addFlash('error', 'Status can only move forward: pending -> confirmed -> completed -> cancelled.');
             return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
         }
-        
+
         if ($status === 'cancelled') {
             $this->entityManager->remove($appointment);
             $this->entityManager->flush();
@@ -362,9 +420,9 @@ class AppointmentManagementController extends AbstractController
     #[Route('/{id}/summarize', name: 'summarize', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function summarize(int $id): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_THERAPIST');
+        $this->denyAccessUnlessGranted('ROLE_PATIENT');
         $appointment = $this->appointmentRepository->find($id);
-        
+
         if ($appointment === null || !$this->canAccessAppointment($appointment)) {
             return $this->json(['error' => 'Appointment not found'], Response::HTTP_NOT_FOUND);
         }
@@ -375,7 +433,7 @@ class AppointmentManagementController extends AbstractController
         }
 
         $noteTexts = array_map(fn($n) => $n->getContent(), $notes);
-        
+
         // Performance: We can use fastcgi_finish_request here if we wanted to push results via WebSockets,
         // but for a simple AJAX call, we just return the result.
         $summary = $this->aiService->summarizeNotes($noteTexts);
@@ -462,6 +520,35 @@ class AppointmentManagementController extends AbstractController
         return $this->redirectToRoute('app_appointments_detail', ['id' => $appointmentId]);
     }
 
+    #[Route('/{id}/patient-mood', name: 'patient_mood', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function patientMood(int $id, Request $request): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_PATIENT');
+        $appointment = $this->appointmentRepository->find($id);
+        if ($appointment === null || !$this->canAccessAppointment($appointment)) {
+            throw $this->createNotFoundException('Appointment not found.');
+        }
+
+        if (strtolower((string) $appointment->getStatus()) !== 'completed') {
+            $this->addFlash('error', 'Mood can only be provided after the appointment is completed.');
+            return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
+        }
+
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User || $user->getId() !== $appointment->getPatient()->getId()) {
+            throw $this->createAccessDeniedException('Only the patient can update their mood.');
+        }
+
+        $mood = trim((string) $request->request->get('patient_mood', ''));
+        if ($mood !== '') {
+            $appointment->setPatientMood($mood);
+            $this->appointmentRepository->save($appointment);
+            $this->addFlash('success', 'Your mood has been recorded.');
+        }
+
+        return $this->redirectToRoute('app_appointments_detail', ['id' => $id]);
+    }
+
     private function resolveTherapistFromRequest(Request $request): ?Therapist
     {
         $id = $request->query->getInt('therapist_id');
@@ -494,8 +581,10 @@ class AppointmentManagementController extends AbstractController
 
         foreach ($availabilityRows as $row) {
             if ($row->getSpecificDate() === null && $row->isAvailable() && $row->getDay() === $day) {
-                if ($row->getStartTime()->format('H:i:s') <= $start->format('H:i:s')
-                    && $row->getEndTime()->format('H:i:s') >= $end->format('H:i:s')) {
+                if (
+                    $row->getStartTime()->format('H:i:s') <= $start->format('H:i:s')
+                    && $row->getEndTime()->format('H:i:s') >= $end->format('H:i:s')
+                ) {
                     $hasCoveringBusinessHour = true;
                     break;
                 }

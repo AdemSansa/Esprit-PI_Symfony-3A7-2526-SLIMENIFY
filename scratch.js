@@ -1,89 +1,4 @@
-{% extends 'layout/app_shell.html.twig' %}
 
-{% block title %}Appointment Calendar{% endblock %}
-
-{% block stylesheets %}
-    {{ parent() }}
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
-    <style>
-        /* Use full width of .app-main (area to the right of the sidebar) */
-        .app-main__inner {
-            max-width: none;
-            width: 100%;
-        }
-        #calendar {
-            min-height: 78vh;
-            width: 100%;
-        }
-        #calendar .fc {
-            max-width: 100%;
-        }
-        #calendar .fc .fc-timegrid-slot {
-            height: 3.1rem;
-        }
-    </style>
-{% endblock %}
-
-{% block app_content %}
-    <meta name="turbo-cache-control" content="no-cache">
-    <h1 style="margin-top:0; font-size:1.7rem; color:#334155;">Appointment Calendar</h1>
-    <p style="color:#64748b; max-width:70ch;">
-        {% if is_therapist %}
-            Drag or resize appointments to reschedule. Colors: pending (yellow), confirmed (green), completed (blue).
-        {% else %}
-            Choose a therapist first, then select a free slot to create a booking.
-        {% endif %}
-    </p>
-
-    <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; margin:0.9rem 0;">
-        {% if not is_therapist %}
-            <label for="therapist-select" style="font-size:0.9rem; color:#475569;">Therapist</label>
-            <select id="therapist-select" style="border:1px solid #cbd5e1; border-radius:8px; padding:0.55rem; min-width:220px;">
-                <option value="">Select therapist</option>
-                {% for therapist in therapists %}
-                    <option value="{{ therapist.id }}" {{ selected_therapist_id == therapist.id ? 'selected' : '' }}>
-                        {{ therapist.firstName }} {{ therapist.lastName }}
-                    </option>
-                {% endfor %}
-            </select>
-        {% endif %}
-        {% if not is_therapist %}
-            <a href="{{ path('app_appointments_calendar') }}" style="text-decoration:none; background:#627255; color:#fff; border-radius:8px; padding:0.5rem 0.8rem;">Refresh</a>
-        {% endif %}
-    </div>
-
-    <div style="display:flex; gap:0.5rem; margin-bottom:0.7rem;">
-        <span style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.85rem;"><span style="width:10px; height:10px; background:#eab308; border-radius:50%;"></span>Pending</span>
-        <span style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.85rem;"><span style="width:10px; height:10px; background:#22c55e; border-radius:50%;"></span>Confirmed</span>
-        <span style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.85rem;"><span style="width:10px; height:10px; background:#3b82f6; border-radius:50%;"></span>Completed</span>
-    </div>
-
-    <div id="calendar" style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:0.8rem;"></div>
-
-    <div id="booking-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.35); z-index:9999; align-items:center; justify-content:center;">
-        <div style="background:#fff; width:100%; max-width:440px; border-radius:14px; border:1px solid #e2e8f0; padding:1rem;">
-            <h3 style="margin-top:0; color:#334155;">Book Appointment</h3>
-            <p id="booking-range" style="margin:0 0 0.8rem; color:#64748b; font-size:0.9rem;"></p>
-            <div id="booking-therapist-wrapper" style="display:none; gap:0.6rem; margin-bottom:0.8rem;">
-                <label style="font-size:0.88rem; color:#475569;">Therapist</label>
-                <select id="booking-therapist" style="border:1px solid #cbd5e1; border-radius:8px; padding:0.55rem;"></select>
-            </div>
-            <div id="booking-type-wrapper" style="display:grid; gap:0.6rem;">
-                <label style="font-size:0.88rem; color:#475569;">Type</label>
-                <select id="booking-type" style="border:1px solid #cbd5e1; border-radius:8px; padding:0.55rem;"></select>
-            </div>
-            <p id="booking-type-info" style="margin:0.4rem 0 0; color:#475569; font-size:0.9rem; font-weight:600;"></p>
-            <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;">
-                <button type="button" id="booking-cancel" style="border:1px solid #cbd5e1; background:#fff; color:#334155; border-radius:8px; padding:0.45rem 0.7rem; cursor:pointer;">Cancel</button>
-                <button type="button" id="booking-save" style="border:none; background:#627255; color:#fff; border-radius:8px; padding:0.45rem 0.8rem; cursor:pointer;">Confirm Booking</button>
-            </div>
-        </div>
-    </div>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script>
         let appointmentCalendarInstance = null;
         let isSwalLoading = false;
 
@@ -154,8 +69,8 @@
             if (!window.FullCalendar) return;
 
             const therapistSelect = document.getElementById('therapist-select');
-            const isTherapist = {{ is_therapist ? 'true' : 'false' }};
-            const selectedTherapistFromBackend = {{ selected_therapist_id ?: 0 }};
+            const isTherapist = 0;
+            const selectedTherapistFromBackend = 0;
             const modalEl = document.getElementById('booking-modal');
             const modalTypeEl = document.getElementById('booking-type');
             const modalTypeWrapper = document.getElementById('booking-type-wrapper');
@@ -183,7 +98,7 @@
 
             async function loadBusinessHours() {
                 if (!activeTherapistId) return { businessHours: [] };
-                const response = await fetch(`{{ path('app_appointments_business_hours') }}?therapist_id=${activeTherapistId}&_ts=${Date.now()}`, {
+                const response = await fetch(`0?therapist_id=${activeTherapistId}&_ts=${Date.now()}`, {
                     cache: 'no-store',
                 });
                 return response.json();
@@ -306,35 +221,25 @@
                         finalTherapistId = parseInt(modalTherapistEl.value, 10);
                     }
                     if (!selectedSlot || !finalTherapistId) return;
-                    
-                    modalSaveEl.disabled = true;
-                    const originalText = modalSaveEl.textContent;
-                    modalSaveEl.textContent = 'Saving...';
-                    
-                    try {
-                        const payload = {
-                            therapist_id: finalTherapistId,
-                            date: formatDate(selectedSlot.start),
-                            start_time: formatTime(selectedSlot.start),
-                            end_time: formatTime(selectedSlot.end),
-                            type: modalTypeEl.value,
-                        };
-                        const response = await fetch('{{ path('app_appointments_book') }}', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload),
-                        });
-                        const body = await response.json().catch(() => ({}));
-                        if (!response.ok) {
-                            await showErrorAlert(body.error || 'Booking failed.');
-                            return;
-                        }
-                        closeBookingModal();
-                        appointmentCalendarInstance.refetchEvents();
-                    } finally {
-                        modalSaveEl.disabled = false;
-                        modalSaveEl.textContent = originalText;
+                    const payload = {
+                        therapist_id: finalTherapistId,
+                        date: formatDate(selectedSlot.start),
+                        start_time: formatTime(selectedSlot.start),
+                        end_time: formatTime(selectedSlot.end),
+                        type: modalTypeEl.value,
+                    };
+                    const response = await fetch('0', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    });
+                    const body = await response.json().catch(() => ({}));
+                    if (!response.ok) {
+                        await showErrorAlert(body.error || 'Booking failed.');
+                        return;
                     }
+                    closeBookingModal();
+                    appointmentCalendarInstance.refetchEvents();
                 });
             }
 
@@ -357,8 +262,8 @@
                 editable: true,
                 eventStartEditable: true,
                 eventDurationEditable: false,
-                selectConstraint: 'businessHours',
-                eventConstraint: 'businessHours',
+                selectConstraint: activeTherapistId ? 'businessHours' : null,
+                eventConstraint: activeTherapistId ? 'businessHours' : null,
                 selectMirror: true,
                 nowIndicator: true,
                 eventOverlap: false,
@@ -381,7 +286,7 @@
                         date: formatDate(info.event.start),
                         start_time: formatTime(info.event.start),
                     };
-                    const response = await fetch(`{{ path('app_appointments_move', {id: 0}) }}`.replace('/0/move', `/${info.event.id}/move`), {
+                    const response = await fetch(`0`.replace('/0/move', `/${info.event.id}/move`), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload),
@@ -424,7 +329,7 @@
                         if (window.Swal) Swal.fire({ title: 'Checking availability...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                         
                         try {
-                            const response = await fetch(`{{ path('app_appointments_available_therapists') }}?date=${selectedDate}&start_time=${selectedStart}`);
+                            const response = await fetch(`0?date=${selectedDate}&start_time=${selectedStart}`);
                             const data = await response.json();
                             if (window.Swal) Swal.close();
                             
@@ -458,7 +363,7 @@
                         successCallback([]);
                         return;
                     }
-                    fetch(`{{ path('app_appointments_events') }}?therapist_id=${activeTherapistId}&_ts=${Date.now()}`, {
+                    fetch(`0?therapist_id=${activeTherapistId}&_ts=${Date.now()}`, {
                         cache: 'no-store',
                     })
                         .then((res) => res.json())
@@ -472,14 +377,9 @@
                 consultationType = data.consultationType || 'BOTH';
                 businessHoursCache = data.businessHours || [];
                 exceptionsCache = data.exceptions || [];
-
-                if (!activeTherapistId) {
-                    businessHoursCache = [{ daysOfWeek: [0, 1, 2, 3, 4, 5, 6], startTime: '00:00', endTime: '24:00' }];
-                }
-
-                appointmentCalendarInstance.setOption('businessHours', businessHoursCache);
-                appointmentCalendarInstance.setOption('selectConstraint', 'businessHours');
-                appointmentCalendarInstance.setOption('eventConstraint', 'businessHours');
+                appointmentCalendarInstance.setOption('businessHours', businessHoursCache.length > 0 ? businessHoursCache : false);
+                appointmentCalendarInstance.setOption('selectConstraint', activeTherapistId ? 'businessHours' : null);
+                appointmentCalendarInstance.setOption('eventConstraint', activeTherapistId ? 'businessHours' : null);
                 appointmentCalendarInstance.render();
                 appointmentCalendarInstance.refetchEvents();
             }
@@ -502,28 +402,20 @@
             }
         });
         
-        let isCalendarInitializing = false;
+        let hasInitialized = false;
 
         async function safeInit() {
-            if (appointmentCalendarInstance) {
+            if (hasInitialized && appointmentCalendarInstance) {
                 appointmentCalendarInstance.refetchEvents();
                 return;
             }
-            if (isCalendarInitializing) return;
-            isCalendarInitializing = true;
-            try {
-                await initAppointmentCalendar();
-            } finally {
-                isCalendarInitializing = false;
-            }
+            hasInitialized = true;
+            await initAppointmentCalendar();
         }
 
         document.addEventListener('turbo:load', safeInit);
         
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', safeInit);
-        } else {
+        if (document.readyState === 'interactive' || document.readyState === 'complete') {
             safeInit();
         }
-    </script>
-{% endblock %}
+    

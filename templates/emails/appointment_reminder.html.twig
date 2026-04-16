@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Reminder</title>
+</head>
+<body style="font-family: 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 40px 20px; color: #374151; -webkit-font-smoothing: antialiased;">
+    
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);">
+        
+        <!-- Header -->
+        <tr>
+            <td style="background: linear-gradient(135deg, #627255 0%, #4a5a40 100%); padding: 40px 30px; text-align: center;">
+                <!-- App Logo placeholder -->
+                <div style="margin-bottom: 20px;">
+                    <img src="https://ui-avatars.com/api/?name=Mindful+Wellness&background=ffffff&color=627255&size=120&rounded=true&bold=true" alt="Mindful Wellness Logo" width="80" style="border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                </div>
+                <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 700; letter-spacing: 0.5px;">Mindful Wellness</h1>
+                <p style="margin: 8px 0 0; color: #dcfce7; font-size: 15px; font-weight: 400; opacity: 0.9;">Your journey to better mental health</p>
+            </td>
+        </tr>
+
+        <!-- Content -->
+        <tr>
+            <td style="padding: 40px 30px;">
+                <h2 style="margin: 0 0 24px; color: #111827; font-size: 22px; font-weight: 600;">Upcoming Appointment Reminder</h2>
+                
+                <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.6; color: #4b5563;">
+                    Hello <strong style="color: #111827;">{{ patient.firstName }}</strong>,
+                </p>
+                <p style="margin: 0 0 24px; font-size: 16px; line-height: 1.6; color: #4b5563;">
+                    This is a friendly reminder of your scheduled consultation tomorrow. We look forward to seeing you!
+                </p>
+                
+                <!-- Appointment Details Card -->
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8fafc; border-radius: 12px; margin-bottom: 30px; border-left: 5px solid #8b5cf6;">
+                    <tr>
+                        <td style="padding: 24px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td width="30%" style="padding-bottom: 12px; font-size: 14px; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Date</td>
+                                    <td width="70%" style="padding-bottom: 12px; font-size: 16px; color: #1f2937; font-weight: 600;">{{ appointment.appointmentDate|date('l, F j, Y') }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-bottom: 12px; font-size: 14px; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Time</td>
+                                    <td style="padding-bottom: 12px; font-size: 16px; color: #1f2937; font-weight: 600;">{{ appointment.startTime|date('H:i') }} - {{ appointment.endTime|date('H:i') }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-bottom: 12px; font-size: 14px; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Therapist</td>
+                                    <td style="padding-bottom: 12px; font-size: 16px; color: #1f2937; font-weight: 600;">{{ appointment.therapist.firstName }} {{ appointment.therapist.lastName }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size: 14px; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Type</td>
+                                    <td style="font-size: 16px; color: #1f2937; font-weight: 600;">{{ appointment.type|capitalize }} Session</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Call to Action -->
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="text-align: center;">
+                    <tr>
+                        <td style="padding-bottom: 30px;">
+                            {% if appointment.type == 'video' %}
+                                <p style="margin: 0 0 20px; font-size: 15px; color: #4b5563; line-height: 1.5;">You can join your video session directly using the link below at the scheduled time:</p>
+                                <a href="{{ detailUrl }}" style="display: inline-block; background-color: #8b5cf6; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.3);">Join Video Consultation</a>
+                            {% else %}
+                                <p style="margin: 0 0 20px; font-size: 15px; color: #4b5563; line-height: 1.5;">Please arrive 5-10 minutes early. If you need to reschedule, please manage your appointment from the dashboard.</p>
+                                <a href="{{ detailUrl }}" style="display: inline-block; background-color: #627255; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(98, 114, 85, 0.3);">Manage Appointment</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+                
+                <p style="margin: 0; font-size: 16px; color: #4b5563; line-height: 1.6;">
+                    Warm regards,<br>
+                    <strong style="color: #111827;">The Mindful Wellness Team</strong>
+                </p>
+            </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+            <td style="background-color: #f8fafc; padding: 24px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                <p style="margin: 0 0 8px; font-size: 13px; color: #6b7280;">&copy; {{ 'now'|date('Y') }} Mindful Wellness App. All rights reserved.</p>
+                <p style="margin: 0; font-size: 12px; color: #9ca3af;">This email was sent automatically. Please do not reply directly to this message.</p>
+            </td>
+        </tr>
+    </table>
+    
+</body>
+</html>
