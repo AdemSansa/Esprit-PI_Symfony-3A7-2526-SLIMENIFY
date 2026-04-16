@@ -18,12 +18,18 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class AdminUserController extends AbstractController
 {
     #[Route('', name: 'app_admin_user_index', methods: ['GET'])]
-    public function index(Request $request, UserRepository $userRepository): Response
+    public function index(Request $request, UserRepository $userRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
         $searchQuery = $request->query->get('q');
         $roleFilter = $request->query->get('role');
 
-        $users = $userRepository->searchAndSort($searchQuery, $roleFilter);
+        $query = $userRepository->searchAndSortQuery($searchQuery, $roleFilter);
+        
+        $users = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            10 // Show 10 users per page
+        );
 
         return $this->render('admin_user/index.html.twig', [
             'users' => $users,

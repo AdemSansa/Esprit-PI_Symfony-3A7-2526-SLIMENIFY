@@ -32,15 +32,15 @@ class ForgotPasswordController extends AbstractController
                 // Génération d'un token aléatoire sécurisé
                 $token = bin2hex(random_bytes(16));
                 
-                // Sauvegarde du token dans le cache pendant 1 heure (3600 secondes)
+                // Sauvegarde du token dans le cache pendant 30 minutes (1800 secondes)
                 $item = $this->cache->getItem('reset_pwd_' . $token);
                 $item->set($email);
-                $item->expiresAfter(3600);
+                $item->expiresAfter(1800);
                 $this->cache->save($item);
 
                 // Envoi de l'email
                 $emailMessage = (new TemplatedEmail())
-                    ->from(new Address('adem.sansa7@gmail.com', 'Slimenify Team'))
+                    ->from(new Address('Slimenify.team@gmail.com', 'Slimenify Team'))
                     ->to($email)
                     ->subject('Réinitialisation de votre mot de passe')
                     ->htmlTemplate('forgot_password/email.html.twig')
@@ -52,7 +52,7 @@ class ForgotPasswordController extends AbstractController
             }
 
             // On affiche toujours le même message pour des raisons de sécurité (empêcher d'énumérer les emails)
-            $this->addFlash('success', 'Si un compte existe pour cet email, un lien de réinitialisation vient de vous être envoyé. Il est valide pendant 1 heure.');
+            $this->addFlash('success', 'Si un compte existe pour cet email, un lien de réinitialisation vient de vous être envoyé. Il est valide pendant 30 minutes.');
             return $this->redirectToRoute('app_login');
         }
 

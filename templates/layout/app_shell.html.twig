@@ -254,6 +254,43 @@
 		transform: translateY(-2px);
 		box-shadow: 0 6px 16px rgba(98,114,85,0.25) !important;
 	}
+	
+	/* KnpPaginator Global Styles to make them look like buttons */
+	.pagination {
+		display: flex;
+		gap: 8px;
+		list-style: none;
+		padding: 0;
+		margin: 20px 0;
+		justify-content: center;
+		align-items: center;
+	}
+	.pagination span, .pagination a {
+		display: inline-block;
+		padding: 8px 16px;
+		border-radius: 8px;
+		font-size: 0.95rem;
+		font-weight: 600;
+		text-decoration: none;
+		transition: all 0.2s ease;
+		background-color: #ffffff;
+		color: #687560;
+		border: 1px solid #D5D9D1;
+		box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+	}
+	.pagination a:hover {
+		background-color: #687560;
+		color: #ffffff;
+		border-color: #687560;
+		transform: translateY(-1px);
+		box-shadow: 0 4px 6px rgba(104,117,96,0.15);
+	}
+	.pagination .current {
+		background-color: #687560;
+		color: #ffffff;
+		border-color: #687560;
+		box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+	}
 	</style>
 {% endblock %}
 
@@ -301,12 +338,13 @@
                 <a href="{{ path('app_blog_web_my_blogs') }}" class="{{ route == 'app_blog_web_my_blogs' ? 'is-active' : '' }}">My Writing</a>
             {% endif %}
 
-			{% if is_granted('ROLE_PATIENT') %}
+			{% if is_granted('ROLE_PATIENT') and not is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_patient_dashboard') }}" class="{{ route == 'app_patient_dashboard' ? 'is-active' : '' }}" style="margin-top: 1.5rem;">Therapists</a>
 			{% endif %}
 	
 			{% if is_granted('ROLE_ADMIN') %}
 				<div style="margin-top: 1.5rem; margin-bottom: 0.25rem; padding: 0 0.85rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-sidebar-muted);">Admin Area</div>
+				<a href="{{ path('app_admin_dashboard') }}" class="{{ route == 'app_admin_dashboard' ? 'is-active' : '' }}">Dashboard</a>
 				<a href="{{ path('app_admin_user_index') }}" class="{{ route starts with 'app_admin_user' ? 'is-active' : '' }}">Users</a>
 				<a href="{{ path('app_admin_therapist_index') }}" class="{{ route starts with 'app_admin_therapist' ? 'is-active' : '' }}">Therapists</a>
 				<a href="{{ path('app_admin_quiz_reviews') }}" class="{{ route starts with 'app_admin_quiz' ? 'is-active' : '' }}">Quiz Requests</a>
@@ -325,10 +363,7 @@
 			{% if app.user %}
 				<div style="font-weight: 600; color: #fff; margin-bottom: 5px;">{{ app.user.userIdentifier }}</div>
 			{% endif %}
-            <a href="{{ path('app_profile_index') }}" class="btn-logout" style="margin-top: 5px; background: rgba(255,255,255,0.05); border-color: transparent;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                My Profile
-            </a>
+
 			<a href="{{ path('app_logout') }}" class="btn-logout">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 Log out
@@ -411,7 +446,7 @@
 					<div class="app-header-glad">Glad to see you again 👋</div>
 				</div>
 				{% if app.user %}
-					<div class="app-header-avatar">{{ app.user.firstName|first|upper }}</div>
+					<a href="{{ path('app_profile_index') }}" class="app-header-avatar" style="text-decoration: none; transition: transform 0.2s; cursor: pointer;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">{{ app.user.firstName|first|upper }}</a>
 				{% else %}
 					<div class="app-header-avatar">?</div>
 				{% endif %}

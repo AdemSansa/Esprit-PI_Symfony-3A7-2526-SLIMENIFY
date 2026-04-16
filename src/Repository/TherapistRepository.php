@@ -44,9 +44,9 @@ class TherapistRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Therapist[]
+     * @return \Doctrine\ORM\Query
      */
-    public function searchAndSort(?string $searchQuery, ?string $specialty): array
+    public function searchAndSortQuery(?string $searchQuery, ?string $specialty, ?string $modeFilter = null): \Doctrine\ORM\Query
     {
         $qb = $this->createQueryBuilder('t');
 
@@ -60,8 +60,21 @@ class TherapistRepository extends ServiceEntityRepository
                ->setParameter('spec', $specialty);
         }
 
+        if ($modeFilter && $modeFilter !== 'all') {
+            $qb->andWhere('t.consultationType = :mode')
+               ->setParameter('mode', $modeFilter);
+        }
+
         $qb->orderBy('t.id', 'ASC');
 
-        return $qb->getQuery()->getResult();
+        return $qb->getQuery();
+    }
+
+    /**
+     * @return Therapist[]
+     */
+    public function searchAndSort(?string $searchQuery, ?string $specialty, ?string $modeFilter = null): array
+    {
+        return $this->searchAndSortQuery($searchQuery, $specialty, $modeFilter)->getResult();
     }
 }

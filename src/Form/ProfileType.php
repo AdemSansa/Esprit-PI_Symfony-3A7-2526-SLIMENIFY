@@ -19,7 +19,16 @@ class ProfileType extends AbstractType
             ->add('firstName', TextType::class, ['label' => 'First Name'])
             ->add('lastName', TextType::class, ['label' => 'Last Name', 'required' => false])
             ->add('email', EmailType::class, ['label' => 'Email'])
-            ->add('phone', TextType::class, ['label' => 'Phone Number', 'required' => false])
+            ->add('phone', TextType::class, [
+                'label' => 'Phone Number', 
+                'required' => false,
+                'constraints' => [
+                    new \Symfony\Component\Validator\Constraints\Regex([
+                        'pattern' => '/^[0-9]{8}$/',
+                        'message' => 'Please enter a valid phone number (exactly 8 digits).'
+                    ])
+                ]
+            ])
             ->add('dateNaissance', DateType::class, [
                 'widget' => 'single_text',
                 'required' => false,

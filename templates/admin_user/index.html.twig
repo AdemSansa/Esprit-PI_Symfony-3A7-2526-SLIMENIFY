@@ -159,7 +159,7 @@
             </div>
         </div>
 
-        <div style="overflow-x: auto;">
+        <div style="overflow-x: auto;" id="tableContainer">
             <table class="admin-table" id="usersTable">
                 <thead>
                     <tr>
@@ -193,6 +193,9 @@
                 {% endfor %}
                 </tbody>
             </table>
+            <div style="margin-top: 20px; display: flex; justify-content: center;">
+                {{ knp_pagination_render(users) }}
+            </div>
         </div>
     </div>
 </div>
@@ -259,6 +262,8 @@
                     const url = new URL(form.action || window.location.href);
                     const formData = new FormData(form);
                     const searchParams = new URLSearchParams(formData);
+                    // Remove page param when searching to start from page 1
+                    searchParams.delete('page');
                     url.search = searchParams.toString();
 
                     fetch(url, { headers: {'X-Requested-With': 'XMLHttpRequest'} })
@@ -266,10 +271,11 @@
                         .then(html => {
                             const parser = new DOMParser();
                             const doc = parser.parseFromString(html, 'text/html');
-                            const newTbody = doc.querySelector('#usersTable tbody');
+                            const newContainer = doc.getElementById('tableContainer');
                             
-                            if (newTbody) {
-                                tableBody.innerHTML = newTbody.innerHTML;
+                            if (newContainer) {
+                                const container = document.getElementById('tableContainer');
+                                container.innerHTML = newContainer.innerHTML;
                                 setupAdminTable(); // Re-bind events to new rows
                             }
                             window.history.pushState({}, '', url);

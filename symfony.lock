@@ -38,6 +38,15 @@
     "knplabs/knp-paginator-bundle": {
         "version": "v6.10.0"
     },
+    "knpuniversity/oauth2-client-bundle": {
+        "version": "2.20",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "1.20",
+            "ref": "1ff300d8c030f55c99219cc55050b97a695af3f6"
+        }
+    },
     "phpunit/phpunit": {
         "version": "11.5",
         "recipe": {
@@ -52,6 +61,15 @@
             "./tests/bootstrap.php",
             "./bin/phpunit"
         ]
+    },
+    "stripe/stripe-php": {
+        "version": "20.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "19.0",
+            "ref": "d6829c693e3927a8972c7671d74a1a5c505712b0"
+        }
     },
     "symfony/asset-mapper": {
         "version": "6.4",
@@ -206,6 +224,15 @@
             "./config/packages/security.yaml",
             "./config/routes/security.yaml"
         ]
+    },
+    "symfony/sendgrid-mailer": {
+        "version": "6.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "4.4",
+            "ref": "1caff9467bfc5c7f68503aa9eba9dc762a30ae21"
+        }
     },
     "symfony/stimulus-bundle": {
         "version": "2.35",
