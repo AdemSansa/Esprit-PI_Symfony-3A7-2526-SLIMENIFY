@@ -344,6 +344,7 @@
 	
 			{% if is_granted('ROLE_ADMIN') %}
 				<div style="margin-top: 1.5rem; margin-bottom: 0.25rem; padding: 0 0.85rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-sidebar-muted);">Admin Area</div>
+				<a href="{{ path('app_admin_dashboard') }}" class="{{ route == 'app_admin_dashboard' ? 'is-active' : '' }}">Dashboard</a>
 				<a href="{{ path('app_admin_user_index') }}" class="{{ route starts with 'app_admin_user' ? 'is-active' : '' }}">Users</a>
 				<a href="{{ path('app_admin_therapist_index') }}" class="{{ route starts with 'app_admin_therapist' ? 'is-active' : '' }}">Therapists</a>
 				<a href="{{ path('app_admin_quiz_reviews') }}" class="{{ route starts with 'app_admin_quiz' ? 'is-active' : '' }}">Quiz Requests</a>
