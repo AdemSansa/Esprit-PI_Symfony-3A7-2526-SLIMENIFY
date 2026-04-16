@@ -19,10 +19,12 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class CartController extends AbstractController
 {
     private RequestStack $requestStack;
+    private \App\Service\EmailService $emailService;
 
-    public function __construct(RequestStack $requestStack)
+    public function __construct(RequestStack $requestStack, \App\Service\EmailService $emailService)
     {
         $this->requestStack = $requestStack;
+        $this->emailService = $emailService;
     }
 
     #[Route('', name: 'app_cart_index', methods: ['GET'])]
@@ -273,6 +275,14 @@ class CartController extends AbstractController
 
         $this->addFlash('success', "🎊 Congratulations! Your order (Total: $totalAmount TND) has been confirmed successfully.");
 
+        // Send confirmation email
+        try {
+            $this->emailService->sendOrderConfirmation($commande);
+        } catch (\Exception $e) {
+            // Log the error and show a more detailed warning flash
+            $this->addFlash('warning', "Order confirmed, but we couldn't send the confirmation email. Error: " . $e->getMessage());
+        }
+
         return $this->redirectToRoute('app_product_index');
     }
 
@@ -285,6 +295,14 @@ class CartController extends AbstractController
 
         $commande->setStatus('payée');
         $em->flush();
+
+        // Send confirmation email
+        try {
+            $this->emailService->sendOrderConfirmation($commande);
+        } catch (\Exception $e) {
+            // Log the error and show a more detailed warning flash
+            $this->addFlash('warning', "Order confirmed, but we couldn't send the confirmation email. Error: " . $e->getMessage());
+        }
 
         $this->addFlash('success', "🎊 Congratulations! Your payment is successful and your order has been confirmed.");
         return $this->redirectToRoute('app_product_index');
