@@ -1,0 +1,350 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Quiz Analytics Dashboard{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .admin-dashboard {
+        padding: 2rem;
+        background-color: transparent;
+        min-height: 100vh;
+        font-family: inherit;
+    }
+    .db-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    .db-title {
+        color: #5D4A3E;
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    /* KPI Cards */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .kpi-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(98, 114, 85, 0.08);
+        border: 1px solid rgba(122, 91, 73, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: transform 0.3s;
+    }
+    .kpi-card:hover {
+        transform: translateY(-5px);
+    }
+    .kpi-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #748764, #A8866E);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.8rem;
+    }
+    .kpi-data h3 {
+        margin: 0;
+        color: #8C6D58;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    .kpi-data p {
+        margin: 0.2rem 0 0;
+        color: #5D4A3E;
+        font-size: 2rem;
+        font-weight: 800;
+    }
+
+    /* Charts Section */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .chart-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(98, 114, 85, 0.08);
+        border: 1px solid rgba(122, 91, 73, 0.1);
+    }
+    .chart-card h3 {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        color: #5D4A3E;
+        font-size: 1.2rem;
+        font-weight: 700;
+        border-bottom: 2px solid #f0f2eb;
+        padding-bottom: 0.8rem;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    /* Activity Feed */
+    .activity-feed {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+    .activity-feed::-webkit-scrollbar {
+        width: 6px;
+    }
+    .activity-feed::-webkit-scrollbar-thumb {
+        background: #d5d9d1;
+        border-radius: 4px;
+    }
+    .activity-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f0f2eb;
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot {
+        width: 12px;
+        height: 12px;
+        background: #748764;
+        border-radius: 50%;
+        margin-top: 5px;
+        flex-shrink: 0;
+    }
+    .activity-content p {
+        margin: 0;
+        color: #5D4A3E;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+    .activity-content small {
+        color: #8C6D58;
+        font-size: 0.8rem;
+    }
+    
+    @media (max-width: 992px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block app_content %}
+<div class="admin-dashboard">
+    <div class="db-header">
+        <h1 class="db-title">Quiz Analytics Dashboard</h1>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon">👥</div>
+            <div class="kpi-data">
+                <h3>Total Users</h3>
+                <p>{{ totalUsers|number_format }}</p>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">📝</div>
+            <div class="kpi-data">
+                <h3>Total Quizzes</h3>
+                <p>{{ totalQuizzes|number_format }}</p>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">✅</div>
+            <div class="kpi-data">
+                <h3>Quiz Attempts</h3>
+                <p>{{ totalAttempts|number_format }}</p>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">⭐</div>
+            <div class="kpi-data">
+                <h3>Average Score</h3>
+                <p>{{ averageScore }}%</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Charts Area -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>📈 Quiz Completion Trends (Last 30 Days)</h3>
+            <div class="chart-container">
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-card" style="grid-row: span 2;">
+            <h3>🕒 Recent Activity</h3>
+            <div class="activity-feed">
+                {% for activity in recentActivity %}
+                    <div class="activity-item">
+                        <div class="activity-dot"></div>
+                        <div class="activity-content">
+                            <p><strong>{{ activity.firstName }} {{ activity.lastName }}</strong> completed <em>{{ activity.quiz_title }}</em> with a score of <strong>{{ activity.score }}%</strong>.</p>
+                            <small>{{ activity.takenAt|date('M d, Y H:i A') }}</small>
+                        </div>
+                    </div>
+                {% else %}
+                    <p style="color: #8C6D58;">No recent activity found.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h3>📊 Top 5 Attempted Quizzes</h3>
+            <div class="chart-container">
+                <canvas id="topQuizzesChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-card">
+            <h3>✨ Average Score (Top 5 Attempted)</h3>
+            <div class="chart-container">
+                <canvas id="scoresChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Injection -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const completionData = {{ completionTrends|json_encode|raw }};
+        const topQuizzesData = {{ topQuizzes|json_encode|raw }};
+        const topScoresData = {{ topScores|json_encode|raw }};
+        
+        const earthyColors = [
+            'rgba(116, 135, 100, 0.8)', // #748764
+            'rgba(168, 134, 110, 0.8)', // #A8866E
+            'rgba(140, 109, 88, 0.8)',  // #8C6D58
+            'rgba(93, 74, 62, 0.8)',    // #5D4A3E
+            'rgba(152, 169, 137, 0.8)'  // lighter green
+        ];
+
+        // 1. Completion Trends Line Chart
+        const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+        new Chart(trendsCtx, {
+            type: 'line',
+            data: {
+                labels: completionData.map(item => item.date),
+                datasets: [{
+                    label: 'Daily Completions',
+                    data: completionData.map(item => item.completions),
+                    borderColor: '#748764',
+                    backgroundColor: 'rgba(116, 135, 100, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#A8866E',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index',
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#5D4A3E',
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // 2. Top Quizzes Bar Chart
+        const topCtx = document.getElementById('topQuizzesChart').getContext('2d');
+        new Chart(topCtx, {
+            type: 'bar',
+            data: {
+                labels: topQuizzesData.map(item => item.title.substring(0, 20) + (item.title.length > 20 ? '...' : '')),
+                datasets: [{
+                    label: 'Total Attempts',
+                    data: topQuizzesData.map(item => item.attempt_count),
+                    backgroundColor: earthyColors,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#5D4A3E',
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // 3. Average Scores Horizontal Bar Chart
+        const scoresCtx = document.getElementById('scoresChart').getContext('2d');
+        new Chart(scoresCtx, {
+            type: 'bar',
+            data: {
+                labels: topScoresData.map(item => item.title.substring(0, 20) + (item.title.length > 20 ? '...' : '')),
+                datasets: [{
+                    label: 'Avg Score (%)',
+                    data: topScoresData.map(item => parseFloat(item.avg_score)),
+                    backgroundColor: 'rgba(168, 134, 110, 0.8)',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y', // Horizontal bars
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#5D4A3E',
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    x: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.05)' } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
