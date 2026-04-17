@@ -4,12 +4,12 @@
 	{{ parent() }}
 	<style>:root
 	{
-		--app-sidebar-bg: #808c75;
-		--app-sidebar-text: #ffffff;
-		--app-sidebar-muted: #d5d9d1;
-		--app-accent: #627255;
-		--app-accent-hover: #4f5d44;
-		--app-main-bg: #f6f5ed;
+		--app-sidebar-bg: #0f172a;
+		--app-sidebar-text: #e2e8f0;
+		--app-sidebar-muted: #94a3b8;
+		--app-accent: #22d3ee;
+		--app-accent-hover: #06b6d4;
+		--app-main-bg: linear-gradient(140deg, #f8fbff 0%, #eef5ff 35%, #f7f3ff 100%);
 	}
 	@keyframes fadeInSlideUp {
 		0% {
@@ -62,20 +62,25 @@
 	.app-sidebar {
 		width: 240px;
 		flex-shrink: 0;
-		background: linear-gradient(180deg, var(--app-sidebar-bg) 0%, #687560 100%);
+		background:
+			radial-gradient(120% 80% at 0% 0%, rgba(34, 211, 238, 0.2) 0%, rgba(34, 211, 238, 0) 60%),
+			radial-gradient(100% 65% at 100% 100%, rgba(129, 140, 248, 0.18) 0%, rgba(129, 140, 248, 0) 65%),
+			linear-gradient(165deg, var(--app-sidebar-bg) 0%, #111827 45%, #0b1120 100%);
 		color: var(--app-sidebar-text);
-		padding: 1.25rem 0;
+		padding: 1rem 0 0.85rem;
 		display: flex;
 		flex-direction: column;
+		border-right: 1px solid rgba(148, 163, 184, 0.2);
+		box-shadow: 10px 0 28px rgba(2, 6, 23, 0.45);
 	}
 	.app-sidebar__brand {
-		padding: 0 1.25rem 1.25rem;
+		padding: 0 1.1rem 1.05rem;
 		font-weight: 800;
-		font-size: 1.3rem;
+		font-size: 1.18rem;
 		letter-spacing: -0.02em;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-		margin-bottom: 0.75rem;
-		background: linear-gradient(90deg, #ffffff, #d5d9d1);
+		border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+		margin-bottom: 0.4rem;
+		background: linear-gradient(90deg, #e2e8f0, #67e8f9);
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
@@ -83,32 +88,74 @@
 	.app-sidebar__nav {
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
-		padding: 0 0.75rem;
+		gap: 0.22rem;
+		padding: 0 0.7rem;
+		overflow-y: auto;
+	}
+	.app-sidebar__section-title {
+		margin: 1.1rem 0 0.2rem;
+		padding: 0 0.85rem;
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: rgba(148, 163, 184, 0.9);
 	}
 	.app-sidebar__nav a {
-		display: block;
-		padding: 0.65rem 0.85rem;
-		border-radius: 8px;
-		color: var(--app-sidebar-muted);
+		position: relative;
+		display: flex;
+		align-items: center;
+		padding: 0.58rem 0.82rem 0.58rem 1.45rem;
+		border-radius: 10px;
+		color: rgba(226, 232, 240, 0.92);
 		text-decoration: none;
-		font-size: 0.95rem;
-		transition: background 0.15s, color 0.15s;
+		font-size: 0.9rem;
+		font-weight: 600;
+		transition: background 0.18s, color 0.18s, transform 0.18s;
+	}
+	.app-sidebar__nav a::before {
+		content: '';
+		position: absolute;
+		left: 0.78rem;
+		width: 6px;
+		height: 6px;
+		border-radius: 999px;
+		background: rgba(148, 163, 184, 0.7);
+		transition: background 0.18s, transform 0.18s;
 	}
 	.app-sidebar__nav a:hover {
 		color: var(--app-sidebar-text);
-		background: rgba(255, 255, 255, 0.1);
+		background: rgba(148, 163, 184, 0.16);
+		transform: translateX(2px);
+	}
+	.app-sidebar__nav a:hover::before {
+		background: #67e8f9;
+		transform: scale(1.2);
 	}
 	.app-sidebar__nav a.is-active {
-		color: #fff;
-		background: rgba(255, 255, 255, 0.2);
+		color: #e0f2fe;
+		background: linear-gradient(90deg, rgba(34, 211, 238, 0.3), rgba(129, 140, 248, 0.22));
+		box-shadow: 0 10px 18px rgba(2, 6, 23, 0.38), inset 0 0 0 1px rgba(125, 211, 252, 0.28);
+	}
+	.app-sidebar__nav a.is-active::before {
+		background: #67e8f9;
+		transform: scale(1.35);
 	}
 	.app-sidebar__footer {
 		margin-top: auto;
-		padding: 1rem 1.25rem 1.5rem;
-		border-top: 1px solid rgba(255, 255, 255, .08);
+		padding: 1rem 1.1rem 1.2rem;
+		border-top: 1px solid rgba(148, 163, 184, 0.18);
 		font-size: 0.8rem;
 		color: var(--app-sidebar-muted);
+	}
+	.app-sidebar__user {
+		font-weight: 700;
+		color: #f8fafc;
+		margin-bottom: 0.5rem;
+		background: rgba(30, 41, 59, 0.7);
+		border: 1px solid rgba(103, 232, 249, 0.2);
+		padding: 0.45rem 0.65rem;
+		border-radius: 8px;
 	}
 	.btn-logout {
 		display: flex;
@@ -117,17 +164,17 @@
         gap: 6px;
 		margin-top: 12px;
 		padding: 8px 15px;
-		background: rgba(255, 255, 255, 0.15);
-		border: 1px solid rgba(255, 255, 255, 0.3);
-		color: #ffffff !important;
+		background: rgba(15, 23, 42, 0.55);
+		border: 1px solid rgba(148, 163, 184, 0.35);
+		color: #e2e8f0 !important;
 		border-radius: 8px;
 		text-decoration: none;
 		font-weight: 600;
 		transition: all 0.2s;
 	}
 	.btn-logout:hover {
-		background: #D9534F;
-        border-color: #D9534F;
+		background: linear-gradient(90deg, #ef4444, #dc2626);
+        border-color: rgba(254, 202, 202, 0.35);
 		text-decoration: none;
 	}
 	.app-main {
@@ -200,9 +247,13 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 0 0 1.25rem 0;
+		padding: 0.45rem 1rem 1rem;
 		margin-bottom: 2rem;
-		border-bottom: 1px solid rgba(122, 91, 73, 0.1);
+		border: 1px solid rgba(148, 163, 184, 0.22);
+		background: rgba(255, 255, 255, 0.62);
+		backdrop-filter: blur(10px);
+		border-radius: 16px;
+		box-shadow: 0 10px 28px rgba(30, 41, 59, 0.08);
 	}
 	.app-header-left {
 		display: flex;
@@ -210,12 +261,12 @@
 	}
 	.app-header-role {
 		font-weight: 700;
-		color: #5D4A3E;
+		color: #0f172a;
 		font-size: 0.95rem;
 		text-transform: capitalize;
 	}
 	.app-header-sub {
-		color: #A8866E;
+		color: #475569;
 		font-size: 0.8rem;
 	}
 	.app-header-right {
@@ -230,29 +281,43 @@
 	}
 	.app-header-welcome {
 		font-weight: 600;
-		color: #5D4A3E;
+		color: #0f172a;
 		font-size: 0.95rem;
 	}
 	.app-header-glad {
-		color: #A8866E;
+		color: #6366f1;
 		font-size: 0.8rem;
 	}
 	.app-header-avatar {
 		width: 45px;
 		height: 45px;
 		border-radius: 50%;
-		background: #ffffff;
-		color: #5D4A3E;
-        box-shadow: 0 4px 12px rgba(122, 91, 73, 0.1);
+		background: linear-gradient(135deg, #0ea5e9, #6366f1);
+		color: #f8fafc;
+        box-shadow: 0 8px 20px rgba(14, 165, 233, 0.25);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		font-weight: 800;
 		font-size: 1.3rem;
 	}
+	.cart-icon-btn {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 42px;
+		height: 42px;
+		background: rgba(255, 255, 255, 0.92);
+		border-radius: 12px;
+		border: 1px solid rgba(125, 211, 252, 0.35);
+		text-decoration: none;
+		transition: all 0.2s;
+		box-shadow: 0 8px 16px rgba(15, 23, 42, 0.1);
+	}
 	.cart-icon-btn:hover {
 		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(98,114,85,0.25) !important;
+		box-shadow: 0 10px 20px rgba(99, 102, 241, 0.26) !important;
 	}
 	
 	/* KnpPaginator Global Styles to make them look like buttons */
@@ -273,23 +338,23 @@
 		font-weight: 600;
 		text-decoration: none;
 		transition: all 0.2s ease;
-		background-color: #ffffff;
-		color: #687560;
-		border: 1px solid #D5D9D1;
-		box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+		background: rgba(255, 255, 255, 0.85);
+		color: #334155;
+		border: 1px solid rgba(148, 163, 184, 0.35);
+		box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
 	}
 	.pagination a:hover {
-		background-color: #687560;
+		background: linear-gradient(135deg, #0ea5e9, #6366f1);
 		color: #ffffff;
-		border-color: #687560;
+		border-color: rgba(224, 231, 255, 0.35);
 		transform: translateY(-1px);
-		box-shadow: 0 4px 6px rgba(104,117,96,0.15);
+		box-shadow: 0 10px 18px rgba(99, 102, 241, 0.3);
 	}
 	.pagination .current {
-		background-color: #687560;
+		background: linear-gradient(135deg, #0ea5e9, #6366f1);
 		color: #ffffff;
-		border-color: #687560;
-		box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+		border-color: rgba(224, 231, 255, 0.35);
+		box-shadow: inset 0 2px 4px rgba(15, 23, 42, 0.18);
 	}
 	</style>
 {% endblock %}
@@ -339,12 +404,13 @@
             {% endif %}
 
 			{% if is_granted('ROLE_PATIENT') and not is_granted('ROLE_ADMIN') %}
-				<a href="{{ path('app_patient_dashboard') }}" class="{{ route == 'app_patient_dashboard' ? 'is-active' : '' }}" style="margin-top: 1.5rem;">Therapists</a>
+				<a href="{{ path('app_patient_dashboard') }}" class="{{ route == 'app_patient_dashboard' ? 'is-active' : '' }}">Therapists</a>
 			{% endif %}
 	
 			{% if is_granted('ROLE_ADMIN') %}
-				<div style="margin-top: 1.5rem; margin-bottom: 0.25rem; padding: 0 0.85rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-sidebar-muted);">Admin Area</div>
-				<a href="{{ path('app_admin_dashboard') }}" class="{{ route == 'app_admin_dashboard' ? 'is-active' : '' }}">Dashboard</a>
+				<div class="app-sidebar__section-title">Admin Area</div>
+				<a href="{{ path('app_admin_dashboard') }}" class="{{ route == 'app_admin_dashboard' ? 'is-active' : '' }}">Main Dashboard</a>
+				<a href="{{ path('app_admin_quiz_dashboard') }}" class="{{ route == 'app_admin_quiz_dashboard' ? 'is-active' : '' }}">Quiz Analytics</a>
 				<a href="{{ path('app_admin_user_index') }}" class="{{ route starts with 'app_admin_user' ? 'is-active' : '' }}">Users</a>
 				<a href="{{ path('app_admin_therapist_index') }}" class="{{ route starts with 'app_admin_therapist' ? 'is-active' : '' }}">Therapists</a>
 				<a href="{{ path('app_admin_quiz_reviews') }}" class="{{ route starts with 'app_admin_quiz' ? 'is-active' : '' }}">Quiz Requests</a>
@@ -354,14 +420,14 @@
 	
 
 			{% if is_granted('ROLE_THERAPIST') and not is_granted('ROLE_ADMIN') %}
-				<div style="margin-top: 1.5rem; margin-bottom: 0.25rem; padding: 0 0.85rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-sidebar-muted);">Therapist Space</div>
+				<div class="app-sidebar__section-title">Therapist Space</div>
 				<a href="{{ path('app_therapist_dashboard') }}" class="{{ route == 'app_therapist_dashboard' ? 'is-active' : '' }}">My Dashboard</a>
 				<a href="{{ path('app_therapist_directory') }}" class="{{ route == 'app_therapist_directory' ? 'is-active' : '' }}">Therapists</a>
 			{% endif %}
 		</nav>
 		<div class="app-sidebar__footer">
 			{% if app.user %}
-				<div style="font-weight: 600; color: #fff; margin-bottom: 5px;">{{ app.user.userIdentifier }}</div>
+				<div class="app-sidebar__user">{{ app.user.userIdentifier }}</div>
 			{% endif %}
 
 			<a href="{{ path('app_logout') }}" class="btn-logout">
@@ -382,17 +448,7 @@
 				{# Favorites icon — only for patients #}
 				{% if app.user and app.user.role|lower != 'admin' and not is_granted('ROLE_ADMIN') %}
 					{% set favCount = app.session.get('favorites', [])|length %}
-					<a href="{{ path('app_favorite_index') }}" class="cart-icon-btn" title="My Favorites" style="
-						position: relative;
-						display: flex; align-items: center; justify-content: center;
-						width: 42px; height: 42px;
-						background: #fff;
-						border-radius: 12px;
-						box-shadow: 0 2px 10px rgba(251,113,133,0.15);
-						border: 1px solid #ffe4e6;
-						text-decoration: none;
-						transition: all 0.2s;
-					">
+					<a href="{{ path('app_favorite_index') }}" class="cart-icon-btn" title="My Favorites">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
 						</svg>
@@ -411,17 +467,7 @@
 					</a>
 
 					{% set cartCount = app.session.get('cart', [])|length %}
-					<a href="{{ path('app_cart_index') }}" class="cart-icon-btn" title="My Cart" style="
-						position: relative;
-						display: flex; align-items: center; justify-content: center;
-						width: 42px; height: 42px;
-						background: #fff;
-						border-radius: 12px;
-						box-shadow: 0 2px 10px rgba(98,114,85,0.15);
-						border: 1px solid #e8f0e4;
-						text-decoration: none;
-						transition: all 0.2s;
-					">
+					<a href="{{ path('app_cart_index') }}" class="cart-icon-btn" title="My Cart">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#627255" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<circle cx="9" cy="21" r="1"></circle>
 							<circle cx="20" cy="21" r="1"></circle>

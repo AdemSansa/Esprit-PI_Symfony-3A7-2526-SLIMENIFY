@@ -7,6 +7,7 @@ use App\Entity\Quiz;
 use App\Enum\PsychologyCategory;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -49,6 +50,22 @@ class QuizType extends AbstractType
                 'expanded' => true,
                 'label' => 'Select Questions',
                 'required' => true,
+            ])
+            ->add('inlineQuestionsText', TextareaType::class, [
+                'label' => 'Add New Questions',
+                'mapped' => false,
+                'required' => false,
+                'attr' => [
+                    'class' => 'auth-input',
+                    'rows' => 6,
+                    'placeholder' => "Type one question per line...\nExample: How often have you felt anxious this week?\nExample: How has your sleep quality been recently?",
+                ],
+            ])
+            ->add('inlineQuestionRequired', CheckboxType::class, [
+                'label' => 'Mark this new question as required',
+                'mapped' => false,
+                'required' => false,
+                'data' => true,
             ])
         ;
     }

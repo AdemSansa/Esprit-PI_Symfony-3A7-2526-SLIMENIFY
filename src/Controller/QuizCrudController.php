@@ -2,11 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\Question;
 use App\Entity\Quiz;
 use App\Form\QuizType;
 use App\Repository\QuizRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -34,6 +36,46 @@ class QuizCrudController extends AbstractController
         }
 
         return false;
+    }
+
+    private function attachInlineQuestionFromForm(FormInterface $form, Quiz $quiz, EntityManagerInterface $entityManager): ?Response
+    {
+        $inlineQuestionsText = trim((string) $form->get('inlineQuestionsText')->getData());
+        if ($inlineQuestionsText === '') {
+            return null;
+        }
+
+        $rawLines = preg_split('/\R+/', $inlineQuestionsText) ?: [];
+        $inlineQuestions = array_values(array_filter(array_map(
+            static fn (string $line): string => trim($line),
+            $rawLines
+        ), static fn (string $line): bool => $line !== ''));
+
+        if ($inlineQuestions === []) {
+            return null;
+        }
+
+        foreach ($inlineQuestions as $questionText) {
+            if (mb_strlen($questionText) < 3 || mb_strlen($questionText) > 255) {
+                $this->addFlash('error', 'Each inline question must be between 3 and 255 characters.');
+
+                return new Response('', Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+        }
+
+        $isRequired = (bool) $form->get('inlineQuestionRequired')->getData();
+        foreach ($inlineQuestions as $questionText) {
+            $question = new Question();
+            $question->setQuestionText($questionText);
+            $question->setCategory($quiz->getCategory());
+            $question->setRequired($isRequired);
+            $question->setImagePath('');
+
+            $entityManager->persist($question);
+            $quiz->addQuestion($question);
+        }
+
+        return null;
     }
 
     #[Route('', name: 'app_quiz_index', methods: ['GET'])]
@@ -68,10 +110,19 @@ class QuizCrudController extends AbstractController
         $quiz = new Quiz();
         $quiz->setAuthor($user);
         $quiz->setActive(Quiz::STATUS_UNDER_REVIEW);
+        $quiz->setRejectionComment(null);
         $form = $this->createForm(QuizType::class, $quiz);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $inlineQuestionError = $this->attachInlineQuestionFromForm($form, $quiz, $entityManager);
+            if ($inlineQuestionError instanceof Response) {
+                return $this->render('quiz/new.html.twig', [
+                    'quiz' => $quiz,
+                    'form' => $form,
+                ], $inlineQuestionError);
+            }
+
             if ($this->hasCategoryMismatch($quiz)) {
                 $this->addFlash('error', 'All selected questions must belong to the same category as the quiz.');
                 return $this->render('quiz/new.html.twig', [
@@ -106,6 +157,14 @@ class QuizCrudController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $inlineQuestionError = $this->attachInlineQuestionFromForm($form, $quiz, $entityManager);
+            if ($inlineQuestionError instanceof Response) {
+                return $this->render('quiz/edit.html.twig', [
+                    'quiz' => $quiz,
+                    'form' => $form,
+                ], $inlineQuestionError);
+            }
+
             if ($this->hasCategoryMismatch($quiz)) {
                 $this->addFlash('error', 'All selected questions must belong to the same category as the quiz.');
                 return $this->render('quiz/edit.html.twig', [
@@ -116,6 +175,10 @@ class QuizCrudController extends AbstractController
 
             $quiz->setTotalQuestions(count($quiz->getQuestions()));
             $quiz->setUpdatedAt(new \DateTimeImmutable());
+            $quiz->setActive(Quiz::STATUS_UNDER_REVIEW);
+            $quiz->setRejectionComment(null);
+
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_quiz_index', [], Response::HTTP_SEE_OTHER);

@@ -1,0 +1,8 @@
+web_profiler:
+    # The debug toolbar adds noticeable overhead; set true when you need it.
+    toolbar: true
+
+framework:
+    profiler:
+        # Collecting serializer metadata is costly; enable only when debugging serializers.
+        collect_serializer_data: false
