@@ -184,7 +184,9 @@
 		overflow: auto;
 	}
 	.app-main__inner {
-		max-width: 960px;
+		width: 100%;
+		max-width: 1400px;
+		margin: 0 auto;
 		animation: fadeInSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 	.app-flash-stack {
@@ -556,6 +558,62 @@
 		color: #fff;
 		box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 	}
+
+	/* Floating Action Button (FAB) */
+	.app-fab {
+		position: fixed;
+		bottom: 30px;
+		right: 30px;
+		width: 85px;
+		height: 85px;
+		background: linear-gradient(135deg, #627255 0%, #808c75 100%);
+		color: white;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+		text-decoration: none;
+		transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+		z-index: 9999;
+		animation: app-fab-pulse 2s infinite;
+		border: 3px solid white;
+		padding: 2px;
+	}
+	@keyframes app-fab-pulse {
+		0% { box-shadow: 0 0 0 0 rgba(98, 114, 85, 0.7); transform: scale(1); }
+		70% { box-shadow: 0 0 0 15px rgba(98, 114, 85, 0); transform: scale(1.05); }
+		100% { box-shadow: 0 0 0 0 rgba(98, 114, 85, 0); transform: scale(1); }
+	}
+	.app-fab:hover {
+		transform: scale(1.1) rotate(5deg);
+		box-shadow: 0 15px 30px rgba(98, 114, 85, 0.5);
+		color: white;
+	}
+	.app-fab svg {
+		width: 28px;
+		height: 28px;
+	}
+	.app-fab::after {
+		content: 'Assistant AI';
+		position: absolute;
+		right: 70px;
+		background: #3d4a32;
+		color: white;
+		padding: 6px 12px;
+		border-radius: 8px;
+		font-size: 0.85rem;
+		font-weight: 600;
+		white-space: nowrap;
+		opacity: 0;
+		transform: translateX(10px);
+		transition: all 0.3s ease;
+		pointer-events: none;
+	}
+	.app-fab:hover::after {
+		opacity: 1;
+		transform: translateX(0);
+	}
 	</style>
 {% endblock %}
 
@@ -869,6 +927,12 @@
             document.addEventListener('DOMContentLoaded', bindSweetAlertDelete);
             document.addEventListener('turbo:load', bindSweetAlertDelete);
         </script>
+
+		{% if route != 'app_ai_companion' %}
+			<a href="{{ path('app_ai_companion') }}" class="app-fab" title="AI Companion">
+				<img src="{{ asset('images/ai.png') }}" alt="AI" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+			</a>
+		{% endif %}
 
 	</main>
 </div>
