@@ -22,11 +22,13 @@ class ProductRepository extends ServiceEntityRepository
         ?string $sort = 'newest',
         ?float $priceMin = null,
         ?float $priceMax = null
-    ): array {
+    ): \Doctrine\ORM\Query {
         $qb = $this->createQueryBuilder('p')
+            ->addSelect('(CASE WHEN p.stockQuantity > 0 THEN 1 ELSE 0 END) AS HIDDEN hasStock')
             ->leftJoin('p.supplier', 's')
             ->andWhere('s.id IS NULL OR s.status = :activeStatus')
-            ->setParameter('activeStatus', 'active');
+            ->setParameter('activeStatus', 'active')
+            ->addOrderBy('hasStock', 'DESC');
 
         // Search by name or description
         if (!empty($search)) {
@@ -71,7 +73,7 @@ class ProductRepository extends ServiceEntityRepository
                 break;
         }
 
-        return $qb->getQuery()->getResult();
+        return $qb->getQuery();
     }
 
     public function save(Product $entity, bool $flush = false): void

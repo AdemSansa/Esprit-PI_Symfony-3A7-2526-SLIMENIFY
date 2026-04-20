@@ -20,7 +20,7 @@ class SupplierRepository extends ServiceEntityRepository
         ?string $search = null,
         ?string $status = null,
         ?string $sort = 'newest'
-    ): array {
+    ): \Doctrine\ORM\Query {
         $qb = $this->createQueryBuilder('s');
 
         // Search by name, email, or company/city
@@ -52,7 +52,7 @@ class SupplierRepository extends ServiceEntityRepository
                 break;
         }
 
-        return $qb->getQuery()->getResult();
+        return $qb->getQuery();
     }
 
     public function save(Supplier $entity, bool $flush = false): void
