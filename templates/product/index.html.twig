@@ -408,12 +408,30 @@
 			color: #627255;
 			font-weight: 600;
 		}
+		.is-out-of-stock {
+			border: 2px solid #ef4444 !important;
+			background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(239, 68, 68, 0.1)) !important;
+			opacity: 0.8;
+		}
+		.out-of-stock-badge {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			background: #ef4444;
+			color: white;
+			padding: 4px 10px;
+			border-radius: 8px;
+			font-size: 0.75rem;
+			font-weight: 700;
+			z-index: 15;
+			box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+		}
 	</style>
 
 	<div class="page-header">
 		<div>
 			<h1 class="page-title">Well-being & Recovery Shop</h1>
-			<p class="page-subtitle" id="product-count">{{ products|length }}
+			<p class="page-subtitle" id="product-count">{{ products.getTotalItemCount() }}
 				product(s) found</p>
 		</div>
 		{% if is_granted('ROLE_ADMIN') %}
@@ -493,7 +511,10 @@
 	{# GRID VIEW #}
 	<div class="product-grid" id="view-grid">
 		{% for product in products %}
-			<div class="grid-card" data-name="{{ product.name|lower }}" data-category="{{ product.category }}" data-price="{{ product.price }}" data-date="{{ product.createdAt|date('Y-m-d H:i:s') }}">
+			<div class="grid-card {% if product.stockQuantity <= 0 %}is-out-of-stock{% endif %}" data-name="{{ product.name|lower }}" data-category="{{ product.category }}" data-price="{{ product.price }}" data-date="{{ product.createdAt|date('Y-m-d H:i:s') }}">
+				{% if product.stockQuantity <= 0 %}
+					<div class="out-of-stock-badge">OUT OF STOCK</div>
+				{% endif %}
 				<a href="{{ path('app_product_show', {'id': product.id}) }}" style="display: block;">
 					<img src="{{ product.photoUrl ?: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&q=80' }}" class="grid-image" alt="Product Image">
 				</a>
@@ -583,7 +604,7 @@
 					</thead>
 					<tbody>
 						{% for product in products %}
-							<tr class="list-row" data-name="{{ product.name|lower }}" data-category="{{ product.category }}" data-price="{{ product.price }}" data-date="{{ product.createdAt|date('Y-m-d H:i:s') }}">
+							<tr class="list-row {% if product.stockQuantity <= 0 %}is-out-of-stock{% endif %}" data-name="{{ product.name|lower }}" data-category="{{ product.category }}" data-price="{{ product.price }}" data-date="{{ product.createdAt|date('Y-m-d H:i:s') }}">
 								<td>
 									<div class="list-prod-info">
 										<a href="{{ path('app_product_show', {'id': product.id}) }}">
@@ -653,6 +674,10 @@
 			</div>
 		</div>
 	{% endif %}
+
+	<div class="navigation" id="pagination-container" style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem;">
+		{{ knp_pagination_render(products) }}
+	</div>
 
 	<script>
 		const initInventoryFeatures = () => {
@@ -734,7 +759,14 @@ currentListBody.innerHTML = newList.innerHTML;
 // Update Count
 const newCount = doc.getElementById('product-count');
 if (newCount) {
-document.getElementById('product-count').textContent = newCount.textContent;
+    document.getElementById('product-count').textContent = newCount.textContent;
+}
+
+// Update Pagination
+const newPagination = doc.getElementById('pagination-container');
+const currentPagination = document.getElementById('pagination-container');
+if (newPagination && currentPagination) {
+    currentPagination.innerHTML = newPagination.innerHTML;
 }
 });
 }

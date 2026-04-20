@@ -17,13 +17,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class SupplierCrudController extends AbstractController
 {
     #[Route('', name: 'app_supplier_index', methods: ['GET'])]
-    public function index(Request $request, SupplierRepository $supplierRepository): Response
+    public function index(Request $request, SupplierRepository $supplierRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search', '');
         $status = $request->query->get('status', 'all');
         $sort = $request->query->get('sort', 'newest');
 
-        $suppliers = $supplierRepository->findFiltered($search, $status, $sort);
+        $suppliersQuery = $supplierRepository->findFiltered($search, $status, $sort);
+        
+        $suppliers = $paginator->paginate(
+            $suppliersQuery,
+            $request->query->getInt('page', 1),
+            5 // 5 suppliers per page
+        );
 
         return $this->render('supplier/index.html.twig', [
             'suppliers' => $suppliers,
