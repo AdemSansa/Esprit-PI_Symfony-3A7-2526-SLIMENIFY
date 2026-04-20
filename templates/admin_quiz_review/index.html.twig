@@ -97,6 +97,58 @@
             background: #ef4444;
             color: #fff;
         }
+        .reject-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1200;
+            padding: 1rem;
+        }
+        .reject-modal-overlay.open {
+            display: flex;
+        }
+        .reject-modal {
+            width: min(560px, 95vw);
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid rgba(122, 91, 73, 0.14);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+            padding: 1rem 1rem 1.1rem;
+        }
+        .reject-modal h3 {
+            margin: 0;
+            color: #5D4A3E;
+        }
+        .reject-modal p {
+            margin: 0.35rem 0 0.8rem;
+            color: #7a5b49;
+            font-size: 0.9rem;
+        }
+        .reject-modal textarea {
+            width: 100%;
+            min-height: 110px;
+            border: 1px solid rgba(122, 91, 73, 0.2);
+            border-radius: 12px;
+            padding: 0.7rem 0.8rem;
+            color: #5D4A3E;
+            font-size: 0.9rem;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .reject-modal-actions {
+            margin-top: 0.8rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        .btn-cancel {
+            background: #fff;
+            color: #5D4A3E;
+            border: 1px solid rgba(122, 91, 73, 0.25);
+        }
         .btn-toggle {
             background: #fff;
             color: #627255;
@@ -186,10 +238,15 @@
                                 <input type="hidden" name="_token" value="{{ csrf_token('approve_quiz_' ~ quiz.id) }}">
                                 <button type="submit" class="btn btn-approve">Approve</button>
                             </form>
-                            <form method="post" action="{{ path('app_admin_quiz_reject', {'id': quiz.id}) }}">
-                                <input type="hidden" name="_token" value="{{ csrf_token('reject_quiz_' ~ quiz.id) }}">
-                                <button type="submit" class="btn btn-reject">Reject</button>
-                            </form>
+                            <button
+                                type="button"
+                                class="btn btn-reject"
+                                data-reject-open
+                                data-reject-action="{{ path('app_admin_quiz_reject', {'id': quiz.id}) }}"
+                                data-quiz-title="{{ quiz.title|e('html_attr') }}"
+                                data-csrf-token="{{ csrf_token('reject_quiz_' ~ quiz.id) }}">
+                                Reject
+                            </button>
                         </div>
                     </div>
 
@@ -213,6 +270,26 @@
         </div>
     {% endif %}
 
+    <div class="reject-modal-overlay" id="rejectModalOverlay">
+        <div class="reject-modal" role="dialog" aria-modal="true" aria-labelledby="rejectModalTitle">
+            <h3 id="rejectModalTitle">Reject quiz request</h3>
+            <p id="rejectModalSubtitle">Please explain to the therapist why this quiz is rejected.</p>
+            <form id="rejectModalForm" method="post" action="">
+                <input type="hidden" name="_token" id="rejectModalToken" value="">
+                <textarea
+                    id="rejectModalComment"
+                    name="rejection_comment"
+                    required
+                    minlength="10"
+                    placeholder="Write what needs to be fixed before resubmission..."></textarea>
+                <div class="reject-modal-actions">
+                    <button type="button" class="btn btn-cancel" id="rejectModalCancel">Cancel</button>
+                    <button type="submit" class="btn btn-reject">Reject Quiz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         document.querySelectorAll('[data-toggle-target]').forEach((button) => {
             button.addEventListener('click', () => {
@@ -223,6 +300,46 @@
                 content.classList.toggle('open');
                 button.textContent = isOpen ? 'View content' : 'Hide content';
             });
+        });
+
+        const rejectModalOverlay = document.getElementById('rejectModalOverlay');
+        const rejectModalForm = document.getElementById('rejectModalForm');
+        const rejectModalToken = document.getElementById('rejectModalToken');
+        const rejectModalComment = document.getElementById('rejectModalComment');
+        const rejectModalSubtitle = document.getElementById('rejectModalSubtitle');
+        const rejectModalCancel = document.getElementById('rejectModalCancel');
+
+        const closeRejectModal = () => {
+            rejectModalOverlay.classList.remove('open');
+            rejectModalForm.action = '';
+            rejectModalToken.value = '';
+            rejectModalComment.value = '';
+        };
+
+        document.querySelectorAll('[data-reject-open]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const action = button.getAttribute('data-reject-action');
+                const token = button.getAttribute('data-csrf-token');
+                const title = button.getAttribute('data-quiz-title') || 'this quiz';
+
+                rejectModalForm.action = action;
+                rejectModalToken.value = token;
+                rejectModalSubtitle.textContent = `Provide feedback for "${title}" so the therapist can fix and resubmit it.`;
+                rejectModalOverlay.classList.add('open');
+                rejectModalComment.focus();
+            });
+        });
+
+        rejectModalCancel.addEventListener('click', closeRejectModal);
+        rejectModalOverlay.addEventListener('click', (event) => {
+            if (event.target === rejectModalOverlay) {
+                closeRejectModal();
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && rejectModalOverlay.classList.contains('open')) {
+                closeRejectModal();
+            }
         });
     </script>
 {% endblock %}

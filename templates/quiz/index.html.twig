@@ -54,6 +54,16 @@
         
         .quiz-title { font-size: 1.3rem; font-weight: 800; color: #5D4A3E; margin: 1rem 0 0.5rem 0; line-height: 1.3; }
         .quiz-desc { color: #808c75; font-size: 0.95rem; margin: 0 0 1.5rem 0; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .reject-feedback {
+            margin: 0.2rem 0 1rem;
+            padding: 0.7rem 0.85rem;
+            border-radius: 10px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            font-size: 0.85rem;
+            line-height: 1.45;
+        }
         
         .quiz-stats {
             background: #ffffff; border-radius: 12px; padding: 1rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.5rem; text-align: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
@@ -115,6 +125,11 @@
 
                     <h2 class="quiz-title">{{ quiz.title }}</h2>
                     <p class="quiz-desc">{{ quiz.description ?: 'No description provided.' }}</p>
+                    {% if quiz.active == 0 and quiz.rejectionComment %}
+                        <div class="reject-feedback">
+                            <strong>Admin feedback:</strong> {{ quiz.rejectionComment }}
+                        </div>
+                    {% endif %}
 
                     <div class="quiz-stats">
                         <div>
