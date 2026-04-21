@@ -142,6 +142,7 @@ class RegistrationController extends AbstractController
                     ->to((string) $user->getEmail())
                     ->subject('Veuillez confirmer votre e-mail - Slimenify')
                     ->htmlTemplate('registration/confirmation_email.html.twig')
+                    ->context(['utilisateur' => $user, 'role' => $role])
             );
 
             // do anything else you need here, like send an email

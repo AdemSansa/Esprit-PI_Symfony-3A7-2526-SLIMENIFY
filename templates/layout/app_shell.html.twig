@@ -224,6 +224,10 @@
 		<div class="app-sidebar__brand">Slimenify</div>
 		<nav class="app-sidebar__nav">
 			<a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'is-active' : '' }}">Home</a>
+			
+			{% if is_granted('ROLE_PATIENT') and not is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_patient_dashboard') }}" class="{{ route == 'app_patient_dashboard' ? 'is-active' : '' }}">Therapists</a>
+			{% endif %}
 
 			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_assessment_index') }}" class="{{ route starts with 'app_assessment' ? 'is-active' : '' }}">Assessments</a>
@@ -258,10 +262,14 @@
         <a href="{{ path('app_reviews_user') }}" class="{{ route starts with 'app_reviews_user' ? 'is-active' : '' }}">My Reviews</a>
     {% endif %}
 
-			{% if is_granted('ROLE_PATIENT') and not is_granted('ROLE_ADMIN') %}
-				<a href="{{ path('app_patient_dashboard') }}" class="{{ route == 'app_patient_dashboard' ? 'is-active' : '' }}" style="margin-top: 1.5rem;">Therapists</a>
+			{% if app.user and app.user.role == 'patient' %}
+				<a href="{{ path('app_chat_index') }}" class="{{ route starts with 'app_chat' ? 'is-active' : '' }}" style="display:flex; align-items:center; gap:6px;">
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+					Messages
+				</a>
 			{% endif %}
 	
+
 			{% if is_granted('ROLE_ADMIN') %}
 				<div style="margin-top: 1.5rem; margin-bottom: 0.25rem; padding: 0 0.85rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-sidebar-muted);">Admin Area</div>
 				<a href="{{ path('app_admin_user_index') }}" class="{{ route starts with 'app_admin_user' ? 'is-active' : '' }}">Users</a>
@@ -274,6 +282,10 @@
 				<div style="margin-top: 1.5rem; margin-bottom: 0.25rem; padding: 0 0.85rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-sidebar-muted);">Therapist Space</div>
 				<a href="{{ path('app_therapist_dashboard') }}" class="{{ route == 'app_therapist_dashboard' ? 'is-active' : '' }}">My Dashboard</a>
 				<a href="{{ path('app_therapist_directory') }}" class="{{ route == 'app_therapist_directory' ? 'is-active' : '' }}">Therapists</a>
+				<a href="{{ path('app_chat_index') }}" class="{{ route starts with 'app_chat' ? 'is-active' : '' }}" style="display:flex; align-items:center; gap:6px;">
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+					Messages
+				</a>
 			{% endif %}
 		</nav>
 		<div class="app-sidebar__footer">
