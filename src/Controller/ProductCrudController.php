@@ -20,14 +20,14 @@ class ProductCrudController extends AbstractController
     {
         $search = $request->query->get('search', '');
         $category = $request->query->get('category', 'all');
-        $sort = $request->query->get('sort', 'newest');
+        $sortBy = $request->query->get('sortBy', 'newest');
         $priceMin = $request->query->get('priceMin');
         $priceMax = $request->query->get('priceMax');
 
         $priceMin = $priceMin !== null && $priceMin !== '' ? (float) $priceMin : null;
         $priceMax = $priceMax !== null && $priceMax !== '' ? (float) $priceMax : null;
 
-        $productsQuery = $productRepository->findFiltered($search, $category, $sort, $priceMin, $priceMax);
+        $productsQuery = $productRepository->findFiltered($search, $category, $sortBy, $priceMin, $priceMax);
         
         $products = $paginator->paginate(
             $productsQuery,
@@ -39,7 +39,7 @@ class ProductCrudController extends AbstractController
             'products' => $products,
             'search' => $search,
             'category' => $category,
-            'sort' => $sort,
+            'sortBy' => $sortBy,
             'priceMin' => $priceMin ?? 0,
             'priceMax' => $priceMax ?? 2000,
         ]);

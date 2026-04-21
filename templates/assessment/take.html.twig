@@ -29,7 +29,7 @@
         .likert-item span {
             font-size: 0.85rem;
             font-weight: 600;
-            color: #64748b;
+            color: #4a544a;
             text-align: center;
             transition: color 0.15s;
         }
@@ -38,7 +38,7 @@
             appearance: none;
             width: 28px;
             height: 28px;
-            border: 2px solid #cbd5e1;
+            border: 2px solid #c2cdc2;
             border-radius: 50%;
             cursor: pointer;
             outline: none;
@@ -73,7 +73,7 @@
         }
 
         .progress-bar-container {
-            background: #e2e8f0;
+            background: #c2cdc2;
             height: 8px;
             border-radius: 4px;
             width: 100%;
@@ -108,12 +108,12 @@
         }
 
         .wizard-btn-secondary {
-            background: #f1f5f9;
-            color: #475569;
+            background: #fdfaf8;
+            color: #5d4a3e;
         }
 
         .wizard-btn-secondary:hover:not(:disabled) {
-            background: #e2e8f0;
+            background: #c2cdc2;
         }
 
         .wizard-btn:disabled {
@@ -127,14 +127,14 @@
     <div style="max-width: 800px; margin: 0 auto; padding-top: 2rem;">
         
         <div style="margin-bottom: 2rem; text-align: center;">
-            <p style="color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em; margin: 0 0 0.5rem;">Assessment</p>
-            <h1 style="margin: 0 0 0.5rem; font-size: 2.25rem; color: #0f172a; letter-spacing: -0.02em;">{{ quiz.title }}</h1>
+            <p style="color: #4a544a; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em; margin: 0 0 0.5rem;">Assessment</p>
+            <h1 style="margin: 0 0 0.5rem; font-size: 2.25rem; color: #1a2a1a; letter-spacing: -0.02em;">{{ quiz.title }}</h1>
             
             <div class="progress-bar-container" style="margin-top: 2rem;">
                 <div class="progress-bar-fill" id="progressFill"></div>
             </div>
             
-            <p style="color: #64748b; font-size: 0.95rem; font-weight: 500;" id="progressText">
+            <p style="color: #4a544a; font-size: 0.95rem; font-weight: 500;" id="progressText">
                 Question 1 of {{ quiz.questions|length }}
             </p>
         </div>
@@ -146,7 +146,7 @@
                     <div class="question-card {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}">
                         
                         <div style="text-align: center; margin-bottom: 2.5rem;">
-                            <h3 style="margin: 0; font-size: 1.5rem; color: #1e293b; line-height: 1.4; font-weight: 600;">
+                            <h3 style="margin: 0; font-size: 1.5rem; color: #1a2a1a; line-height: 1.4; font-weight: 600;">
                                 {{ question.questionText }}
                             </h3>
                             
@@ -184,7 +184,7 @@
             </div>
 
             {% if quiz.questions|length > 0 %}
-            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 2rem; margin-top: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #fdfaf8; padding-top: 2rem; margin-top: 2rem;">
                 <button type="button" id="btnBack" class="wizard-btn wizard-btn-secondary" style="visibility: hidden;" onclick="prevQuestion()">
                     &larr; Back
                 </button>

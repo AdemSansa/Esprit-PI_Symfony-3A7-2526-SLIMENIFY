@@ -21,7 +21,7 @@
 			letter-spacing: -0.02em;
 		}
 		.page-subtitle {
-			color: #64748b;
+			color: #5d665d;
 			font-size: 0.95rem;
 			margin-top: 0.25rem;
 			font-weight: 500;
@@ -56,7 +56,7 @@
 			margin-bottom: 1.5rem;
 			display: flex;
 			gap: 1rem;
-			border: 1px solid #e2e8f0;
+			border: 1px solid #c2cdc2;
 			align-items: center;
 		}
 		.search-container {
@@ -66,9 +66,9 @@
 		.search-input {
 			width: 100%;
 			padding: 0.6rem 1rem 0.6rem 2.5rem;
-			border: 1px solid #e2e8f0;
+			border: 1px solid #c2cdc2;
 			border-radius: 8px;
-			background: #f8fafc;
+			background: #fdfaf8;
 			font-size: 0.95rem;
 			outline: none;
 			transition: all 0.2s;
@@ -83,19 +83,19 @@
 			left: 0.85rem;
 			top: 50%;
 			transform: translateY(-50%);
-			color: #94a3b8;
+			color: #948b83;
 			width: 1.1rem;
 			height: 1.1rem;
 		}
 
 		.filter-select {
 			padding: 0.6rem 2.5rem 0.6rem 1rem;
-			border: 1px solid #e2e8f0;
+			border: 1px solid #c2cdc2;
 			border-radius: 8px;
-			background: #f8fafc;
+			background: #fdfaf8;
 			font-size: 0.95rem;
 			outline: none;
-			color: #475569;
+			color: #4a544a;
 			cursor: pointer;
 		}
 
@@ -112,7 +112,7 @@
 			border-radius: 8px;
 			border: 1px solid transparent;
 			background: transparent;
-			color: #94a3b8;
+			color: #948b83;
 			cursor: pointer;
 			transition: all 0.2s;
 		}
@@ -140,7 +140,7 @@
 		}
 		.badge-discontinued {
 			background: #f1f5f9;
-			color: #64748b;
+			color: #5d665d;
 		}
 
 		/* Actions */
@@ -155,16 +155,16 @@
 			width: 32px;
 			height: 32px;
 			border-radius: 6px;
-			border: 1px solid #e2e8f0;
+			border: 1px solid #c2cdc2;
 			background: #fff;
-			color: #64748b;
+			color: #5d665d;
 			text-decoration: none;
 			transition: all 0.2s;
 			cursor: pointer;
 		}
 		.btn-icon:hover {
-			background: #f8fafc;
-			color: #0f172a;
+			background: #fdfaf8;
+			color: #1a201a;
 		}
 		.btn-icon.delete:hover {
 			color: #ef4444;
@@ -233,7 +233,7 @@
 			cursor: pointer;
 			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 			transition: all 0.3s;
-			color: #94a3b8;
+			color: #948b83;
 		}
 		.btn-heart-float:hover {
 			color: #fb7185;
@@ -260,7 +260,7 @@
 			align-items: center;
 			margin-top: auto;
 			padding-top: 0.75rem;
-			border-top: 1px solid #f8fafc;
+			border-top: 1px solid #fdfaf8;
 		}
 		.btn-cart-small {
 			background: var(--primary-green);
@@ -306,7 +306,7 @@
 		.grid-title {
 			font-size: 0.95rem; /* Finer size */
 			font-weight: 500; /* Finer weight */
-			color: #0f172a;
+			color: #1a201a;
 			margin: 0;
 			line-height: 1.4;
 		}
@@ -327,11 +327,11 @@
 			font-size: 0.9rem;
 		}
 		.detail-label {
-			color: #64748b;
+			color: #5d665d;
 		}
 		.detail-value {
 			font-weight: 500;
-			color: #1e293b;
+			color: #1f2d1f;
 		}
 
 		.grid-actions {
@@ -349,7 +349,7 @@
 			background: #fff;
 			border-radius: 12px;
 			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-			border: 1px solid #e2e8f0;
+			border: 1px solid #c2cdc2;
 			overflow: hidden;
 			width: 100%;
 		}
@@ -359,12 +359,12 @@
 			text-align: left;
 		}
 		.data-table th {
-			background: #f8fafc;
+			background: #fdfaf8;
 			padding: 1rem 1.5rem;
 			font-size: 0.85rem;
 			font-weight: 600;
-			color: #475569;
-			border-bottom: 1px solid #e2e8f0;
+			color: #4a544a;
+			border-bottom: 1px solid #c2cdc2;
 		}
 		.data-table td {
 			padding: 1rem 1.5rem;
@@ -374,7 +374,7 @@
 			font-size: 0.95rem;
 		}
 		.data-table tbody tr:hover {
-			background: #f8fafc;
+			background: #fdfaf8;
 		}
 		.data-table tbody tr:last-child td {
 			border-bottom: none;
@@ -390,14 +390,14 @@
 			height: 48px;
 			border-radius: 8px;
 			object-fit: cover;
-			border: 1px solid #e2e8f0;
+			border: 1px solid #c2cdc2;
 		}
 		.list-title {
 			font-weight: 600;
-			color: #1e293b;
+			color: #1f2d1f;
 		}
 		.list-desc {
-			color: #64748b;
+			color: #5d665d;
 			font-size: 0.85rem;
 			white-space: nowrap;
 			overflow: hidden;
@@ -460,21 +460,21 @@
 			<option value="Relaxing Products" {% if category|default('') == 'Relaxing Products' %} selected {% endif %}>Relaxing Products</option>
 			<option value="Therapeutic Games & Activities" {% if category|default('') == 'Therapeutic Games & Activities' %} selected {% endif %}>Therapeutic Games & Activities</option>
 		</select>
-		<select name="sort" class="filter-select" id="sort-select">
-			<option value="newest" {% if sort|default('newest') == 'newest' %} selected {% endif %}>Newest First</option>
-			<option value="price-low" {% if sort|default('') == 'price-low' %} selected {% endif %}>Price: Low to High</option>
-			<option value="price-high" {% if sort|default('') == 'price-high' %} selected {% endif %}>Price: High to Low</option>
-			<option value="name-asc" {% if sort|default('') == 'name-asc' %} selected {% endif %}>Name: A-Z</option>
-			<option value="name-desc" {% if sort|default('') == 'name-desc' %} selected {% endif %}>Name: Z-A</option>
+		<select name="sortBy" class="filter-select" id="sort-select">
+			<option value="newest" {% if sortBy|default('newest') == 'newest' %} selected {% endif %}>Newest First</option>
+			<option value="price-low" {% if sortBy|default('') == 'price-low' %} selected {% endif %}>Price: Low to High</option>
+			<option value="price-high" {% if sortBy|default('') == 'price-high' %} selected {% endif %}>Price: High to Low</option>
+			<option value="name-asc" {% if sortBy|default('') == 'name-asc' %} selected {% endif %}>Name: A-Z</option>
+			<option value="name-desc" {% if sortBy|default('') == 'name-desc' %} selected {% endif %}>Name: Z-A</option>
 		</select>
 
-		<div id="price-slider-wrap" style="display: flex; align-items: center; gap: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.5rem 1rem; min-width: 240px; position: relative;">
+		<div id="price-slider-wrap" style="display: flex; align-items: center; gap: 0.75rem; background: #fdfaf8; border: 1px solid #c2cdc2; border-radius: 10px; padding: 0.5rem 1rem; min-width: 240px; position: relative;">
 			<div style="display: flex; flex-direction: column; width: 100%; gap: 0.3rem;">
 				<div style="display: flex; justify-content: space-between; align-items: center;">
-					<span style="font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;">Price (TND)</span>
+					<span style="font-size: 0.72rem; color: #5d665d; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;">Price (TND)</span>
 					<span id="price-display" style="font-size: 0.78rem; font-weight: 800; color: #627255; background: #e8f0e4; padding: 0.15rem 0.5rem; border-radius: 20px;">0 — ∞ TND</span>
 				</div>
-				<div style="position: relative; height: 4px; background: #e2e8f0; border-radius: 4px; margin: 6px 0;">
+				<div style="position: relative; height: 4px; background: #c2cdc2; border-radius: 4px; margin: 6px 0;">
 					<div id="price-range-fill" style="position: absolute; height: 100%; background: linear-gradient(90deg, #748764, #b2936a); border-radius: 4px; left: 0%; right: 0%;"></div>
 					<input name="priceMin" id="price-min" type="range" min="0" max="2000" step="5" value="{{ priceMin|default('0') }}" style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 3; top: 0; left: 0;">
 					<input name="priceMax" id="price-max" type="range" min="0" max="2000" step="5" value="{{ priceMax|default('2000') }}" style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 4; top: 0; left: 0;">
@@ -580,7 +580,7 @@
 				</div>
 			</div>
 		{% else %}
-			<div style="grid-column: 1 / -1; text-align: center; color: #64748b; padding: 2rem;">No products found.</div>
+			<div style="grid-column: 1 / -1; text-align: center; color: #5d665d; padding: 2rem;">No products found.</div>
 		{% endfor %}
 	</div>
 
@@ -618,7 +618,7 @@
 										</div>
 									</div>
 								</td>
-								<td style="color: #64748b;">
+								<td style="color: #5d665d;">
 									{{ product.category ?: 'N/A' }}
 								</td>
 								<td class="price-text">
@@ -626,13 +626,13 @@
 								</td>
 								{% if not is_granted('ROLE_PATIENT') %}
 									<td>
-										<div style="color: #64748b; display: flex; flex-direction: column;">
-											<span style="font-weight: 500; color: #1e293b;">{{ product.stockQuantity }}</span>
+										<div style="color: #5d665d; display: flex; flex-direction: column;">
+											<span style="font-weight: 500; color: #1f2d1f;">{{ product.stockQuantity }}</span>
 											<span style="font-size: 0.8rem;">units</span>
 										</div>
 									</td>
 								{% endif %}
-								<td style="color: #64748b;">
+								<td style="color: #5d665d;">
 									{{ product.expirationDate ? product.expirationDate|date('Y-m-d') : 'N/A' }}
 								</td>
 								<td>
@@ -663,7 +663,7 @@
 												Take
 											</a>
 										{% else %}
-											<span style="font-size: 0.75rem; color: #94a3b8;">Consult</span>
+											<span style="font-size: 0.75rem; color: #948b83;">Consult</span>
 										{% endif %}
 									</div>
 								</td>
@@ -680,167 +680,165 @@
 	</div>
 
 	<script>
+        let currentFetchController = null;
+
 		const initInventoryFeatures = () => {
-const btnGrid = document.getElementById('btn-grid-view');
-const btnList = document.getElementById('btn-list-view');
-const viewGrid = document.getElementById('view-grid');
-const viewList = document.getElementById('view-list');
+            const btnGrid = document.getElementById('btn-grid-view');
+            const btnList = document.getElementById('btn-list-view');
+            const viewGrid = document.getElementById('view-grid');
+            const viewList = document.getElementById('view-list');
 
-const filterForm = document.getElementById('filter-form');
-const searchInput = document.getElementById('search-input');
-const categoryFilter = document.getElementById('category-filter');
-const sortSelect = document.getElementById('sort-select');
-const sliderMin = document.getElementById('price-min');
-const sliderMax = document.getElementById('price-max');
+            const filterForm = document.getElementById('filter-form');
+            const searchInput = document.getElementById('search-input');
+            const categoryFilter = document.getElementById('category-filter');
+            const sortSelect = document.getElementById('sort-select');
+            const sliderMin = document.getElementById('price-min');
+            const sliderMax = document.getElementById('price-max');
 
-// View Toggling
-btnGrid ?. addEventListener('click', (e) => {
-e.preventDefault();
-btnGrid.classList.add('active');
-if (btnList) 
-btnList.classList.remove('active');
+            function executeAjaxFilter() {
+                if (!filterForm) return;
 
-viewGrid.style.display = 'grid';
-if (viewList) 
-viewList.style.display = 'none';
+                // Abort previous fetch if it's still running
+                if (currentFetchController) {
+                    currentFetchController.abort();
+                }
+                currentFetchController = new AbortController();
 
-});
+                // Show loading state
+                if (viewGrid) viewGrid.style.opacity = '0.4';
+                if (viewList) viewList.style.opacity = '0.4';
 
-btnList ?. addEventListener('click', (e) => {
-e.preventDefault();
-btnList.classList.add('active');
-if (btnGrid) 
-btnGrid.classList.remove('active');
+                const actionPath = filterForm.getAttribute('action');
+                const formData = new FormData(filterForm);
+                const params = new URLSearchParams(formData);
+                
+                // Always reset to page 1 on new filter/search
+                params.set('page', '1'); 
+                
+                const fullUrl = actionPath + '?' + params.toString();
 
-if (viewGrid) 
-viewGrid.style.display = 'none';
+                window.history.replaceState({}, '', fullUrl);
 
-if (viewList) 
-viewList.style.display = 'block';
+                fetch(fullUrl, {
+                    signal: currentFetchController.signal,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, "text/html");
 
-});
+                    // Update Grid
+                    const newGrid = doc.getElementById('view-grid');
+                    if (newGrid && viewGrid) {
+                        viewGrid.innerHTML = newGrid.innerHTML;
+                    }
 
-// AJAX Intelligent Search & Sort (Calls PHP without full reload)
-function executeAjaxFilter() {
-if (! filterForm) 
-return;
+                    // Update List
+                    const newList = doc.querySelector('.data-table tbody');
+                    const currentListBody = document.querySelector('.data-table tbody');
+                    if (newList && currentListBody) {
+                        currentListBody.innerHTML = newList.innerHTML;
+                    }
 
+                    // Update Other Elements
+                    ['product-count', 'pagination-container'].forEach(id => {
+                        const newVal = doc.getElementById(id);
+                        const currentVal = document.getElementById(id);
+                        if (newVal && currentVal) {
+                            currentVal.innerHTML = newVal.innerHTML;
+                        }
+                    });
 
-const actionPath = filterForm.getAttribute('action');
-const formData = new FormData(filterForm);
-const params = new URLSearchParams(formData);
-const fullUrl = actionPath + '?' + params.toString();
+                    // Restore opacity
+                    if (viewGrid) viewGrid.style.opacity = '1';
+                    if (viewList) viewList.style.opacity = '1';
+                })
+                .catch(error => {
+                    if (error.name === 'AbortError') return;
+                    console.error('AJAX Error:', error);
+                    if (viewGrid) viewGrid.style.opacity = '1';
+                    if (viewList) viewList.style.opacity = '1';
+                });
+            }
 
-// Update browser URL without reloading so sharing links works
-window.history.replaceState({}, '', fullUrl);
+            let debounceTimer;
+            function autoSubmit() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(executeAjaxFilter, 300);
+            }
 
-// Add grid/list state so we update both, though backend returns both anyway
-fetch(fullUrl, {
-headers: {
-'X-Requested-With': 'XMLHttpRequest'
-}
-}).then(response => response.text()).then(html => {
-const parser = new DOMParser();
-const doc = parser.parseFromString(html, "text/html");
+            // View Toggling
+            btnGrid ?. addEventListener('click', (e) => {
+                e.preventDefault();
+                btnGrid.classList.add('active');
+                if (btnList) btnList.classList.remove('active');
+                viewGrid.style.display = 'grid';
+                if (viewList) viewList.style.display = 'none';
+            });
 
-// Replace Grid View
-const newGrid = doc.getElementById('view-grid');
-if (newGrid && viewGrid) {
-viewGrid.innerHTML = newGrid.innerHTML;
-}
+            btnList ?. addEventListener('click', (e) => {
+                e.preventDefault();
+                btnList.classList.add('active');
+                if (btnGrid) btnGrid.classList.remove('active');
+                if (viewGrid) viewGrid.style.display = 'none';
+                if (viewList) viewList.style.display = 'block';
+            });
 
-// Replace List View
-const newList = doc.querySelector('.data-table tbody');
-const currentListBody = document.querySelector('.data-table tbody');
-if (newList && currentListBody) {
-currentListBody.innerHTML = newList.innerHTML;
-}
+            // Bind triggers
+            if (filterForm) {
+                categoryFilter ?. addEventListener('change', autoSubmit);
+                sortSelect ?. addEventListener('change', autoSubmit);
+                searchInput ?. addEventListener('input', autoSubmit);
+                filterForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    executeAjaxFilter();
+                });
+            }
 
-// Update Count
-const newCount = doc.getElementById('product-count');
-if (newCount) {
-    document.getElementById('product-count').textContent = newCount.textContent;
-}
+            // Dual Range Slider Logic
+            function updateSliderVisuals() {
+                const thumbMin = document.getElementById('thumb-min');
+                const thumbMax = document.getElementById('thumb-max');
+                const fill = document.getElementById('price-range-fill');
+                const display = document.getElementById('price-display');
+                if (! sliderMin || ! sliderMax) return;
 
-// Update Pagination
-const newPagination = doc.getElementById('pagination-container');
-const currentPagination = document.getElementById('pagination-container');
-if (newPagination && currentPagination) {
-    currentPagination.innerHTML = newPagination.innerHTML;
-}
-});
-}
+                let minVal = parseInt(sliderMin.value);
+                let maxVal = parseInt(sliderMax.value);
 
-let debounceTimer;
-function autoSubmit() {
-clearTimeout(debounceTimer);
-debounceTimer = setTimeout(executeAjaxFilter, 300); // 300ms intelligent debounce
-}
+                if (minVal >= maxVal) {
+                    if (this === sliderMin) minVal = maxVal - 5;
+                    else maxVal = minVal + 5;
+                    sliderMin.value = minVal;
+                    sliderMax.value = maxVal;
+                }
 
-// Bind triggers
-if (filterForm) {
-categoryFilter ?. addEventListener('change', autoSubmit);
-sortSelect ?. addEventListener('change', autoSubmit);
-searchInput ?. addEventListener('input', autoSubmit);
-filterForm.addEventListener('submit', (e) => {
-e.preventDefault();
-executeAjaxFilter();
-});
-}
+                const range = parseInt(sliderMin.max) - parseInt(sliderMin.min);
+                const leftPct = ((minVal - parseInt(sliderMin.min)) / range) * 100;
+                const rightPct = 100 - ((maxVal - parseInt(sliderMin.min)) / range) * 100;
 
-// Dual Range Slider Logic
-function updateSliderVisuals() {
-const thumbMin = document.getElementById('thumb-min');
-const thumbMax = document.getElementById('thumb-max');
-const fill = document.getElementById('price-range-fill');
-const display = document.getElementById('price-display');
-if (! sliderMin || ! sliderMax) 
-return;
+                if (thumbMin) thumbMin.style.left = leftPct + '%';
+                if (thumbMax) thumbMax.style.left = (100 - rightPct) + '%';
+                if (fill) {
+                    fill.style.left = leftPct + '%';
+                    fill.style.right = rightPct + '%';
+                }
+                if (display) {
+                    const maxLabel = maxVal >= 2000 ? '∞' : maxVal;
+                    display.textContent = `${minVal} — ${maxLabel} TND`;
+                }
+            }
 
-
-let minVal = parseInt(sliderMin.value);
-let maxVal = parseInt(sliderMax.value);
-
-// Prevent handles crossing
-if (minVal >= maxVal) {
-if (this === sliderMin) 
-minVal = maxVal - 5;
- else 
-maxVal = minVal + 5;
- sliderMin.value = minVal;
-sliderMax.value = maxVal;
-}
-
-const range = parseInt(sliderMin.max) - parseInt(sliderMin.min);
-const leftPct = ((minVal - parseInt(sliderMin.min)) / range) * 100;
-const rightPct = 100 - ((maxVal - parseInt(sliderMin.min)) / range) * 100;
-
-if (thumbMin) 
-thumbMin.style.left = leftPct + '%';
-
-if (thumbMax) 
-thumbMax.style.left = (100 - rightPct) + '%';
-
-if (fill) {
-fill.style.left = leftPct + '%';
-fill.style.right = rightPct + '%';
-}
-if (display) {
-const maxLabel = maxVal >= 2000 ? '∞' : maxVal;
-display.textContent = `${minVal} — ${maxLabel} TND`;
-}
-}
-
-sliderMin ?. addEventListener('input', updateSliderVisuals);
-sliderMax ?. addEventListener('input', updateSliderVisuals);
-
-// Intelligent fetch on drag completion (change event)
-sliderMin ?. addEventListener('change', autoSubmit);
-sliderMax ?. addEventListener('change', autoSubmit);
-
-// Initialize visuals
-updateSliderVisuals();
-};
+            sliderMin ?. addEventListener('input', updateSliderVisuals);
+            sliderMax ?. addEventListener('input', updateSliderVisuals);
+            sliderMin ?. addEventListener('change', autoSubmit);
+            sliderMax ?. addEventListener('change', autoSubmit);
+            updateSliderVisuals();
+        };
 
 // Listen for both event types to handle initial load and Turbo navigation
 document.addEventListener("DOMContentLoaded", initInventoryFeatures);
@@ -871,8 +869,8 @@ window.toggleFavorite = function(button, productId, productName) {
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="#fb7185" stroke="#fb7185"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                         </div>
                         <div style="text-align: left;">
-                            <h4 style="margin: 0; font-size: 0.95rem; color: #0f172a; font-weight: 700;">Added to Favorites!</h4>
-                            <p style="margin: 0; font-size: 0.8rem; color: #64748b;">${productName} saved to your list.</p>
+                            <h4 style="margin: 0; font-size: 0.95rem; color: #1a201a; font-weight: 700;">Added to Favorites!</h4>
+                            <p style="margin: 0; font-size: 0.8rem; color: #5d665d;">${productName} saved to your list.</p>
                             <a href="/favorites" style="font-size: 0.8rem; font-weight: 600; color: #fb7185; text-decoration: underline;">View Favorites</a>
                         </div>
                     </div>
@@ -885,14 +883,14 @@ window.toggleFavorite = function(button, productId, productName) {
                 position: 'top-end',
                 showConfirmButton: false,
                 timer: 2000,
-                background: '#f8fafc',
+                background: '#fdfaf8',
                 html: `
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                            <span style="font-size: 0.85rem; color: #64748b;">Removed from favorites</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#948b83" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            <span style="font-size: 0.85rem; color: #5d665d;">Removed from favorites</span>
                         </div>
-                        <a href="/favorites" style="font-size: 0.75rem; color: #94a3b8; text-decoration: underline;">View list</a>
+                        <a href="/favorites" style="font-size: 0.75rem; color: #948b83; text-decoration: underline;">View list</a>
                     </div>
                 `
             });
