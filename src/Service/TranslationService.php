@@ -6,10 +6,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class TranslationService
 {
-    /**
-     * MyMemory free API: max ~500 chars per request for parameter "q".
-     * We stay under that to avoid "QUERY LENGTH LIMIT EXCEEDED".
-     */
+    
     private const MAX_QUERY_CHARS = 450;
 
     public function __construct(

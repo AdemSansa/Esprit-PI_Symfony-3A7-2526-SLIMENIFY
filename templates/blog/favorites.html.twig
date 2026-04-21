@@ -1,0 +1,175 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}My favorites blogs {% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .blog-feed {
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+        padding: 2rem 0;
+    }
+    .blog-card-outer {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding-bottom: 2rem;
+    }
+    .blog-card {
+        display: grid;
+        grid-template-columns: 1fr 200px;
+        gap: 2rem;
+        align-items: flex-start;
+        text-decoration: none;
+        color: inherit;
+    }
+    .blog-card__content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .blog-card__meta {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.85rem;
+        color: #757575;
+    }
+    .blog-card__author {
+        font-weight: 600;
+        color: #242424;
+    }
+    .blog-card__title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #242424;
+        line-height: 1.2;
+    }
+    .blog-card__excerpt {
+        font-size: 1rem;
+        color: #757575;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.5;
+    }
+    .blog-card__footer {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-top: 1rem;
+        font-size: 0.85rem;
+        color: #757575;
+    }
+    .blog-card__image {
+        width: 100%;
+        aspect-ratio: 4/3;
+        object-fit: cover;
+        border-radius: 4px;
+        background: #f0f0f0;
+    }
+    .fav-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #555;
+    }
+    .heart.active {
+        color: red;
+    }
+</style>
+{% endblock %}
+
+{% block app_content %}
+<div class="blog-header" style="margin-bottom: 3rem;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em;">My Favorites</h1>
+    <p style="color: #757575; font-size: 1.1rem;">Find all your favorite blogs here.</p>
+    <a href="{{ path('app_blog_web_index') }}" style="color: #627255; text-decoration: none; font-weight: 600;">
+        ← Back 
+    </a>
+</div>
+
+<div class="blog-feed" id="blogList">
+    {% for favorite in pagination %}
+        {% set blog = favorite.blog %}
+        <div class="blog-card-outer" id="fav-item-{{ blog.id }}">
+            <a href="{{ path('app_blog_web_show', {id: blog.id}) }}" class="blog-card">
+                <div class="blog-card__content">
+                    <div class="blog-card__meta">
+                        <span class="blog-card__author">
+                            {{ blog.therapist.firstName }} {{ blog.therapist.lastName }}
+                        </span>
+                        <span>·</span>
+                        <span>{{ blog.createdAt|date('M d, Y') }}</span>
+                    </div>
+                    <h2 class="blog-card__title">{{ blog.title }}</h2>
+                    <div class="blog-card__excerpt">{{ blog.content }}</div>
+                    <div class="blog-card__footer">
+                        <span>
+                            <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                            {{ blog.likes|length }}
+                        </span>
+                        
+                        <button class="meta-item fav-btn" data-id="{{ blog.id }}">
+                            <svg class="heart active"
+                                width="18" height="18"
+                                viewBox="0 0 24 24"
+                                fill="red"
+                                stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20.8 4.6c-1.8-1.7-4.6-1.7-6.4 0L12 6.9 9.6 4.6c-1.8-1.7-4.6-1.7-6.4 0-1.9 1.8-1.9 4.8 0 6.6L12 21l8.8-9.8c1.9-1.8 1.9-4.8 0-6.6z"/>
+                            </svg>
+                            <span class="fav-text">Favori</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="blog-card__visual">
+                    <img src="{{ asset('uploads/blogs/' ~ blog.photo) }}" class="blog-card__image" alt="Article image">
+                </div>
+            </a>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 4rem; color: #757575;">
+            <p>Vous n'avez pas encore d'articles favoris.</p>
+            <a href="{{ path('app_blog_web_index') }}" class="btn btn-outline-secondary">Explorer les blogs</a>
+        </div>
+    {% endfor %}
+</div>
+
+<div class="blog-pager-wrap">
+    {{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/sliding.html.twig') }}
+</div>
+
+<script>
+document.querySelectorAll('.fav-btn').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        const id = this.dataset.id;
+        const item = document.getElementById('fav-item-' + id);
+
+        fetch('/api/interactive/blog/' + id + '/favorite', {
+            method: 'POST'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.favorited) {
+                // If unfavorited, remove from list
+                item.style.opacity = '0';
+                setTimeout(() => {
+                    item.remove();
+                    if (document.querySelectorAll('.blog-card-outer').length === 0) {
+                        location.reload();
+                    }
+                }, 300);
+            }
+        })
+        .catch(err => console.error('Error toggling favorite:', err));
+    });
+});
+</script>
+{% endblock %}
