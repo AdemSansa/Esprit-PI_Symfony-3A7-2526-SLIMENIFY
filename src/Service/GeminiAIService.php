@@ -137,4 +137,61 @@ EOT;
             return "Une exception est survenue : " . $e->getMessage();
         }
     }
+
+    /**
+     * Identifies a product from a base64 image snapshot using Gemini Vision.
+     */
+    public function identifyProductFromImage(string $base64Image, array $productNames): string
+    {
+        if (empty($this->apiKey)) {
+            return "API Key missing.";
+        }
+
+        $productListString = implode(", ", $productNames);
+        $prompt = "You are an expert shopping assistant. Look at this photo and identify which item from the following catalog it represents.
+        
+        Catalog products: $productListString
+        
+        Instructions:
+        1. If you see one of the catalog products, return EXACTLY AND ONLY its name.
+        2. If you are not sure but it looks like one, return that name.
+        3. If it looks absolutely nothing like any product in the list, return 'NOT_FOUND'.
+        4. DO NOT provide explanations, just the name or 'NOT_FOUND'.";
+
+        try {
+            $response = $this->httpClient->request('POST', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' . $this->apiKey, [
+                'json' => [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => $prompt],
+                                [
+                                    'inline_data' => [
+                                        'mime_type' => 'image/jpeg',
+                                        'data' => $base64Image
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'timeout' => 60,
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            if ($statusCode !== 200) {
+                $this->logger->error("Gemini Vision Error: " . $response->getContent(false));
+                return "ERROR";
+            }
+
+            $data = $response->toArray();
+            $result = trim($data['candidates'][0]['content']['parts'][0]['text'] ?? "NOT_FOUND");
+            
+            return $result;
+
+        } catch (\Exception $e) {
+            $this->logger->error("Gemini Vision Exception: " . $e->getMessage());
+            return "ERROR";
+        }
+    }
 }
