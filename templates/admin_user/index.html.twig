@@ -159,7 +159,7 @@
             </div>
         </div>
 
-        <div style="overflow-x: auto;">
+        <div style="overflow-x: auto;" id="tableContainer">
             <table class="admin-table" id="usersTable">
                 <thead>
                     <tr>
@@ -167,6 +167,7 @@
                         <th>Full Name</th>
                         <th>Email</th>
                         <th>Role</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -178,7 +179,30 @@
                         <td>{{ u.email }}</td>
                         <td>{{ u.role }}</td>
                         <td>
-                            <a href="{{ path('app_admin_user_show', {'id': u.id}) }}" style="color: #7A5B49; text-decoration: none;">View</a>
+                            {% if u.isArchived %}
+                                <span style="background-color: #718096; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">Archivé</span>
+                            {% elseif u.isBlocked %}
+                                <span style="background-color: #E53E3E; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">Bloqué</span>
+                            {% else %}
+                                <span style="background-color: #48BB78; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">Actif</span>
+                            {% endif %}
+                        </td>
+                        <td style="display: flex; gap: 8px;">
+                            <a href="{{ path('app_admin_user_show', {'id': u.id}) }}" class="btn-outline-brown" style="text-decoration:none; padding:4px 10px; font-size:0.8rem; margin:0;">View</a>
+                            
+                            <form method="post" action="{{ path('app_admin_user_toggle_block', {'id': u.id}) }}" style="margin: 0;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_block' ~ u.id) }}">
+                                <button class="btn-outline-red" style="padding:4px 10px; font-size:0.8rem; margin:0; {{ u.isBlocked ? 'background-color:#E53E3E; color:white;' : '' }}">
+                                    {{ u.isBlocked ? 'Débloquer' : 'Bloquer' }}
+                                </button>
+                            </form>
+
+                            <form method="post" action="{{ path('app_admin_user_toggle_archive', {'id': u.id}) }}" style="margin: 0;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_archive' ~ u.id) }}">
+                                <button class="btn-outline-brown" style="padding:4px 10px; font-size:0.8rem; margin:0; {{ u.isArchived ? 'background-color:#A8866E; color:white;' : '' }}">
+                                    {{ u.isArchived ? 'Désarchiver' : 'Archiver' }}
+                                </button>
+                            </form>
                             
                             {# Hidden delete form for each user #}
                             <div class="hidden-delete-form">
@@ -193,6 +217,9 @@
                 {% endfor %}
                 </tbody>
             </table>
+            <div style="margin-top: 20px; display: flex; justify-content: center;">
+                {{ knp_pagination_render(users) }}
+            </div>
         </div>
     </div>
 </div>
@@ -259,6 +286,8 @@
                     const url = new URL(form.action || window.location.href);
                     const formData = new FormData(form);
                     const searchParams = new URLSearchParams(formData);
+                    // Remove page param when searching to start from page 1
+                    searchParams.delete('page');
                     url.search = searchParams.toString();
 
                     fetch(url, { headers: {'X-Requested-With': 'XMLHttpRequest'} })
@@ -266,10 +295,11 @@
                         .then(html => {
                             const parser = new DOMParser();
                             const doc = parser.parseFromString(html, 'text/html');
-                            const newTbody = doc.querySelector('#usersTable tbody');
+                            const newContainer = doc.getElementById('tableContainer');
                             
-                            if (newTbody) {
-                                tableBody.innerHTML = newTbody.innerHTML;
+                            if (newContainer) {
+                                const container = document.getElementById('tableContainer');
+                                container.innerHTML = newContainer.innerHTML;
                                 setupAdminTable(); // Re-bind events to new rows
                             }
                             window.history.pushState({}, '', url);

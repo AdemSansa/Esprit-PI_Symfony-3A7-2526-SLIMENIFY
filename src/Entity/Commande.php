@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\CommandeRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
 #[ORM\Table(name: 'commande')]
@@ -26,12 +27,18 @@ class Commande
     private ?string $status = 'en_attente';
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Shipping address is required.")]
+    #[Assert\Length(min: 8, max: 255, minMessage: "Shipping address must be at least {{ limit }} characters long.")]
     private ?string $shippingAddress = null;
 
     #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: "Contact phone number is required.")]
+    #[Assert\Regex(pattern: "/^\d{8}$/", message: "Phone number must be exactly 8 digits.")]
     private ?string $contactPhone = null;
 
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: "Payment method must be selected.")]
+    #[Assert\Choice(choices: ["cash_on_delivery", "bank_card"], message: "Invalid payment method selected.")]
     private ?string $paymentMethod = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

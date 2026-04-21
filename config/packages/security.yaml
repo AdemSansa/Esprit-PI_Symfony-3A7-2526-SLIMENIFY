@@ -23,6 +23,7 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            user_checker: App\Security\UserChecker
             custom_authenticator: App\Security\AuthAuthenticator
             logout:
                 path: app_logout
@@ -51,6 +52,7 @@ security:
         - { path: ^/appointments, roles: [ROLE_PATIENT, ROLE_THERAPIST, ROLE_ADMIN] }
         - { path: ^/product, roles: [ROLE_PATIENT, ROLE_THERAPIST, ROLE_ADMIN] }
         - { path: ^/supplier, roles: [ROLE_ADMIN] }
+
 
 when@test:
     security:

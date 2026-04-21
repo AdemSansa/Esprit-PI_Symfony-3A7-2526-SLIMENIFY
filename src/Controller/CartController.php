@@ -12,16 +12,19 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route('/cart')]
 #[IsGranted('ROLE_USER')]
 class CartController extends AbstractController
 {
     private RequestStack $requestStack;
+    private \App\Service\EmailService $emailService;
 
-    public function __construct(RequestStack $requestStack)
+    public function __construct(RequestStack $requestStack, \App\Service\EmailService $emailService)
     {
         $this->requestStack = $requestStack;
+        $this->emailService = $emailService;
     }
 
     #[Route('', name: 'app_cart_index', methods: ['GET'])]
@@ -69,6 +72,12 @@ class CartController extends AbstractController
         $quantity = (int) $request->get('quantity', 1);
         if ($quantity < 1) $quantity = 1;
 
+        // 🛑 Stock Limit Check
+        if ($quantity > $product->getStockQuantity()) {
+            $this->addFlash('error', sprintf('Sorry, you cannot add %d units of "%s". Only %d are available in stock.', $quantity, $product->getName(), $product->getStockQuantity()));
+            return $this->redirectToRoute('app_product_index');
+        }
+
         $cart[$id] = $quantity;
         $session->set('cart', $cart);
 
@@ -78,7 +87,7 @@ class CartController extends AbstractController
     }
 
     #[Route('/update/{id}', name: 'app_cart_update', methods: ['POST'])]
-    public function update(int $id, Request $request): Response
+    public function update(int $id, Request $request, ProductRepository $productRepository): Response
     {
         $session = $this->requestStack->getSession();
         $cart = $session->get('cart', []);
@@ -86,13 +95,19 @@ class CartController extends AbstractController
         $quantity = (int) $request->get('quantity');
         
         if ($quantity > 0) {
+            $product = $productRepository->find($id);
+            if ($product && $quantity > $product->getStockQuantity()) {
+                $this->addFlash('error', sprintf('Cannot update to %d units. Only %d units of "%s" are in stock.', $quantity, $product->getStockQuantity(), $product->getName()));
+                return $this->redirectToRoute('app_cart_index');
+            }
             $cart[$id] = $quantity;
+            $this->addFlash('success', 'Cart updated successfully.');
         } else {
             unset($cart[$id]);
+            $this->addFlash('success', 'Item removed from cart.');
         }
 
         $session->set('cart', $cart);
-        $this->addFlash('success', 'Cart updated successfully.');
 
         return $this->redirectToRoute('app_cart_index');
     }
@@ -131,7 +146,7 @@ class CartController extends AbstractController
         $cart = $session->get('cart', []);
 
         if (empty($cart)) {
-            $this->addFlash('error', 'Votre panier est vide.');
+            $this->addFlash('error', 'Your cart is empty.');
             return $this->redirectToRoute('app_cart_index');
         }
 
@@ -158,7 +173,7 @@ class CartController extends AbstractController
     }
 
     #[Route('/confirm', name: 'app_cart_confirm', methods: ['POST'])]
-    public function confirm(Request $request, ProductRepository $productRepository, EntityManagerInterface $em): Response
+    public function confirm(Request $request, ProductRepository $productRepository, EntityManagerInterface $em, \Symfony\Component\Validator\Validator\ValidatorInterface $validator): Response
     {
         $session = $this->requestStack->getSession();
         $cart = $session->get('cart', []);
@@ -185,8 +200,18 @@ class CartController extends AbstractController
         $commande->setPaymentMethod($paymentMethod);
         $commande->setStatus('en_attente');
 
+        // ✅ Validation against Commande assert rules
+        $errors = $validator->validate($commande);
+        if (count($errors) > 0) {
+            foreach ($errors as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
+            return $this->redirectToRoute('app_cart_checkout');
+        }
+
         $totalAmount = 0;
         $itemsDetails = [];
+        $stripeLineItems = [];
 
         foreach ($cart as $id => $quantity) {
             $product = $productRepository->find($id);
@@ -211,6 +236,17 @@ class CartController extends AbstractController
                     'unit_price' => $price,
                     'total_price' => $itemTotal
                 ];
+
+                $stripeLineItems[] = [
+                    'price_data' => [
+                        'currency' => 'eur',
+                        'product_data' => [
+                            'name' => $product->getName(),
+                        ],
+                        'unit_amount' => (int) round($price * 100),
+                    ],
+                    'quantity' => $quantity,
+                ];
             }
         }
 
@@ -223,8 +259,63 @@ class CartController extends AbstractController
         // Clear the cart
         $session->set('cart', []);
 
+        if ($paymentMethod === 'bank_card') {
+            \Stripe\Stripe::setApiKey($this->getParameter('stripe.secret_key'));
+
+            $checkout_session = \Stripe\Checkout\Session::create([
+                'payment_method_types' => ['card'],
+                'line_items' => $stripeLineItems,
+                'mode' => 'payment',
+                'success_url' => $this->generateUrl('app_cart_stripe_success', ['id' => $commande->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
+                'cancel_url' => $this->generateUrl('app_cart_stripe_cancel', ['id' => $commande->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
+            ]);
+
+            return $this->redirect($checkout_session->url, 303);
+        }
+
         $this->addFlash('success', "🎊 Congratulations! Your order (Total: $totalAmount TND) has been confirmed successfully.");
 
+        // Send confirmation email
+        try {
+            $this->emailService->sendOrderConfirmation($commande);
+        } catch (\Exception $e) {
+            // Log the error and show a more detailed warning flash
+            $this->addFlash('warning', "Order confirmed, but we couldn't send the confirmation email. Error: " . $e->getMessage());
+        }
+
         return $this->redirectToRoute('app_product_index');
+    }
+
+    #[Route('/stripe/success/{id}', name: 'app_cart_stripe_success')]
+    public function stripeSuccess(Commande $commande, EntityManagerInterface $em): Response
+    {
+        if ($commande->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $commande->setStatus('payée');
+        $em->flush();
+
+        // Send confirmation email
+        try {
+            $this->emailService->sendOrderConfirmation($commande);
+        } catch (\Exception $e) {
+            // Log the error and show a more detailed warning flash
+            $this->addFlash('warning', "Order confirmed, but we couldn't send the confirmation email. Error: " . $e->getMessage());
+        }
+
+        $this->addFlash('success', "🎊 Congratulations! Your payment is successful and your order has been confirmed.");
+        return $this->redirectToRoute('app_product_index');
+    }
+
+    #[Route('/stripe/cancel/{id}', name: 'app_cart_stripe_cancel')]
+    public function stripeCancel(Commande $commande): Response
+    {
+        if ($commande->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $this->addFlash('error', "Your payment was cancelled. Your order is pending. Please try again.");
+        return $this->redirectToRoute('app_orders_index');
     }
 }

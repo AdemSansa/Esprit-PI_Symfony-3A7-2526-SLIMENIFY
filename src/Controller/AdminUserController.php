@@ -18,12 +18,18 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class AdminUserController extends AbstractController
 {
     #[Route('', name: 'app_admin_user_index', methods: ['GET'])]
-    public function index(Request $request, UserRepository $userRepository): Response
+    public function index(Request $request, UserRepository $userRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
         $searchQuery = $request->query->get('q');
         $roleFilter = $request->query->get('role');
 
-        $users = $userRepository->searchAndSort($searchQuery, $roleFilter);
+        $query = $userRepository->searchAndSortQuery($searchQuery, $roleFilter);
+        
+        $users = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            10 // Show 10 users per page
+        );
 
         return $this->render('admin_user/index.html.twig', [
             'users' => $users,
@@ -99,6 +105,32 @@ class AdminUserController extends AbstractController
             $entityManager->remove($user);
             $entityManager->flush();
             $this->addFlash('success', 'User deleted successfully.');
+        }
+
+        return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{id}/toggle-block', name: 'app_admin_user_toggle_block', methods: ['POST'])]
+    public function toggleBlock(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('toggle_block'.$user->getId(), $request->getPayload()->getString('_token'))) {
+            $user->setIsBlocked(!$user->isBlocked());
+            $entityManager->flush();
+            $status = $user->isBlocked() ? 'bloqué' : 'débloqué';
+            $this->addFlash('success', "Le compte de l'utilisateur a été $status avec succès.");
+        }
+
+        return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{id}/toggle-archive', name: 'app_admin_user_toggle_archive', methods: ['POST'])]
+    public function toggleArchive(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('toggle_archive'.$user->getId(), $request->getPayload()->getString('_token'))) {
+            $user->setIsArchived(!$user->isArchived());
+            $entityManager->flush();
+            $status = $user->isArchived() ? 'archivé' : 'désarchivé';
+            $this->addFlash('success', "Le compte de l'utilisateur a été $status avec succès.");
         }
 
         return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);

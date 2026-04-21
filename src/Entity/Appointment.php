@@ -45,6 +45,9 @@ class Appointment
     #[ORM\OneToMany(mappedBy: 'appointment', targetEntity: Note::class, cascade: ['remove'])]
     private Collection $notes;
 
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    private ?string $patientMood = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -69,4 +72,6 @@ class Appointment
     public function getPatient(): User { return $this->patient; }
     public function setPatient(User $v): static { $this->patient = $v; return $this; }
     public function getNotes(): Collection { return $this->notes; }
+    public function getPatientMood(): ?string { return $this->patientMood; }
+    public function setPatientMood(?string $v): static { $this->patientMood = $v; return $this; }
 }

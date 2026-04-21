@@ -16,13 +16,15 @@ class QuizRepository extends ServiceEntityRepository
     public function save(Quiz $entity, bool $flush = true): void
     {
         $this->getEntityManager()->persist($entity);
-        if ($flush) $this->getEntityManager()->flush();
+        if ($flush)
+            $this->getEntityManager()->flush();
     }
 
     public function remove(Quiz $entity, bool $flush = true): void
     {
         $this->getEntityManager()->remove($entity);
-        if ($flush) $this->getEntityManager()->flush();
+        if ($flush)
+            $this->getEntityManager()->flush();
     }
 
     public function findActive(): array
@@ -64,5 +66,12 @@ class QuizRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-    
+
+    public function countTotalQuizzes(): int
+    {
+        return (int) $this->createQueryBuilder('q')
+            ->select('COUNT(q.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

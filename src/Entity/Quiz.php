@@ -43,6 +43,9 @@ class Quiz
     #[ORM\Column(type: 'smallint', options: ['default' => self::STATUS_UNDER_REVIEW])]
     private int $active = self::STATUS_UNDER_REVIEW;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $rejectionComment = null;
+
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     #[Assert\PositiveOrZero(message: 'Minimum score must be zero or a positive number.')]
     private int $minScore = 0;
@@ -91,11 +94,13 @@ class Quiz
     public function setCategory(?string $v): static { $this->category = $v; return $this; }
     public function getTotalQuestions(): int { return $this->totalQuestions; }
     public function setTotalQuestions(int $v): static { $this->totalQuestions = $v; return $this; }
-    public function getActive(): int { return $this->active; }
+    
     public function isActive(): bool { return $this->active === self::STATUS_ACTIVE; }
     public function isUnderReview(): bool { return $this->active === self::STATUS_UNDER_REVIEW; }
     public function isInactive(): bool { return $this->active === self::STATUS_INACTIVE; }
     public function setActive(int $v): static { $this->active = $v; return $this; }
+    public function getRejectionComment(): ?string { return $this->rejectionComment; }
+    public function setRejectionComment(?string $comment): static { $this->rejectionComment = $comment; return $this; }
     public function getMinScore(): int { return $this->minScore; }
     public function setMinScore(int $v): static { $this->minScore = $v; return $this; }
     public function getMaxScore(): int { return $this->maxScore; }
@@ -140,5 +145,8 @@ class Quiz
     public function getResults(): Collection { return $this->results; }
     
     public function getAuthor(): ?User { return $this->author; }
+    public function setStatus(int $v): static { return $this->setActive($v); }
+    public function getStatus(): int { return $this->getActive(); }
+    public function getActive(): int { return $this->active; }
     public function setAuthor(?User $author): static { $this->author = $author; return $this; }
 }

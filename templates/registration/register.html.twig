@@ -1,6 +1,12 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Register{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
+{% endblock %}
+
+
 
 {% block body %}
     <style>
@@ -271,6 +277,10 @@
             {% for flash_error in app.flashes('verify_email_error') %}
                 <div class="alert-error" role="alert">{{ flash_error }}</div>
             {% endfor %}
+            {% for flash_error in app.flashes('error') %}
+                <div class="alert-error" role="alert">{{ flash_error }}</div>
+            {% endfor %}
+
 
             {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
                 <div class="error-message">{{ form_errors(registrationForm) }}</div>
@@ -389,7 +399,25 @@
 
                 {{ form_row(registrationForm._token) }}
 
+                <div class="auth-field" style="display: flex; flex-direction: column; align-items: center; margin-bottom: 25px; padding: 15px; background: #f9f9f9; border-radius: 12px; border: 1px solid #eee;">
+                    <label class="auth-label" style="margin-bottom: 15px;">Vérification de sécurité</label>
+                    <div id="recaptcha-container"></div>
+                </div>
+
+
                 <button type="submit" class="auth-submit">Create account</button>
+
+
+                <div style="margin: 2rem 0 1rem; display: flex; align-items: center; text-align: center; color: #A8866E; font-size: 0.85rem; font-weight: 600;">
+                    <hr style="flex: 1; border: none; border-top: 1px solid #EBE6DF;">
+                    <span style="padding: 0 15px; text-transform: uppercase; letter-spacing: 1px;">ou</span>
+                    <hr style="flex: 1; border: none; border-top: 1px solid #EBE6DF;">
+                </div>
+
+                <a href="{{ path('connect_google_start') }}" style="display: flex; align-items: center; justify-content: center; width: 100%; background: #ffffff; color: #5D4A3E; padding: 14px 30px; border-radius: 30px; border: 2px solid #EBE6DF; font-weight: 700; font-size: 1.1rem; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.02);" onmouseover="this.style.borderColor='#A8866E'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#EBE6DF'; this.style.transform='translateY(0)';">
+                    <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google" style="width: 24px; height: 24px; margin-right: 12px;">
+                    S'inscrire avec Google
+                </a>
 
                 <p class="auth-subtitle auth-footer-text">
                     Already have an account? <a class="auth-link" href="{{ path('app_login') }}">Sign in</a>
@@ -402,14 +430,23 @@
         function setupRoleToggle() {
             const roleSelect = document.getElementById('registration_form_role') || document.querySelector('.role-select-input');
             const therapistFields = document.getElementById('therapist-fields');
+            const dateInput = document.getElementById('registration_form_dateNaissance');
 
             if (!roleSelect || !therapistFields) return;
 
             function toggleFields() {
                 if (roleSelect.value === 'therapist') {
                     therapistFields.style.display = 'block';
+                    if (dateInput) {
+                        const today = new Date();
+                        const twentyYearsAgo = new Date(today.getFullYear() - 20, today.getMonth(), today.getDate());
+                        dateInput.max = twentyYearsAgo.toISOString().split('T')[0];
+                    }
                 } else {
                     therapistFields.style.display = 'none';
+                    if (dateInput) {
+                        dateInput.removeAttribute('max');
+                    }
                 }
             }
 
@@ -417,8 +454,39 @@
             toggleFields();
         }
 
-        document.addEventListener('DOMContentLoaded', setupRoleToggle);
-        document.addEventListener('turbo:load', setupRoleToggle);
-        setupRoleToggle(); // Run immediately as fallback
+        // reCAPTCHA initialization for Turbo
+        function initRecaptcha() {
+            const container = document.getElementById('recaptcha-container');
+            if (container && window.grecaptcha) {
+                // Clear container first to avoid duplicates
+                container.innerHTML = ''; 
+                const widget = document.createElement('div');
+                widget.id = 'g-recaptcha-widget';
+                container.appendChild(widget);
+
+                grecaptcha.render('g-recaptcha-widget', {
+                    'sitekey': '{{ recaptcha_site_key }}',
+                    'type': 'image',
+                    'theme': 'light'
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupRoleToggle();
+            // Give time for the API script to load if it's the first time
+            setTimeout(initRecaptcha, 500);
+        });
+        
+        document.addEventListener('turbo:load', () => {
+            setupRoleToggle();
+            initRecaptcha();
+        });
+        
+        // Callback for the API script load
+        window.onloadCallback = function() {
+            initRecaptcha();
+        };
     </script>
 {% endblock %}
+

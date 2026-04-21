@@ -20,19 +20,20 @@ class SupplierRepository extends ServiceEntityRepository
         ?string $search = null,
         ?string $status = null,
         ?string $sort = 'newest'
-    ): array {
+    ): \Doctrine\ORM\Query {
         $qb = $this->createQueryBuilder('s');
 
         // Search by name, email, or company/city
         if (!empty($search)) {
-            $qb->andWhere('LOWER(s.name) LIKE LOWER(:search) OR LOWER(s.email) LIKE LOWER(:search) OR LOWER(s.city) LIKE LOWER(:search)')
-               ->setParameter('search', '%' . strtolower($search) . '%');
+            $searchTerm = '%' . strtolower(trim($search)) . '%';
+            $qb->andWhere('LOWER(s.name) LIKE :term OR LOWER(s.email) LIKE :term OR LOWER(s.city) LIKE :term')
+               ->setParameter('term', $searchTerm);
         }
 
         // Filter by status
         if (!empty($status) && $status !== 'all') {
-            $qb->andWhere('s.status = :status')
-               ->setParameter('status', $status);
+            $qb->andWhere('s.status = :selectedStatus')
+               ->setParameter('selectedStatus', $status);
         }
 
         // Sorting
@@ -52,7 +53,7 @@ class SupplierRepository extends ServiceEntityRepository
                 break;
         }
 
-        return $qb->getQuery()->getResult();
+        return $qb->getQuery();
     }
 
     public function save(Supplier $entity, bool $flush = false): void

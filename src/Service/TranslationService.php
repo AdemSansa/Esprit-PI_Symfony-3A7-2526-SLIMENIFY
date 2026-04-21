@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class TranslationService
 {
@@ -36,6 +37,62 @@ class TranslationService
         }
 
         return implode("\n\n", $parts);
+    }
+
+    /**
+     * @param list<string> $texts
+     * @return list<string>
+     */
+    public function translateMany(array $texts, string $from, string $to): array
+    {
+        if ($texts === []) {
+            return [];
+        }
+
+        $responses = [];
+        foreach ($texts as $index => $text) {
+            $safeText = trim($text);
+            if ($safeText === '') {
+                $responses[$index] = null;
+                continue;
+            }
+
+            if (mb_strlen($safeText) > self::MAX_QUERY_CHARS) {
+                $responses[$index] = $this->translate($safeText, $from, $to);
+                continue;
+            }
+
+            $responses[$index] = $this->client->request('GET', 'https://api.mymemory.translated.net/get', [
+                'query' => [
+                    'q' => $safeText,
+                    'langpair' => $from.'|'.$to,
+                ],
+                'timeout' => 8,
+            ]);
+        }
+
+        $translated = [];
+        foreach ($texts as $index => $originalText) {
+            $response = $responses[$index] ?? null;
+            if (\is_string($response)) {
+                $translated[] = $response;
+                continue;
+            }
+
+            if (!$response instanceof ResponseInterface) {
+                $translated[] = $originalText;
+                continue;
+            }
+
+            try {
+                $data = $response->toArray(false);
+                $translated[] = (string) ($data['responseData']['translatedText'] ?? $originalText);
+            } catch (\Throwable) {
+                $translated[] = $originalText;
+            }
+        }
+
+        return $translated;
     }
 
     private function translateChunk(string $text, string $from, string $to): string

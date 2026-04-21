@@ -33,6 +33,7 @@ class AdminQuizReviewController extends AbstractController
     {
         if ($this->isCsrfTokenValid('approve_quiz_'.$quiz->getId(), $request->request->get('_token'))) {
             $quiz->setActive(Quiz::STATUS_ACTIVE);
+            $quiz->setRejectionComment(null);
             $quiz->setUpdatedAt(new \DateTimeImmutable());
             $entityManager->flush();
             $this->addFlash('success', 'Quiz approved and now visible to users.');
@@ -45,7 +46,15 @@ class AdminQuizReviewController extends AbstractController
     public function reject(Request $request, Quiz $quiz, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('reject_quiz_'.$quiz->getId(), $request->request->get('_token'))) {
+            $rejectionComment = trim((string) $request->request->get('rejection_comment', ''));
+            if ($rejectionComment === '') {
+                $this->addFlash('error', 'A rejection comment is required so the therapist knows what to fix.');
+
+                return $this->redirectToRoute('app_admin_quiz_reviews');
+            }
+
             $quiz->setActive(Quiz::STATUS_INACTIVE);
+            $quiz->setRejectionComment($rejectionComment);
             $quiz->setUpdatedAt(new \DateTimeImmutable());
             $entityManager->flush();
             $this->addFlash('warning', 'Quiz request rejected and marked as inactive.');
