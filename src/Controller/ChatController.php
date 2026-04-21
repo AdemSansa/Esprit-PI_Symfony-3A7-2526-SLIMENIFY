@@ -144,29 +144,30 @@ class ChatController extends AbstractController
             $analysis = $aiService->analyzeMessage($content);
             $message->setSensitivityLevel($analysis['level']);
             $message->setAiAnalysis($analysis['analysis']);
-
-            // Alert therapist if high or critical distress detected
-            if (in_array($analysis['level'], ['high', 'critical'])) {
-                $therapist = $conversation->getTherapist();
-                $levelLabel = $analysis['level'] === 'critical' ? '🚨 CRITIQUE' : '🔴 ÉLEVÉ';
-                $email = (new Email())
-                    ->from('Slimenify.team@gmail.com')
-                    ->to($therapist->getEmail())
-                    ->subject("[Slimenify] {$levelLabel} — Message préoccupant détecté")
-                    ->html(
-                        "<h2>⚠️ Alerte — Message de détresse détecté</h2>
-                        <p><strong>Patient :</strong> {$user->getFirstName()} {$user->getLastName()}</p>
-                        <p><strong>Niveau :</strong> {$levelLabel}</p>
-                        <p><strong>Message :</strong> <em>\"{$content}\"</em></p>
-                        <p><strong>Analyse IA :</strong> {$analysis['analysis']}</p>
-                        <p>Veuillez répondre rapidement à ce patient.</p>"
-                    );
-                try { $mailer->send($email); } catch (\Throwable $e) { /* Ne pas bloquer l'envoi */ }
-            }
         }
 
+        // Save message to DB FIRST — instant response, never blocked by email
         $em->persist($message);
         $em->flush();
+
+        // Alert therapist if high or critical distress detected (after save, non-blocking)
+        if ($role !== 'therapist' && in_array($analysis['level'] ?? 'low', ['high', 'critical'])) {
+            $therapist  = $conversation->getTherapist();
+            $levelLabel = ($analysis['level'] === 'critical') ? '🚨 CRITIQUE' : '🔴 ÉLEVÉ';
+            $alertEmail = (new Email())
+                ->from('Slimenify.team@gmail.com')
+                ->to($therapist->getEmail())
+                ->subject("[Slimenify] {$levelLabel} — Message préoccupant détecté")
+                ->html(
+                    "<h2>⚠️ Alerte — Message de détresse détecté</h2>
+                    <p><strong>Patient :</strong> {$user->getFirstName()} {$user->getLastName()}</p>
+                    <p><strong>Niveau :</strong> {$levelLabel}</p>
+                    <p><strong>Message :</strong> <em>\"{$content}\"</em></p>
+                    <p><strong>Analyse IA :</strong> {$analysis['analysis']}</p>
+                    <p>Veuillez répondre rapidement à ce patient.</p>"
+                );
+            try { $mailer->send($alertEmail); } catch (\Throwable $e) { /* silent */ }
+        }
 
         return $this->json([
             'id'               => $message->getId(),
