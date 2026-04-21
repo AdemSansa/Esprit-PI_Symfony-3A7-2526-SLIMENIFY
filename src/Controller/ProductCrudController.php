@@ -16,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProductCrudController extends AbstractController
 {
     #[Route('', name: 'app_product_index', methods: ['GET'])]
-    public function index(Request $request, ProductRepository $productRepository): Response
+    public function index(Request $request, ProductRepository $productRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search', '');
         $category = $request->query->get('category', 'all');
@@ -27,7 +27,13 @@ class ProductCrudController extends AbstractController
         $priceMin = $priceMin !== null && $priceMin !== '' ? (float) $priceMin : null;
         $priceMax = $priceMax !== null && $priceMax !== '' ? (float) $priceMax : null;
 
-        $products = $productRepository->findFiltered($search, $category, $sort, $priceMin, $priceMax);
+        $productsQuery = $productRepository->findFiltered($search, $category, $sort, $priceMin, $priceMax);
+        
+        $products = $paginator->paginate(
+            $productsQuery,
+            $request->query->getInt('page', 1),
+            10 // 10 products per page
+        );
 
         return $this->render('product/index.html.twig', [
             'products' => $products,

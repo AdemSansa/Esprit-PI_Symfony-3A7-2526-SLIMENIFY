@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #3d4a32; margin: 0; padding: 0; background-color: #fdfbf7; }
+        .wrapper { width: 100%; table-layout: fixed; background-color: #fdfbf7; padding-bottom: 50px; padding-top: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(61, 74, 50, 0.1); border: 1px solid rgba(180, 140, 54, 0.1); }
+        
+        /* Creative Gradient Header */
+        .header { 
+            background: linear-gradient(135deg, #3d4a32 0%, #627255 100%); 
+            padding: 50px 40px; 
+            text-align: center; 
+            position: relative;
+        }
+        .header-content { position: relative; z-index: 2; }
+        .logo { width: 140px; margin-bottom: 15px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1)); }
+        .mascot-header { 
+            width: 100px; 
+            position: absolute; 
+            right: 20px; 
+            top: 20px; 
+            opacity: 0.9;
+        }
+        
+        .welcome-title { font-size: 28px; font-weight: 900; color: #ffffff; margin: 0; letter-spacing: -0.03em; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .welcome-subtitle { font-size: 15px; color: #d5d9d1; margin-top: 8px; font-weight: 500; }
+        
+        .content { padding: 45px; background: #ffffff; }
+        
+        /* Section Styling */
+        .section-card { 
+            background: #f8faf6; 
+            border-left: 4px solid #b48c36; 
+            padding: 25px; 
+            border-radius: 0 16px 16px 0; 
+            margin-bottom: 35px;
+        }
+        .section-title { font-size: 12px; font-weight: 800; color: #b48c36; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 12px; }
+        
+        /* Invoice Table */
+        .invoice-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin: 30px 0; }
+        .invoice-table th { text-align: left; padding: 12px 15px; font-size: 11px; font-weight: 700; color: #808c75; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #eef1e9; }
+        .item-row td { background: #fdfdfd; padding: 20px 15px; border-top: 1px solid #f1f5ef; border-bottom: 1px solid #f1f5ef; }
+        .item-row:first-child td { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+        .item-row:last-child td { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+        
+        .price-total { font-size: 22px; color: #3d4a32; font-weight: 900; text-align: right; }
+        .price-label { font-size: 14px; font-weight: 700; color: #808c75; text-align: right; padding-right: 15px; }
+
+        .footer { 
+            background: linear-gradient(135deg, #627255 0%, #3d4a32 100%); 
+            padding: 40px; 
+            text-align: center; 
+            color: #ffffff;
+        }
+        .footer p { margin: 5px 0; font-size: 14px; opacity: 0.8; }
+        
+        .badge { 
+            display: inline-block; 
+            padding: 6px 14px; 
+            border-radius: 10px; 
+            font-size: 12px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            background: #b48c36; 
+            color: #ffffff; 
+            box-shadow: 0 4px 10px rgba(180, 140, 54, 0.2);
+        }
+        
+        .congrats-text { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            font-size: 18px; 
+            font-weight: 600; 
+            color: #3d4a32; 
+        }
+    </style>
+</head>
+<body>
+    <table class="wrapper" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td align="center">
+                <div class="container">
+                    <div class="header">
+                        <img src="cid:mascot" alt="" class="mascot-header">
+                        <div class="header-content">
+                            <img src="cid:logo" alt="Slimenify" class="logo">
+                            <h1 class="welcome-title">Magic is Happening!</h1>
+                            <p class="welcome-subtitle">Receipt for your beautiful order #{{ commande.id }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="congrats-text">
+                            Hello <strong>{{ user.firstName }}</strong>! 🌿 <br>
+                            Your well-being journey just took a colorful step forward.
+                        </div>
+                        
+                        <table width="100%" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td width="55%" style="vertical-align: top;">
+                                    <div class="section-card">
+                                        <div class="section-title">Shipping To</div>
+                                        <p style="margin:0; font-weight: 700; font-size: 16px;">{{ user.firstName }} {{ user.lastName }}</p>
+                                        <p style="margin:5px 0 0; color: #808c75; font-size: 14px;">{{ commande.shippingAddress }}</p>
+                                        <p style="margin:3px 0 0; color: #808c75; font-size: 14px;">📞 {{ commande.contactPhone }}</p>
+                                    </div>
+                                </td>
+                                <td width="5%"></td>
+                                <td width="40%" style="vertical-align: top;">
+                                    <div class="section-card" style="border-left-color: #627255; background: #f4f7f1;">
+                                        <div class="section-title" style="color: #627255;">Order Details</div>
+                                        <p style="margin:0; font-size: 14px;"><strong>📅 Date:</strong> {{ commande.createdAt|date('M d, Y') }}</p>
+                                        <p style="margin:8px 0 0;"><span class="badge">{{ commande.paymentMethod|replace({'_': ' '})|capitalize }}</span></p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <table class="invoice-table" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Item Description</th>
+                                    <th style="text-align: center;">Qty</th>
+                                    <th style="text-align: right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in commande.itemsDetails %}
+                                    <tr class="item-row">
+                                        <td>
+                                            <div style="font-weight: 800; color: #3d4a32; font-size: 15px;">{{ item.name }}</div>
+                                            <div style="font-size: 12px; color: #808c75; margin-top: 4px;">Premium Recovery Product</div>
+                                        </td>
+                                        <td style="text-align: center; font-weight: 700;">{{ item.quantity }}</td>
+                                        <td style="text-align: right; font-weight: 900; color: #3d4a32;">{{ item.total_price|number_format(2) }} TND</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        
+                        <table width="100%" style="margin-top: 30px;">
+                            <tr>
+                                <td class="price-label">INVESTMENT IN WELL-BEING</td>
+                                <td class="price-total">{{ commande.totalAmount|number_format(2) }} TND</td>
+                            </tr>
+                        </table>
+                        
+                        <div style="text-align: center; margin-top: 50px; padding: 20px; border: 2px dashed #eef1e9; border-radius: 20px;">
+                            <p style="margin:0; font-style: italic; color: #808c75;">"Your mind is a garden. Your thoughts are the seeds. You can grow flowers or you can grow weeds."</p>
+                        </div>
+                    </div>
+                    
+                    <div class="footer">
+                        <p style="font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; font-size: 16px;">Slimenify</p>
+                        <p>Healing Minds • Growing Together</p>
+                        <div style="margin: 20px 0; border-top: 1px solid rgba(255,255,255,0.1); width: 60px; display: inline-block;"></div>
+                        <p style="font-size: 12px; opacity: 0.6;">&copy; {{ "now"|date("Y") }} Slimenify Team. All Rights Reserved.</p>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

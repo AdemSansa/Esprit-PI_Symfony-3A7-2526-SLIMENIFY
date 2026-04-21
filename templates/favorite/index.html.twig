@@ -1,0 +1,225 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}My Favorites{% endblock %}
+
+{% block app_content %}
+	<style>
+		.page-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 2rem;
+		}
+		.page-title {
+			margin: 0;
+			font-size: 2rem;
+			font-weight: 800;
+			background: linear-gradient(90deg, #fb7185, #f43f5e);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			letter-spacing: -0.02em;
+		}
+		.page-subtitle {
+			color: #64748b;
+			font-size: 0.95rem;
+			margin-top: 0.25rem;
+			font-weight: 500;
+		}
+
+		/* GRID VIEW */
+		.product-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+			gap: 1.25rem;
+		}
+		.grid-card {
+			background: #fff;
+			border-radius: 20px;
+			overflow: hidden;
+			display: flex;
+			flex-direction: column;
+			transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+			position: relative;
+			padding: 3px;
+			background: linear-gradient(135deg, rgba(251,113,133,0.15), rgba(244,63,94,0.05));
+			border: none;
+		}
+		.grid-card::after {
+			content: '';
+			position: absolute;
+			inset: 1px;
+			background: #fff;
+			border-radius: 19px;
+			z-index: 0;
+		}
+		.grid-card:hover {
+			transform: translateY(-8px);
+			background: linear-gradient(135deg, #fb7185, #f43f5e);
+			box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+		}
+		.grid-card:hover::after {
+			inset: 2px;
+		}
+        
+        .btn-heart-float {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+            width: 32px;
+            height: 32px;
+            background: #fff;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(251,113,133,0.3);
+            transition: all 0.3s;
+            color: #fb7185;
+        }
+        .btn-heart-float svg {
+            fill: #fb7185;
+        }
+
+		.price-footer {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-top: auto;
+			padding-top: 0.75rem;
+			border-top: 1px solid #f8fafc;
+		}
+		.btn-cart-small {
+			background: transparent;
+            border: 1px solid var(--primary-green); 
+            color: var(--primary-green);
+			width: 32px;
+			height: 32px;
+			border-radius: 8px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			transition: all 0.3s;
+		}
+		.btn-cart-small:hover {
+			background: var(--primary-green);
+            color: #fff;
+			transform: translateY(-2px);
+		}
+		.grid-image {
+			width: 100%;
+			height: 150px;
+			object-fit: contain;
+			background: #fff;
+			padding: 1rem;
+			position: relative;
+			z-index: 1;
+			border-radius: 18px 18px 0 0;
+		}
+		.grid-content {
+			padding: 1.25rem;
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			position: relative;
+			z-index: 1;
+		}
+		.grid-header {
+			display: flex;
+			flex-direction: column;
+			gap: 0.25rem;
+			margin-bottom: 0.5rem;
+		}
+		.grid-title {
+			font-size: 0.95rem;
+			font-weight: 500;
+			color: #0f172a;
+			margin: 0;
+			line-height: 1.4;
+		}
+		.price-text {
+			font-weight: 600;
+			color: var(--primary-green);
+			font-size: 0.95rem;
+		}
+	</style>
+
+	<div class="page-header">
+		<div>
+			<h1 class="page-title">My Favorites</h1>
+			<p class="page-subtitle">{{ products|length }} product(s) saved</p>
+		</div>
+        <a href="{{ path('app_product_index') }}" class="btn-primary" style="background: linear-gradient(135deg, #64748b, #475569); color: white; padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">&larr; Back to Shop</a>
+	</div>
+
+	{# GRID VIEW #}
+	<div class="product-grid" id="view-grid">
+		{% for product in products %}
+			<div class="grid-card" id="fav-card-{{ product.id }}">
+				<a href="{{ path('app_product_show', {'id': product.id}) }}" style="display: block;">
+					<img src="{{ product.photoUrl ?: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&q=80' }}" class="grid-image" alt="{{ product.name }}">
+				</a>
+				<div class="grid-content">
+					<div class="grid-header">
+						<h2 class="grid-title">
+							<a href="{{ path('app_product_show', {'id': product.id}) }}" style="color: inherit; text-decoration: none;">{{ product.name }}</a>
+						</h2>
+					</div>
+
+                    <button class="btn-heart-float" onclick="removeFavorite({{ product.id }})">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                    </button>
+
+					<div class="price-footer">
+						<div class="price-text">{{ product.price }} TND</div>
+                        <a href="{{ path('app_cart_add', {'id': product.id}) }}" class="btn-cart-small" title="Add to Cart">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21.5 6l-2.07 10.34c-.22 1.1-.55 2.66-3.1 2.66H7.67c-2.55 0-2.88-1.56-3.1-2.66L2.5 6"></path>
+                                <path d="M10 2L2.5 6"></path>
+                                <path d="M14 2l7.5 4"></path>
+                            </svg>
+                        </a>
+					</div>
+				</div>
+			</div>
+		{% else %}
+            <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; padding: 4rem 2rem; border-radius: 20px; border: 2px dashed #f1f5f9; text-align: center;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" stroke-width="2" style="margin-bottom: 1rem;">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+                <h3 style="color: #64748b; margin: 0 0 0.5rem 0; font-weight: 500;">No favorites yet</h3>
+                <p style="color: #94a3b8; font-size: 0.9rem; margin: 0 0 1.5rem 0;">You haven't added any products to your favorites list.</p>
+                <a href="{{ path('app_product_index') }}" style="color: #fb7185; font-weight: 600; text-decoration: none;">&larr; Browse the Shop</a>
+            </div>
+		{% endfor %}
+	</div>
+
+    <script>
+        function removeFavorite(productId) {
+            fetch(`/favorites/toggle/${productId}`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.isFavorite) {
+                    const card = document.getElementById('fav-card-' + productId);
+                    if (card) {
+                        card.style.transform = 'scale(0.9)';
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            card.remove();
+                            // Optional: Update count
+                            // location.reload(); // Simple approach to update counter easily
+                        }, 300);
+                    }
+                }
+            });
+        }
+    </script>
+{% endblock %}

@@ -16,18 +16,20 @@ class QuizRepository extends ServiceEntityRepository
     public function save(Quiz $entity, bool $flush = true): void
     {
         $this->getEntityManager()->persist($entity);
-        if ($flush) $this->getEntityManager()->flush();
+        if ($flush)
+            $this->getEntityManager()->flush();
     }
 
     public function remove(Quiz $entity, bool $flush = true): void
     {
         $this->getEntityManager()->remove($entity);
-        if ($flush) $this->getEntityManager()->flush();
+        if ($flush)
+            $this->getEntityManager()->flush();
     }
 
     public function findActive(): array
     {
-        return $this->findBy(['active' => true]);
+        return $this->findBy(['active' => Quiz::STATUS_ACTIVE]);
     }
 
     public function findByCategory(string $category): array
@@ -44,5 +46,32 @@ class QuizRepository extends ServiceEntityRepository
             ->setParameter('query', '%' . $query . '%')
             ->getQuery()
             ->getResult();
+    }
+    public function findByAuthor(int $author): array
+    {
+        return $this->createQueryBuilder('q')
+            ->where('q.author = :author')
+            ->setParameter('author', $author)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByAuthorAndSearchQuery(int $author, string $query): array
+    {
+        return $this->createQueryBuilder('q')
+            ->where('q.author = :author')
+            ->andWhere('q.title LIKE :query OR q.description LIKE :query OR q.category LIKE :query')
+            ->setParameter('author', $author)
+            ->setParameter('query', '%' . $query . '%')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countTotalQuizzes(): int
+    {
+        return (int) $this->createQueryBuilder('q')
+            ->select('COUNT(q.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

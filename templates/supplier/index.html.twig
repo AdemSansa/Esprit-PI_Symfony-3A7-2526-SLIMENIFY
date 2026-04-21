@@ -180,7 +180,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">Suppliers Management</h1>
-            <p class="page-subtitle" id="supplier-count">{{ suppliers|length }} supplier(s) registered</p>
+            <p class="page-subtitle" id="supplier-count">{{ suppliers.getTotalItemCount() }} supplier(s) registered</p>
         </div>
         <a href="{{ path('app_supplier_new') }}" class="btn-primary">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -248,7 +248,7 @@
                                 <a href="{{ path('app_supplier_edit', {'id': supplier.id}) }}" class="btn-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                                 </a>
-                                <form method="post" action="{{ path('app_supplier_delete', {'id': supplier.id}) }}" onsubmit="return confirm('Are you sure you want to permanently remove this supplier from the system?');" style="margin: 0;">
+                                <form method="post" action="{{ path('app_supplier_delete', {'id': supplier.id}) }}" class="swal-delete-form" data-name="supplier" style="margin: 0;">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ supplier.id) }}">
                                     <button class="btn-icon delete">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -267,6 +267,10 @@
             </tbody>
         </table>
     </div>
+
+	<div class="navigation" id="pagination-container" style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 2rem;">
+		{{ knp_pagination_render(suppliers) }}
+	</div>
 {% endblock %}
 
 {% block javascripts %}
@@ -306,6 +310,12 @@
                     const newCount = doc.getElementById('supplier-count');
                     if (newCount && countLabel) {
                         countLabel.textContent = newCount.textContent;
+                    }
+
+                    const newPagination = doc.getElementById('pagination-container');
+                    const currentPagination = document.getElementById('pagination-container');
+                    if (newPagination && currentPagination) {
+                        currentPagination.innerHTML = newPagination.innerHTML;
                     }
                 });
             }

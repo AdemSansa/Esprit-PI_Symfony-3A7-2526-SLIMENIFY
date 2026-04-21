@@ -1,0 +1,333 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}My Orders (History){% endblock %}
+
+{% block app_content %}
+<style>
+    .page-header {
+        margin-bottom: 2.5rem;
+        animation: fadeInDown 0.8s ease-out;
+    }
+    .page-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #3d4a32, #748764);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1rem;
+        margin-top: 0.5rem;
+        font-weight: 500;
+    }
+
+    .orders-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .order-card {
+        background: #fff;
+        border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+        overflow: hidden;
+        border: 1px solid #f8fafc;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+        animation: fadeInUp 0.8s ease-out backwards;
+    }
+    .order-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 50px rgba(98,114,85,0.1);
+    }
+
+    .order-header {
+        background: linear-gradient(to right, #f6f7f5, #ffffff);
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px dashed #e2e8f0;
+    }
+    .order-id-date {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    .order-id {
+        font-weight: 800;
+        color: #1e293b;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .order-id svg {
+        color: #748764;
+    }
+    .order-date {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .order-summary-pills {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+    .status-badge {
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .status-badge.en_attente {
+        background: #fef3c7;
+        color: #d97706;
+    }
+    .status-badge.complete {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .order-body {
+        padding: 2rem;
+        display: grid;
+        grid-template-columns: 2.5fr 1fr;
+        gap: 3rem;
+    }
+
+    @media (max-width: 900px) {
+        .order-body {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+    }
+
+    /* Items List */
+    .items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+    .item-row {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 1rem;
+        border-radius: 16px;
+        background: #f8fafc;
+        transition: background 0.3s;
+    }
+    .item-row:hover {
+        background: #f1f5f9;
+    }
+    .item-icon {
+        width: 48px;
+        height: 48px;
+        background: #fff;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        color: #748764;
+    }
+    .item-details {
+        flex: 1;
+    }
+    .item-name {
+        font-weight: 700;
+        color: #334155;
+        font-size: 1rem;
+        margin-bottom: 0.2rem;
+    }
+    .item-meta {
+        font-size: 0.85rem;
+        color: #64748b;
+        display: flex;
+        gap: 1rem;
+    }
+    .item-price-total {
+        font-weight: 800;
+        color: #1e293b;
+        font-size: 1.05rem;
+    }
+
+    /* Details Panel */
+    .order-details-panel {
+        background: #f8fafc;
+        border-radius: 20px;
+        padding: 1.5rem;
+        height: fit-content;
+    }
+    .panel-section {
+        margin-bottom: 1.5rem;
+    }
+    .panel-section:last-child {
+        margin-bottom: 0;
+    }
+    .panel-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #94a3b8;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.4rem;
+    }
+    .panel-value {
+        font-size: 0.95rem;
+        color: #334155;
+        font-weight: 600;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        line-height: 1.4;
+    }
+    .panel-value svg {
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .order-footer {
+        padding: 1.5rem 2rem;
+        background: #1e293b;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .total-label {
+        font-size: 0.9rem;
+        color: #cbd5e1;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .total-amount {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #10b981;
+        text-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
+    }
+
+    .empty-orders {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: #fff;
+        border-radius: 30px;
+        border: 2px dashed #f1f5f9;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">My Orders</h1>
+    <p class="page-subtitle">Track your wellness purchase history with peace of mind.</p>
+</div>
+
+<div class="orders-layout">
+    {% for order in orders %}
+        <div class="order-card" style="animation-delay: {{ loop.index0 * 0.15 }}s;">
+            
+            <div class="order-header">
+                <div class="order-id-date">
+                    <span class="order-id">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        Order #{{ order.id }}
+                    </span>
+                    <span class="order-date">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        Placed on {{ order.createdAt|date('M d, Y at H:i') }}
+                    </span>
+                </div>
+                <div class="order-summary-pills">
+                    <div class="status-badge {{ order.status == 'pending' or order.status == 'en_attente' ? 'en_attente' : 'complete' }}">
+                        {{ order.status|replace({'_': ' ', 'en_attente': 'pending', 'validée': 'validated', 'livrée': 'delivered', 'annulée': 'cancelled'})|capitalize }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-body">
+                <!-- Items list from JSON -->
+                <div class="items-list">
+                    <h3 style="font-size: 1.1rem; color: #1e293b; margin: 0 0 0.5rem 0; font-weight: 800;">Articles ({{ order.itemsDetails|length }})</h3>
+                    {% for item in order.itemsDetails %}
+                        <div class="item-row">
+                            <div class="item-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                            </div>
+                            <div class="item-details">
+                                <div class="item-name">{{ item.name }}</div>
+                                <div class="item-meta">
+                                    <span>Qty: {{ item.quantity }}</span> 
+                                    <span style="opacity: 0.5;">|</span>
+                                    <span>Unit Price: {{ item.unit_price|number_format(2) }} TND</span>
+                                </div>
+                            </div>
+                            <div class="item-price-total">
+                                {{ item.total_price|number_format(2) }} TND
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Delivery Details -->
+                <div class="order-details-panel">
+                    <div class="panel-section">
+                        <div class="panel-label">Delivery Address</div>
+                        <div class="panel-value">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            {{ order.shippingAddress }}
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <div class="panel-label">Contact Mobile</div>
+                        <div class="panel-value">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            {{ order.contactPhone }}
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <div class="panel-label">Payment Method</div>
+                        <div class="panel-value">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                            {{ order.paymentMethod|replace({'cash_on_delivery': 'Cash on Delivery', 'bank_card': 'Bank Card'}) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-footer">
+                <div class="total-label">Total Amount Billed</div>
+                <div class="total-amount">{{ order.totalAmount|number_format(2) }} TND</div>
+            </div>
+            
+        </div>
+    {% else %}
+        <div class="empty-orders">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" style="margin-bottom: 1.5rem;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            <h2 style="font-size: 1.5rem; color: #334155; font-weight: 800; margin-bottom: 0.5rem;">No orders yet</h2>
+            <p style="color: #64748b; margin-bottom: 2rem;">You haven't placed any orders yet. Discover our wellness products!</p>
+            <a href="{{ path('app_product_index') }}" style="background: #3d4a32; color: #fff; padding: 1rem 2rem; border-radius: 12px; text-decoration: none; font-weight: 600; transition: background 0.2s;">Start Shopping</a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -28,6 +28,16 @@
             <div><strong>Therapist:</strong> {{ appointment.therapist.firstName }} {{ appointment.therapist.lastName }}</div>
             <div><strong>Client:</strong> {{ appointment.patient.firstName }} {{ appointment.patient.lastName }}</div>
         </div>
+
+        {% if jitsi_url %}
+            <div style="margin-top:1.2rem; padding-top:1rem; border-top:1px solid #f1f5f9;">
+                <a href="{{ jitsi_url }}" target="_blank" style="text-decoration:none; background:#8b5cf6; color:#fff; border-radius:10px; padding:0.6rem 1.2rem; font-weight:600; display:inline-flex; align-items:center; gap:0.5rem; transition:all 0.2s; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1);">
+                    <svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    Join Video Consultation
+                </a>
+                <p style="margin:0.5rem 0 0; font-size:0.8rem; color:#64748b;">Powered by Jitsi Meet. No login required.</p>
+            </div>
+        {% endif %}
     </section>
 
     {% if can_manage_status %}
@@ -63,8 +73,63 @@
         </section>
     {% endif %}
 
+    {% if appointment.status == 'completed' %}
+        {% set show_mood = false %}
+        {% if is_granted('ROLE_THERAPIST') or (is_granted('ROLE_PATIENT') and app.user.id == appointment.patient.id) %}
+            {% set show_mood = true %}
+        {% endif %}
+
+        {% if show_mood %}
+            <section style="margin-top:1rem; background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1rem;">
+                <h2 style="margin-top:0; color:#334155; font-size:1.1rem;">Patient Mood</h2>
+                {% if appointment.patientMood %}
+                    <p style="color:#475569;">
+                        {% if is_granted('ROLE_THERAPIST') %}
+                            The patient reported their mood as:
+                        {% else %}
+                            You reported your mood as:
+                        {% endif %}
+                        <strong>{{ appointment.patientMood }}</strong>
+                    </p>
+                {% elseif is_granted('ROLE_PATIENT') and app.user.id == appointment.patient.id %}
+                    <form id="mood-form" method="post" action="{{ path('app_appointments_patient_mood', {id: appointment.id}) }}" style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+                        <label for="patient_mood" style="color:#475569; font-size:0.95rem;">How are you feeling after this session?</label>
+                        <select name="patient_mood" id="patient_mood" required style="border:1px solid #cbd5e1; border-radius:8px; padding:0.45rem;">
+                            <option value="">Select your mood</option>
+                            <option value="Excellent">Excellent</option>
+                            <option value="Good">Good</option>
+                            <option value="Neutral">Neutral</option>
+                            <option value="Bad">Bad</option>
+                            <option value="Terrible">Terrible</option>
+                        </select>
+                        <button type="submit" style="border:none; background:#8b5cf6; color:#fff; border-radius:8px; padding:0.45rem 1rem; cursor:pointer;">Submit Mood</button>
+                    </form>
+                {% else %}
+                    <p style="color:#64748b; font-style:italic; font-size:0.9rem;">Patient has not yet submitted their mood feedback.</p>
+                {% endif %}
+            </section>
+        {% endif %}
+    {% endif %}
+
+    {% if not is_granted('ROLE_ADMIN') %}
     <section style="margin-top:1rem; background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1rem;">
-        <h2 style="margin-top:0; color:#334155; font-size:1.1rem;">Session Notes</h2>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem;">
+            <h2 style="margin:0; color:#334155; font-size:1.1rem;">Session Notes</h2>
+            {% if notes is not empty %}
+                <button id="summarize-btn" type="button" style="border:1px solid #e2e8f0; background:#f8fafc; color:#1e293b; border-radius:8px; padding:0.4rem 0.8rem; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:0.4rem; transition:all 0.2s;">
+                    <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Summarize with Gemini AI
+                </button>
+            {% endif %}
+        </div>
+
+        <div id="ai-summary-container" style="display:none; margin-bottom:1.5rem; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:12px; padding:1rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem; color:#6d28d9; font-weight:600; font-size:0.9rem;">
+                <svg style="width:18px; height:18px;" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z"></path></svg>
+                Gemini AI Summary
+            </div>
+            <div id="ai-summary-text" style="color:#2e1065; line-height:1.5; font-size:0.95rem;"></div>
+        </div>
 
         {% if can_manage_notes %}
             <form method="post" action="{{ path('app_appointments_add_note', {id: appointment.id}) }}" style="display:grid; gap:0.55rem; margin-bottom:1rem;">
@@ -99,9 +164,93 @@
             {% endfor %}
         {% endif %}
     </section>
+    {% endif %}
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        (function() {
+            function initAppointmentDetailPage() {
+                // 1. Gemini AI Summarization
+                const summarizeBtn = document.getElementById('summarize-btn');
+                if (summarizeBtn && !summarizeBtn.dataset.listenerBound) {
+                    summarizeBtn.dataset.listenerBound = 'true';
+                    summarizeBtn.addEventListener('click', async () => {
+                        summarizeBtn.disabled = true;
+                        const originalContent = summarizeBtn.innerHTML;
+                        summarizeBtn.innerHTML = '<span style="display:inline-block; animation: spin 1s linear infinite;">⏳</span> Summarizing...';
+                        
+                        try {
+                            const response = await fetch('{{ path('app_appointments_summarize', {id: appointment.id}) }}', {
+                                method: 'POST',
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                            });
+                            
+                            const data = await response.json();
+                            if (data.summary) {
+                                const container = document.getElementById('ai-summary-container');
+                                const text = document.getElementById('ai-summary-text');
+                                text.innerText = data.summary;
+                                container.style.display = 'block';
+                                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            } else if (data.error) {
+                                Swal.fire('Error', data.error, 'error');
+                            }
+                        } catch (e) {
+                            Swal.fire('Error', 'Failed to connect to AI service.', 'error');
+                        } finally {
+                            summarizeBtn.disabled = false;
+                            summarizeBtn.innerHTML = originalContent;
+                        }
+                    });
+                }
+
+                // 2. Jitsi Auto-Join (only if video appointment and not already opened)
+                {% if jitsi_url and appointment.status != 'completed' and appointment.status != 'cancelled' %}
+                const jitsiKey = 'jitsi_opened_' + {{ appointment.id }};
+                if (!sessionStorage.getItem(jitsiKey)) {
+                    const aptStartStr = "{{ appointment.appointmentDate|date('Y-m-d') }}T{{ appointment.startTime|date('H:i:s') }}";
+                    const aptEndStr = "{{ appointment.appointmentDate|date('Y-m-d') }}T{{ appointment.endTime|date('H:i:s') }}";
+                    const aptStart = new Date(aptStartStr);
+                    const aptEnd = new Date(aptEndStr);
+
+                    if (window.jitsiInterval) clearInterval(window.jitsiInterval);
+                    window.jitsiInterval = setInterval(() => {
+                        const now = new Date();
+                        if (now >= aptStart && now <= aptEnd) {
+                            sessionStorage.setItem(jitsiKey, 'true');
+                            clearInterval(window.jitsiInterval);
+                            Swal.fire({
+                                title: 'Session Started',
+                                text: 'Your video consultation time has arrived. Join now?',
+                                icon: 'info',
+                                showCancelButton: true,
+                                confirmButtonText: 'Join',
+                                cancelButtonText: 'Later'
+                            }).then((r) => {
+                                if (r.isConfirmed) {
+                                    window.open("{{ jitsi_url }}", "_blank");
+                                }
+                            });
+                        }
+                    }, 10000);
+                }
+                {% endif %}
+            }
+
+            // Bind to all possible load events
+            document.addEventListener('turbo:load', initAppointmentDetailPage);
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initAppointmentDetailPage);
+            } else {
+                initAppointmentDetailPage();
+            }
+        })();
+    </script>
+
+    <style>
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
 {% endblock %}

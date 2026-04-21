@@ -64,6 +64,10 @@
         <div style="background:#fff; width:100%; max-width:440px; border-radius:14px; border:1px solid #e2e8f0; padding:1rem;">
             <h3 style="margin-top:0; color:#334155;">Book Appointment</h3>
             <p id="booking-range" style="margin:0 0 0.8rem; color:#64748b; font-size:0.9rem;"></p>
+            <div id="booking-therapist-wrapper" style="display:none; gap:0.6rem; margin-bottom:0.8rem;">
+                <label style="font-size:0.88rem; color:#475569;">Therapist</label>
+                <select id="booking-therapist" style="border:1px solid #cbd5e1; border-radius:8px; padding:0.55rem;"></select>
+            </div>
             <div id="booking-type-wrapper" style="display:grid; gap:0.6rem;">
                 <label style="font-size:0.88rem; color:#475569;">Type</label>
                 <select id="booking-type" style="border:1px solid #cbd5e1; border-radius:8px; padding:0.55rem;"></select>
@@ -156,6 +160,8 @@
             const modalTypeEl = document.getElementById('booking-type');
             const modalTypeWrapper = document.getElementById('booking-type-wrapper');
             const modalTypeInfo = document.getElementById('booking-type-info');
+            const modalTherapistEl = document.getElementById('booking-therapist');
+            const modalTherapistWrapper = document.getElementById('booking-therapist-wrapper');
             const modalRangeEl = document.getElementById('booking-range');
             const modalCancelEl = document.getElementById('booking-cancel');
             const modalSaveEl = document.getElementById('booking-save');
@@ -233,13 +239,9 @@
                 return !isBlockedByException(startDate, endDate);
             }
 
-            async function openBookingModal(slotInfo) {
-                const fixedEnd = new Date(slotInfo.start.getTime() + (60 * 60 * 1000));
-                selectedSlot = { start: slotInfo.start, end: fixedEnd };
-                modalRangeEl.textContent = `${formatDate(selectedSlot.start)} ${formatTime(selectedSlot.start)} - ${formatTime(selectedSlot.end)} (60 min)`;
-                
+            function updateTypeDropdown(cType) {
                 modalTypeEl.innerHTML = '';
-                const options = typeOptionsByConsultation(consultationType);
+                const options = typeOptionsByConsultation(cType);
                 options.forEach((option) => {
                     const el = document.createElement('option');
                     el.value = option.value;
@@ -255,6 +257,33 @@
                 } else {
                     modalTypeWrapper.style.display = 'grid';
                     modalTypeInfo.style.display = 'none';
+                }
+            }
+
+            async function openBookingModal(slotInfo, availableTherapists = null) {
+                const fixedEnd = new Date(slotInfo.start.getTime() + (60 * 60 * 1000));
+                selectedSlot = { start: slotInfo.start, end: fixedEnd };
+                modalRangeEl.textContent = `${formatDate(selectedSlot.start)} ${formatTime(selectedSlot.start)} - ${formatTime(selectedSlot.end)} (60 min)`;
+                
+                if (availableTherapists) {
+                    modalTherapistEl.innerHTML = '';
+                    availableTherapists.forEach(t => {
+                        const opt = document.createElement('option');
+                        opt.value = t.id;
+                        opt.textContent = t.name;
+                        opt.dataset.type = t.consultationType || 'BOTH';
+                        modalTherapistEl.appendChild(opt);
+                    });
+                    modalTherapistWrapper.style.display = 'grid';
+                    
+                    modalTherapistEl.onchange = () => {
+                        const selectedOpt = modalTherapistEl.options[modalTherapistEl.selectedIndex];
+                        updateTypeDropdown(selectedOpt.dataset.type);
+                    };
+                    modalTherapistEl.onchange(); // Trigger initial
+                } else {
+                    modalTherapistWrapper.style.display = 'none';
+                    updateTypeDropdown(consultationType);
                 }
 
                 modalEl.style.display = 'flex';
@@ -272,26 +301,40 @@
             if (modalSaveEl && !modalSaveEl.dataset.fcListenerAttached) {
                 modalSaveEl.dataset.fcListenerAttached = 'true';
                 modalSaveEl.addEventListener('click', async () => {
-                    if (!selectedSlot || !activeTherapistId) return;
-                    const payload = {
-                        therapist_id: activeTherapistId,
-                        date: formatDate(selectedSlot.start),
-                        start_time: formatTime(selectedSlot.start),
-                        end_time: formatTime(selectedSlot.end),
-                        type: modalTypeEl.value,
-                    };
-                    const response = await fetch('{{ path('app_appointments_book') }}', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                    });
-                    const body = await response.json().catch(() => ({}));
-                    if (!response.ok) {
-                        await showErrorAlert(body.error || 'Booking failed.');
-                        return;
+                    let finalTherapistId = activeTherapistId;
+                    if (!finalTherapistId && modalTherapistEl.style.display !== 'none') {
+                        finalTherapistId = parseInt(modalTherapistEl.value, 10);
                     }
-                    closeBookingModal();
-                    appointmentCalendarInstance.refetchEvents();
+                    if (!selectedSlot || !finalTherapistId) return;
+                    
+                    modalSaveEl.disabled = true;
+                    const originalText = modalSaveEl.textContent;
+                    modalSaveEl.textContent = 'Saving...';
+                    
+                    try {
+                        const payload = {
+                            therapist_id: finalTherapistId,
+                            date: formatDate(selectedSlot.start),
+                            start_time: formatTime(selectedSlot.start),
+                            end_time: formatTime(selectedSlot.end),
+                            type: modalTypeEl.value,
+                        };
+                        const response = await fetch('{{ path('app_appointments_book') }}', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload),
+                        });
+                        const body = await response.json().catch(() => ({}));
+                        if (!response.ok) {
+                            await showErrorAlert(body.error || 'Booking failed.');
+                            return;
+                        }
+                        closeBookingModal();
+                        appointmentCalendarInstance.refetchEvents();
+                    } finally {
+                        modalSaveEl.disabled = false;
+                        modalSaveEl.textContent = originalText;
+                    }
                 });
             }
 
@@ -354,29 +397,46 @@
                     await showErrorAlert('Appointment duration is fixed to 60 minutes.');
                 },
                 selectAllow: (selectionInfo) => {
-                    if (!activeTherapistId || isTherapist) {
-                        return false;
-                    }
+                    if (isTherapist) return false;
+                    if (!activeTherapistId) return true;
                     return isWithinBusinessHours(selectionInfo.start, selectionInfo.end);
                 },
-                select: (selectionInfo) => {
-                    if (!activeTherapistId) {
-                        showErrorAlert('Please select a therapist first.');
-                        return;
-                    }
+                select: async (selectionInfo) => {
                     if (selectionInfo.start < new Date()) {
                         showErrorAlert('You cannot book appointments in the past.');
                         return;
                     }
-                    if (isBlockedByException(selectionInfo.start, selectionInfo.end)) {
-                        showErrorAlert('This therapist is unavailable at this specific time (exception).');
-                        return;
+                    if (activeTherapistId) {
+                        if (isBlockedByException(selectionInfo.start, selectionInfo.end)) {
+                            showErrorAlert('This therapist is unavailable at this specific time (exception).');
+                            return;
+                        }
+                        if (!isWithinBusinessHours(selectionInfo.start, selectionInfo.end)) {
+                            showErrorAlert('You cannot book outside therapist business hours.');
+                            return;
+                        }
+                        openBookingModal(selectionInfo);
+                    } else {
+                        const selectedDate = formatDate(selectionInfo.start);
+                        const selectedStart = formatTime(selectionInfo.start);
+                        
+                        // use internal swal loading if available
+                        if (window.Swal) Swal.fire({ title: 'Checking availability...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                        
+                        try {
+                            const response = await fetch(`{{ path('app_appointments_available_therapists') }}?date=${selectedDate}&start_time=${selectedStart}`);
+                            const data = await response.json();
+                            if (window.Swal) Swal.close();
+                            
+                            if (!data.therapists || data.therapists.length === 0) {
+                                showErrorAlert('No therapists are available at the selected time.');
+                                return;
+                            }
+                            openBookingModal(selectionInfo, data.therapists);
+                        } catch(e) {
+                            if (window.Swal) Swal.fire('Error', 'Failed to fetch available therapists.', 'error');
+                        }
                     }
-                    if (!isWithinBusinessHours(selectionInfo.start, selectionInfo.end)) {
-                        showErrorAlert('You cannot book outside therapist business hours.');
-                        return;
-                    }
-                    openBookingModal(selectionInfo);
                 },
                 dateClick: (info) => {
                     if (isTherapist || !activeTherapistId) return;
@@ -412,7 +472,14 @@
                 consultationType = data.consultationType || 'BOTH';
                 businessHoursCache = data.businessHours || [];
                 exceptionsCache = data.exceptions || [];
+
+                if (!activeTherapistId) {
+                    businessHoursCache = [{ daysOfWeek: [0, 1, 2, 3, 4, 5, 6], startTime: '00:00', endTime: '24:00' }];
+                }
+
                 appointmentCalendarInstance.setOption('businessHours', businessHoursCache);
+                appointmentCalendarInstance.setOption('selectConstraint', 'businessHours');
+                appointmentCalendarInstance.setOption('eventConstraint', 'businessHours');
                 appointmentCalendarInstance.render();
                 appointmentCalendarInstance.refetchEvents();
             }
@@ -435,20 +502,27 @@
             }
         });
         
-        let hasInitialized = false;
+        let isCalendarInitializing = false;
 
         async function safeInit() {
-            if (hasInitialized && appointmentCalendarInstance) {
+            if (appointmentCalendarInstance) {
                 appointmentCalendarInstance.refetchEvents();
                 return;
             }
-            hasInitialized = true;
-            await initAppointmentCalendar();
+            if (isCalendarInitializing) return;
+            isCalendarInitializing = true;
+            try {
+                await initAppointmentCalendar();
+            } finally {
+                isCalendarInitializing = false;
+            }
         }
 
         document.addEventListener('turbo:load', safeInit);
         
-        if (document.readyState === 'interactive' || document.readyState === 'complete') {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', safeInit);
+        } else {
             safeInit();
         }
     </script>

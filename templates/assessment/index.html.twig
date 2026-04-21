@@ -62,8 +62,8 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: #3b82f6;
-            box-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6;
+            background: #748764;
+            box-shadow: 0 0 10px #748764, 0 0 20px #748764;
             animation: scanLine 2s infinite ease-in-out;
             opacity: 0.8;
             display: none;
@@ -91,74 +91,180 @@
 {% endblock %}
 
 {% block app_content %}
-    <!-- Smile to Unlock Overlay -->
+    <style>
+        .assessment-shell { display: grid; gap: 1.25rem; }
+        .hero { background: linear-gradient(135deg, #ffffff, #f6f5ed); border: 1px solid rgba(116,135,100,0.25); border-radius: 20px; padding: 1.4rem; box-shadow: 0 10px 25px rgba(98,114,85,0.12); }
+        .hero-top { display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        .hero-title { margin: 0; font-size: 2rem; color: #5D4A3E; letter-spacing: -0.03em; }
+        .hero-sub { margin: 0.35rem 0 0; color: #7a5b49; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 0.75rem; margin-top: 1rem; }
+        .stat { background: #fff; border-radius: 12px; padding: 0.8rem; border: 1px solid rgba(168,134,110,0.22); }
+        .stat-label { font-size: 0.75rem; text-transform: uppercase; color: #A8866E; font-weight: 700; letter-spacing: 0.04em; }
+        .stat-val { font-size: 1.35rem; color: #5D4A3E; font-weight: 800; margin-top: 0.2rem; }
+        .featured { background: linear-gradient(135deg, #748764, #627255); color: #fff; border-radius: 18px; padding: 1.1rem; box-shadow: 0 12px 30px rgba(98,114,85,0.35); }
+        .featured-head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+        .pill { background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35); color: #f6f5ed; border-radius: 999px; padding: 0.25rem 0.65rem; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; }
+        .featured h3 { margin: 0 0 0.35rem; font-size: 1.35rem; }
+        .featured p { margin: 0 0 0.7rem; color: #f6f5ed; }
+        .carousel-wrap { background: #fff; border-radius: 18px; border: 1px solid rgba(168,134,110,0.22); padding: 1rem; box-shadow: 0 8px 20px rgba(122,91,73,0.08); }
+        .carousel-head { display:flex; justify-content: space-between; align-items:center; margin-bottom: 0.9rem; gap: .5rem; }
+        .tabs { display:flex; gap:0.45rem; flex-wrap:wrap; margin-bottom:0.9rem; }
+        .tab-btn { background:#f6f5ed; color:#7a5b49; border:1px solid rgba(168,134,110,0.3); border-radius:999px; padding:0.35rem 0.75rem; font-size:0.78rem; font-weight:700; cursor:pointer; }
+        .tab-btn.active { background:#627255; color:#fff; border-color:#627255; }
+        .carousel-controls { display:flex; gap: .4rem; }
+        .ctrl-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid rgba(98,114,85,0.35); background: #fff; color: #627255; cursor: pointer; font-size: 1.1rem; font-weight: 700; }
+        .quiz-carousel { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(270px, 1fr); gap: .85rem; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 0.3rem; }
+        .quiz-carousel::-webkit-scrollbar { height: 8px; }
+        .quiz-carousel::-webkit-scrollbar-thumb { background: #d5d9d1; border-radius: 999px; }
+        .quiz-card { background: linear-gradient(180deg, #fff, #fafaf6); border: 1px solid rgba(168,134,110,0.22); border-radius: 14px; padding: 1rem; display: flex; flex-direction: column; min-height: 230px; opacity: 0; transform: translateY(16px) scale(0.98); animation: cardIn .55s cubic-bezier(.2,.8,.2,1) forwards; animation-delay: calc(var(--delay, 0) * 70ms); }
+        .quiz-top { display:flex; justify-content: space-between; align-items:center; gap: .4rem; }
+        .cat { background: rgba(116,135,100,0.14); color: #627255; padding: 0.22rem 0.6rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; }
+        .taken { color: #7a5b49; font-size: 0.78rem; font-weight: 700; }
+        .quiz-card h4 { margin: .75rem 0 .35rem; color: #5D4A3E; font-size: 1.08rem; }
+        .quiz-card p { margin: 0 0 .8rem; color: #7a5b49; font-size: .9rem; flex-grow: 1; }
+        .quiz-foot { display:flex; justify-content: space-between; align-items:center; border-top: 1px dashed rgba(168,134,110,0.35); padding-top: .7rem; }
+        .take-btn { background: #627255; color: white; text-decoration: none; font-size: .84rem; padding: .45rem .8rem; border-radius: 8px; font-weight: 700; }
+        .history-btn { background: #fff; color: #627255; border: 1px solid rgba(98,114,85,0.35); padding: 0.6rem 1.2rem; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.92rem; }
+        .quiz-card.hidden-by-tab { display: none; }
+        @keyframes cardIn { to { opacity: 1; transform: translateY(0) scale(1); } }
+    </style>
+
     <div id="smile-lock-overlay">
         <div class="smile-card">
             <h2 style="margin: 0 0 0.5rem; color: #0f172a; font-size: 1.8rem; letter-spacing: -0.02em;">Interface Locked</h2>
             <p style="color: #64748b; margin: 0; line-height: 1.5;">Let's boost your mood! Please smile brightly at the camera to unlock your assessments. 😊</p>
-            
             <div class="video-container" id="video-wrapper">
                 <div class="scanning-line"></div>
                 <video id="video" autoplay muted playsinline></video>
             </div>
-            
             <p id="status-msg">Initializing AI models...</p>
         </div>
     </div>
 
-    <!-- Main Content underneath -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <div>
-            <h1 style="margin: 0; font-size: 1.8rem; color: #0f172a; letter-spacing: -0.02em;">Take an Assessment</h1>
-            <p style="margin: 0.5rem 0 0; color: #64748b; font-size: 0.95rem;">Select an active quiz to complete your evaluation.</p>
+    <section class="assessment-shell">
+        <div class="hero">
+            <div class="hero-top">
+                <div>
+                    <h1 class="hero-title">Assessment Hub</h1>
+                    <p class="hero-sub">Discover quizzes, follow trends, and start your next self-check instantly.</p>
+                </div>
+                <a href="{{ path('app_assessment_history') }}" class="history-btn">Quiz History</a>
+            </div>
+            <div class="stats">
+                <div class="stat"><div class="stat-label">Available quizzes</div><div class="stat-val">{{ quizzes|length }}</div></div>
+                <div class="stat"><div class="stat-label">Total attempts</div><div class="stat-val">{{ totalAttempts }}</div></div>
+                <div class="stat"><div class="stat-label">Top category</div><div class="stat-val" style="font-size:1rem;">{{ mostTakenQuiz ? (mostTakenQuiz.category ?? 'General') : 'N/A' }}</div></div>
+            </div>
         </div>
-        <div>
-            <a href="{{ path('app_assessment_history') }}" style="background: white; color: #3b82f6; border: 1px solid #bfdbfe; padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem; transition: background 0.2s;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='white'">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-                Quiz History
-            </a>
-        </div>
-    </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
-        {% for quiz in quizzes %}
-            <div style="background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05)'">
-                
-                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                    <div style="background: #eff6ff; color: #3b82f6; padding: 0.35rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
-                        {{ quiz.category ?? 'General' }}
-                    </div>
+        {% if mostTakenQuiz %}
+            <div class="featured">
+                <div class="featured-head">
+                    <span class="pill">Most taken quiz</span>
+                    <span class="pill">{{ mostTakenQuiz.getParticipantCount() }} participants</span>
                 </div>
-                
-                <h2 style="margin: 0 0 0.5rem; font-size: 1.25rem; color: #1e293b;">{{ quiz.title }}</h2>
-                <p style="margin: 0 0 1.5rem; color: #64748b; font-size: 0.9rem; line-height: 1.5; flex-grow: 1;">
-                    {{ quiz.description ?: 'No description provided.' }}
-                </p>
-                
-                <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 1.25rem; margin-top: auto;">
-                    <div style="font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; gap: 0.35rem;">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
-                        {{ quiz.totalQuestions }} Questions
-                    </div>
-                    
-                    <div style="display: flex; gap: 0.5rem;">
-                        <a href="{{ path('app_assessment_take', {'id': quiz.id}) }}" style="background: #3b82f6; color: white; text-decoration: none; font-size: 0.85rem; padding: 0.4rem 0.75rem; border-radius: 6px; font-weight: 500;">Take Quiz</a>
-                    </div>
+                <h3>{{ mostTakenQuiz.title }}</h3>
+                <p>{{ mostTakenQuiz.description ?: 'No description provided.' }}</p>
+                <a href="{{ path('app_assessment_take', {'id': mostTakenQuiz.id}) }}" class="take-btn" style="background:#fff; color:#627255;">Start Featured Quiz</a>
+            </div>
+        {% endif %}
+
+        <div class="carousel-wrap">
+            <div class="carousel-head">
+                <h2 style="margin:0; color:#5D4A3E; font-size:1.35rem;">Trending Assessments</h2>
+                <div class="carousel-controls">
+                    <button class="ctrl-btn" type="button" id="carouselPrev">‹</button>
+                    <button class="ctrl-btn" type="button" id="carouselNext">›</button>
                 </div>
             </div>
-        {% else %}
-            <div style="grid-column: 1 / -1; background: white; border-radius: 16px; padding: 3rem; text-align: center; border: 2px dashed #cbd5e1;">
-                <h3 style="margin: 0 0 0.5rem; color: #334155; font-size: 1.1rem;">No quizzes available</h3>
+            <div class="tabs" id="categoryTabs">
+                <button class="tab-btn active" type="button" data-category="all">All</button>
+                {% set seenCategories = [] %}
+                {% for quiz in quizzes %}
+                    {% set label = quiz.category ?? 'General' %}
+                    {% if label not in seenCategories %}
+                        {% set seenCategories = seenCategories|merge([label]) %}
+                        <button class="tab-btn" type="button" data-category="{{ label|lower }}">{{ label }}</button>
+                    {% endif %}
+                {% endfor %}
             </div>
-        {% endfor %}
-    </div>
+
+            <div class="quiz-carousel" id="quizCarousel">
+                {% for quiz in quizzes %}
+                    <article class="quiz-card" style="--delay: {{ loop.index0 }};" data-category="{{ (quiz.category ?? 'General')|lower }}">
+                        <div class="quiz-top">
+                            <span class="cat">{{ quiz.category ?? 'General' }}</span>
+                            <span class="taken">{{ quiz.getParticipantCount() }} taken</span>
+                        </div>
+                        <h4>{{ quiz.title }}</h4>
+                        <p>{{ quiz.description ?: 'No description provided.' }}</p>
+                        <div class="quiz-foot">
+                            <span style="font-size:.82rem;color:#64748b;">{{ quiz.totalQuestions }} questions</span>
+                            <a class="take-btn" href="{{ path('app_assessment_take', {'id': quiz.id}) }}">Take Quiz</a>
+                        </div>
+                    </article>
+                {% else %}
+                    <div style="background:#fff;border:2px dashed #cbd5e1;border-radius:14px;padding:2rem;text-align:center;color:#475569;">No quizzes available</div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
 
     <!-- Load AI Models -->
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script>
+        (function () {
+            const carousel = document.getElementById('quizCarousel');
+            const prev = document.getElementById('carouselPrev');
+            const next = document.getElementById('carouselNext');
+            const tabs = document.querySelectorAll('#categoryTabs .tab-btn');
+            const cards = document.querySelectorAll('#quizCarousel .quiz-card');
+            if (!carousel || !prev || !next) return;
+
+            const scrollStep = () => Math.max(280, Math.floor(carousel.clientWidth * 0.8));
+            prev.addEventListener('click', () => carousel.scrollBy({ left: -scrollStep(), behavior: 'smooth' }));
+            next.addEventListener('click', () => carousel.scrollBy({ left: scrollStep(), behavior: 'smooth' }));
+
+            tabs.forEach((tab) => {
+                tab.addEventListener('click', () => {
+                    const selected = tab.getAttribute('data-category');
+                    tabs.forEach((t) => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    cards.forEach((card) => {
+                        const category = card.getAttribute('data-category');
+                        const visible = selected === 'all' || category === selected;
+                        card.classList.toggle('hidden-by-tab', !visible);
+                    });
+                    carousel.scrollTo({ left: 0, behavior: 'smooth' });
+                });
+            });
+
+            let autoRotate;
+            const startAutoRotate = () => {
+                autoRotate = window.setInterval(() => {
+                    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+                    const atEnd = carousel.scrollLeft >= maxScroll - 10;
+                    carousel.scrollTo({
+                        left: atEnd ? 0 : carousel.scrollLeft + scrollStep(),
+                        behavior: 'smooth'
+                    });
+                }, 3500);
+            };
+            const stopAutoRotate = () => window.clearInterval(autoRotate);
+            startAutoRotate();
+            carousel.addEventListener('mouseenter', stopAutoRotate);
+            carousel.addEventListener('mouseleave', startAutoRotate);
+            carousel.addEventListener('touchstart', stopAutoRotate, { passive: true });
+        })();
+
         (function() {
             const overlay = document.getElementById('smile-lock-overlay');
             if (!overlay) return;
+
+            if (sessionStorage.getItem('smileUnlocked') === 'true') {
+                overlay.style.display = 'none';
+                return;
+            }
 
             const video = document.getElementById('video');
             const statusMsg = document.getElementById('status-msg');
@@ -188,6 +294,7 @@
             }
 
             function unlockUI() {
+                sessionStorage.setItem('smileUnlocked', 'true');
                 if (streamRef) {
                     streamRef.getTracks().forEach(track => track.stop());
                 }

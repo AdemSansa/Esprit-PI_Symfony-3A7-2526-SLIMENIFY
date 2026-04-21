@@ -50,9 +50,6 @@ class User implements UserInterface,PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $photoUrl = null;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Review::class)]
-    private Collection $reviews;
-
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: QuizResult::class)]
     private Collection $quizResults;
 
@@ -68,7 +65,6 @@ class User implements UserInterface,PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->reviews = new ArrayCollection();
         $this->quizResults = new ArrayCollection();
     }
 
@@ -93,7 +89,6 @@ class User implements UserInterface,PasswordAuthenticatedUserInterface
     public function setGender(?string $gender): static { $this->gender = $gender; return $this; }
     public function getPhotoUrl(): ?string { return $this->photoUrl; }
     public function setPhotoUrl(?string $photoUrl): static { $this->photoUrl = $photoUrl; return $this; }
-    public function getReviews(): Collection { return $this->reviews; }
     public function getQuizResults(): Collection { return $this->quizResults; }
 
     /**
