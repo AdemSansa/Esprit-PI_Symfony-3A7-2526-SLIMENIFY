@@ -655,7 +655,7 @@ class AppointmentManagementController extends AbstractController
     {
         return match ($status) {
             'confirmed' => '#22c55e',
-            'completed' => '#3b82f6',
+            'completed' => '#748764',
             default => '#eab308',
         };
     }

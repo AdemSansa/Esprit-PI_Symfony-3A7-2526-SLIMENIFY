@@ -21,9 +21,9 @@ class SupplierCrudController extends AbstractController
     {
         $search = $request->query->get('search', '');
         $status = $request->query->get('status', 'all');
-        $sort = $request->query->get('sort', 'newest');
+        $sortBy = $request->query->get('sortBy', 'newest');
 
-        $suppliersQuery = $supplierRepository->findFiltered($search, $status, $sort);
+        $suppliersQuery = $supplierRepository->findFiltered($search, $status, $sortBy);
         
         $suppliers = $paginator->paginate(
             $suppliersQuery,
@@ -35,7 +35,7 @@ class SupplierCrudController extends AbstractController
             'suppliers' => $suppliers,
             'search' => $search,
             'status' => $status,
-            'sort' => $sort,
+            'sortBy' => $sortBy,
         ]);
     }
 

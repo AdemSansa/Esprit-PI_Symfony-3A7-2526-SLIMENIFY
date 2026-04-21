@@ -15,10 +15,8 @@ class Comment
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Assert\NotBlank(message: "Comment cannot be empty")]
-    #[Assert\Length(min: 2, minMessage: "Comment too short")]
-    #[ORM\Column(type: "text")]
-    private ?string $content = null;
+    #[ORM\Column(type: "text", )]
+    private ?string $content = "";
 
     #[ORM\Column]
     private ?\DateTime $createdAt = null;
@@ -39,11 +37,15 @@ class Comment
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentLike::class, cascade: ['remove'])]
     private Collection $likes;
 
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $rating = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
         $this->likes = new ArrayCollection();
     }
+
 
     // GETTERS & SETTERS
 
@@ -65,6 +67,17 @@ class Comment
 
     public function getParent() { return $this->parent; }
     public function setParent($parent): self { $this->parent = $parent; return $this; }
+
+    public function getRating(): ?int
+    {
+    return $this->rating;
+    }
+
+    public function setRating(?int $rating): self
+    {
+        $this->rating = $rating;
+        return $this;
+    }
 
     /** @return Collection<int, CommentLike> */
     public function getLikes(): Collection { return $this->likes; }

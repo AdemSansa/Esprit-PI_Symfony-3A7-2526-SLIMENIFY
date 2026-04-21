@@ -10,6 +10,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use App\Entity\Category;
 
 class BlogType extends AbstractType
 {
@@ -20,6 +22,12 @@ class BlogType extends AbstractType
                 'label' => 'Blog Title',
                 'required'=> false,
                  'attr' => ['placeholder' => 'Enter a catchy title...']
+            ])
+            ->add('category', EntityType::class, [
+                'class' => Category::class,
+                'choice_label' => 'name',
+                'label' => 'Catégorie',
+                'placeholder' => 'Choisir une catégorie',
             ])
             ->add('content', TextareaType::class, [
                 'label' => 'Content',
