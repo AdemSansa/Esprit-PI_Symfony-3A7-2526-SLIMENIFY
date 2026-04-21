@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ app.request.locale|default('en') }}" dir="{{ app.request.locale|default('en') == 'ar' ? 'rtl' : 'ltr' }}">
 	<head>
 		<meta charset="UTF-8">
 		<title>
-			{% block title %}Welcome!
-			{% endblock %}
+			{% block title %}{{ 'common.welcome'|trans }}{% endblock %}
 		</title>
 		<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>"> {% block stylesheets %}{% endblock %}
 
@@ -22,11 +21,16 @@
 		{% endif %}
 	</head>
 	<body>
+		<script>
+			window.APP_LOCALE = '{{ app.request.locale|default('en') }}';
+			window.APP_UI_TRANSLATE_URL = '{{ path('app_ui_translate') }}';
+		</script>
+		<script src="{{ asset('js/ui-auto-translate.js') }}" defer></script>
 		{% block body %}
-			<a href="{{ path('app_home') }}">Home</a>
-			<a href="{{ path('app_login') }}">Login</a>
-			<a href="{{ path('app_register') }}">Register</a>
-			<a href="{{ path('app_logout') }}">Logout</a>
+			<a href="{{ path('app_home') }}">{{ 'nav.home'|trans }}</a>
+			<a href="{{ path('app_login') }}">{{ 'auth.login'|trans }}</a>
+			<a href="{{ path('app_register') }}">{{ 'auth.register'|trans }}</a>
+			<a href="{{ path('app_logout') }}">{{ 'auth.logout'|trans }}</a>
 		{% endblock %}
 	</body>
 </html>
