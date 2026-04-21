@@ -1,11 +1,35 @@
-<h1>Hi! Please confirm your email!</h1>
+<div style="font-family: Arial, sans-serif; background-color: #F9F8F5; padding: 40px; color: #2D2D2D; text-align: center;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: left;">
+        
+        <h1 style="color: #687560; margin-top: 0; font-size: 24px; text-align: center;">Bienvenue sur Slimenify !</h1>
+        
+        <p style="font-size: 16px; line-height: 1.6;">
+            {% if role == 'patient' %}
+                Cher/Chère Patient(e) <strong>{{ utilisateur.firstName }} {{ utilisateur.lastName }}</strong>,
+            {% elseif role == 'therapist' %}
+                Cher(e) Docteur/Thérapeute <strong>{{ utilisateur.firstName }} {{ utilisateur.lastName }}</strong>,
+            {% else %}
+                Bonjour <strong>{{ utilisateur.firstName }}</strong>,
+            {% endif %}
+        </p>
 
-<p>
-    Please confirm your email address by clicking the following link: <br><br>
-    <a href="{{ signedUrl|raw }}">Confirm my Email</a>.
-    This link will expire in {{ expiresAtMessageKey|trans(expiresAtMessageData, 'VerifyEmailBundle') }}.
-</p>
+        <p style="font-size: 16px; line-height: 1.6;">
+            Nous sommes ravis de vous compter parmi nous. Afin d'activer votre compte et de profiter pleinement de nos services, nous vous demandons de bien vouloir confirmer votre adresse e-mail.
+        </p>
 
-<p>
-    Cheers!
-</p>
+        <div style="text-align: center; margin: 35px 0;">
+            <a href="{{ signedUrl|raw }}" style="background-color: #687560; color: #FFFFFF; font-weight: bold; text-decoration: none; padding: 14px 28px; border-radius: 25px; display: inline-block; font-size: 16px;">Activer mon compte</a>
+        </div>
+
+        <p style="font-size: 14px; color: #A8866E; text-align: center; margin-bottom: 30px;">
+            <small>Attention : Ce lien de confirmation expirera dans {{ expiresAtMessageKey|trans(expiresAtMessageData, 'VerifyEmailBundle') }}.</small>
+        </p>
+
+        <hr style="border: none; border-top: 1px solid #EBE6DF; margin: 30px 0;">
+
+        <p style="font-size: 15px; color: #5D4A3E; text-align: center; margin: 0;">
+            À très bientôt,<br>
+            <strong>L'équipe Slimenify</strong>
+        </p>
+    </div>
+</div>
