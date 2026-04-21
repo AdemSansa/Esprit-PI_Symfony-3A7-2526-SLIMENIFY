@@ -16,6 +16,9 @@ parameters:
 
     stripe.secret_key: '%env(STRIPE_SECRET_KEY)%'
     env(PROFANITY_CHECK_ENABLED): '1'
+    app.gemini_api_key: '%env(GEMINI_API_KEY)%'
+    app.hf_token: '%env(HF_TOKEN)%'
+    default_hf_image_model: 'black-forest-labs/FLUX.1-schnell'
    
 
 
@@ -25,6 +28,9 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
         bind:
+            $geminiApiKey: '%app.gemini_api_key%'
+            $hfToken: '%app.hf_token%'
+            $projectDir: '%kernel.project_dir%'
             $geminiApiKey: '%gemini_api_key%'
 
     # makes classes in src/ available to be used as services
@@ -49,3 +55,8 @@ services:
         arguments:
             $profanityCheck: '@profanity.checker'
             $profanityCheckEnabled: '%env(bool:PROFANITY_CHECK_ENABLED)%'
+    
+
+    App\Service\ImageGenerator:
+        arguments:
+            $hfModel: '%env(default:default_hf_image_model:HF_IMAGE_MODEL)%'
