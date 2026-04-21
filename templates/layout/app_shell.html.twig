@@ -744,6 +744,10 @@
 			{% endif %}
 			{% if is_granted('ROLE_THERAPIST') and not is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_therapist_dashboard') }}" class="{{ route == 'app_therapist_dashboard' ? 'is-active' : '' }}">My Dashboard</a>
+				<a href="{{ path('app_chat_index') }}" class="{{ route starts with 'app_chat' ? 'is-active' : '' }}" style="display:flex; align-items:center; gap:6px;">
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+					Messages
+				</a>
 			{% endif %}
 			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_product_index') }}" class="{{ route starts with 'app_product' ? 'is-active' : '' }}">{{ 'nav.products'|trans }}</a>
@@ -772,12 +776,13 @@
 					<a href="{{ path('app_admin_user_index') }}" class="{{ route starts with 'app_admin_user' ? 'is-active' : '' }}">Users</a>
 					<a href="{{ path('app_admin_therapist_index') }}" class="{{ route starts with 'app_admin_therapist' ? 'is-active' : '' }}">Therapists</a>
 				{% endif %}
-				{% if is_granted('ROLE_PATIENT') and not is_granted('ROLE_ADMIN') %}
+				{% if is_granted('ROLE_PATIENT') and not is_granted('ROLE_THERAPIST') and not is_granted('ROLE_ADMIN') %}
 					<a href="{{ path('app_patient_dashboard') }}" class="{{ route == 'app_patient_dashboard' ? 'is-active' : '' }}">Therapists</a>
 				{% endif %}
 				{% if is_granted('ROLE_THERAPIST') and not is_granted('ROLE_ADMIN') %}
 					<a href="{{ path('app_therapist_directory') }}" class="{{ route == 'app_therapist_directory' ? 'is-active' : '' }}">Therapists</a>
 				{% endif %}
+
 			{% endif %}
 		</nav>
 		<div class="app-sidebar__footer">
