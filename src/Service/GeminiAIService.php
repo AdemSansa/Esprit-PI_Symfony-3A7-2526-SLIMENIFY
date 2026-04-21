@@ -47,7 +47,7 @@ class GeminiAIService
                         ]
                     ]
                 ],
-                'timeout' => 15,
+                'timeout' => 30,
             ]);
 
             $statusCode = $response->getStatusCode();
@@ -116,7 +116,7 @@ EOT;
                         ]
                     ]
                 ],
-                'timeout' => 30,
+                'timeout' => 60,
             ]);
 
             $statusCode = $response->getStatusCode();

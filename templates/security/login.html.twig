@@ -10,11 +10,22 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        /* Affiche le motif entier en se répétant */
-        background: #f6f5ed url('{{ asset("psy.png") }}') top left repeat;
-        background-size: auto; /* Affiche la photo à sa taille réelle ou utilisez contain pour l'ajuster */
         padding: 2rem;
         font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        position: relative;
+        overflow: hidden;
+    }
+    .login-container::before {
+        content: "";
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        background: #f6f5ed url('{{ asset("psy.png") }}') top left repeat;
+        background-size: auto;
+        filter: blur(8px);
+        z-index: -1;
     }
     .login-card {
         display: flex;

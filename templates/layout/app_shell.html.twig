@@ -9,7 +9,7 @@
 		--app-sidebar-muted: #94a3b8;
 		--app-accent: #22d3ee;
 		--app-accent-hover: #06b6d4;
-		--app-main-bg: linear-gradient(140deg, #f8fbff 0%, #eef5ff 35%, #f7f3ff 100%);
+		--app-main-bg: transparent;
 	}
 	@keyframes fadeInSlideUp {
 		0% {
@@ -58,6 +58,20 @@
 		min-height: 100vh;
 		margin: 0;
 		font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+		position: relative;
+	}
+	.app-layout::before {
+		content: "";
+		position: fixed;
+		top: -10px;
+		left: -10px;
+		right: -10px;
+		bottom: -10px;
+		background: #f9f8f4 url('{{ asset('psy.png') }}') repeat;
+		filter: blur(6px);
+		z-index: -1;
+		pointer-events: none;
+		opacity: 0.8;
 	}
 	.app-sidebar {
 		width: 240px;
@@ -179,9 +193,10 @@
 	}
 	.app-main {
 		flex: 1;
-		background: var(--app-main-bg);
+		background: rgba(249, 248, 244, 0.4);
 		padding: 1.75rem 2rem;
 		overflow: auto;
+		backdrop-filter: blur(2px);
 	}
 	.app-main__inner {
 		width: 100%;
@@ -388,7 +403,7 @@
 	/* --- PATIENT TOP NAV STYLES --- */
 	.is-patient-layout {
 		flex-direction: column;
-		background: linear-gradient(140deg, #fdfcfb 0%, #eef1f5 100%);
+		background: transparent;
 	}
 	.is-patient-layout .app-main {
 		background: transparent;
@@ -639,6 +654,28 @@
 	.app-fab:hover::after {
 		opacity: 1;
 		transform: translateX(0);
+	}
+	.btn-premium {
+		display: inline-block;
+		background: linear-gradient(135deg, #748764 0%, #546549 100%);
+		color: white !important;
+		padding: 12px 24px;
+		border-radius: 12px;
+		font-weight: 700;
+		text-decoration: none;
+		transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+		border: none;
+		box-shadow: 0 4px 15px rgba(98, 114, 85, 0.2);
+		cursor: pointer;
+		text-align: center;
+	}
+	.btn-premium:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 25px rgba(98, 114, 85, 0.35);
+		background: linear-gradient(135deg, #829672 0%, #617455 100%);
+	}
+	.btn-premium:active {
+		transform: translateY(0);
 	}
 	</style>
 {% endblock %}
