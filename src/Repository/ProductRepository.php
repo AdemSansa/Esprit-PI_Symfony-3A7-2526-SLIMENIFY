@@ -26,20 +26,19 @@ class ProductRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('p')
             ->addSelect('(CASE WHEN p.stockQuantity > 0 THEN 1 ELSE 0 END) AS HIDDEN hasStock')
             ->leftJoin('p.supplier', 's')
-            ->andWhere('s.id IS NULL OR s.status = :activeStatus')
-            ->setParameter('activeStatus', 'active')
             ->addOrderBy('hasStock', 'DESC');
 
-        // Search by name or description
+        // Search by name, description or category
         if (!empty($search)) {
-            $qb->andWhere('LOWER(p.name) LIKE LOWER(:search) OR LOWER(p.description) LIKE LOWER(:search)')
-               ->setParameter('search', '%' . strtolower($search) . '%');
+            $searchTerm = '%' . strtolower(trim($search)) . '%';
+            $qb->andWhere('LOWER(p.name) LIKE :term OR LOWER(p.description) LIKE :term OR LOWER(p.category) LIKE :term')
+               ->setParameter('term', $searchTerm);
         }
 
-        // Filter by category
+        // Filter by category (dropdown)
         if (!empty($category) && $category !== 'all') {
-            $qb->andWhere('p.category = :category')
-               ->setParameter('category', $category);
+            $qb->andWhere('p.category = :selectedCategory')
+               ->setParameter('selectedCategory', $category);
         }
 
         // Filter by price range
@@ -56,20 +55,20 @@ class ProductRepository extends ServiceEntityRepository
         // Sorting
         switch ($sort) {
             case 'price-low':
-                $qb->orderBy('p.price', 'ASC');
+                $qb->addOrderBy('p.price', 'ASC');
                 break;
             case 'price-high':
-                $qb->orderBy('p.price', 'DESC');
+                $qb->addOrderBy('p.price', 'DESC');
                 break;
             case 'name-asc':
-                $qb->orderBy('p.name', 'ASC');
+                $qb->addOrderBy('p.name', 'ASC');
                 break;
             case 'name-desc':
-                $qb->orderBy('p.name', 'DESC');
+                $qb->addOrderBy('p.name', 'DESC');
                 break;
             case 'newest':
             default:
-                $qb->orderBy('p.createdAt', 'DESC');
+                $qb->addOrderBy('p.createdAt', 'DESC');
                 break;
         }
 

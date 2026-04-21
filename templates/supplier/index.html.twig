@@ -20,7 +20,7 @@
             letter-spacing: -0.02em;
         }
         .page-subtitle {
-            color: #64748b;
+            color: #5d665d;
             font-size: 0.95rem;
             margin-top: 0.25rem;
             font-weight: 500;
@@ -55,7 +55,7 @@
             margin-bottom: 1.5rem;
             display: flex;
             gap: 1rem;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #c2cdc2;
         }
         .search-container {
             position: relative;
@@ -64,7 +64,7 @@
         .search-input {
             width: 100%;
             padding: 0.6rem 1rem 0.6rem 2.5rem;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #c2cdc2;
             border-radius: 8px;
             background: #f8fafc;
             font-size: 0.95rem;
@@ -81,7 +81,7 @@
             left: 0.85rem;
             top: 50%;
             transform: translateY(-50%);
-            color: #94a3b8;
+            color: #948b83;
             width: 1.1rem;
             height: 1.1rem;
         }
@@ -90,7 +90,7 @@
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid #e2e8f0;
+            border: 1px solid #c2cdc2;
             overflow: hidden;
         }
         .data-table {
@@ -103,12 +103,12 @@
             padding: 1rem 1.5rem;
             font-size: 0.85rem;
             font-weight: 600;
-            color: #475569;
-            border-bottom: 1px solid #e2e8f0;
+            color: #4a544a;
+            border-bottom: 1px solid #c2cdc2;
         }
         .data-table td {
             padding: 1rem 1.5rem;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid #fdfaf8;
             vertical-align: middle;
             color: #334155;
             font-size: 0.95rem;
@@ -125,10 +125,10 @@
 
         .supp-name {
             font-weight: 600;
-            color: #1e293b;
+            color: #1f2d1f;
         }
         .supp-email {
-            color: #64748b;
+            color: #5d665d;
             font-size: 0.9rem;
         }
         
@@ -142,7 +142,7 @@
             letter-spacing: 0.05em;
         }
         .badge-active { background: #dcfce7; color: #166534; }
-        .badge-inactive { background: #f1f5f9; color: #64748b; }
+        .badge-inactive { background: #fdfaf8; color: #5d665d; }
 
         .action-btns {
             display: flex;
@@ -155,16 +155,16 @@
             width: 32px;
             height: 32px;
             border-radius: 6px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #c2cdc2;
             background: #fff;
-            color: #64748b;
+            color: #5d665d;
             text-decoration: none;
             transition: all 0.2s;
             cursor: pointer;
         }
         .btn-icon:hover {
             background: #f8fafc;
-            color: #0f172a;
+            color: #2d1e16;
         }
         .btn-icon.delete:hover {
             color: #ef4444;
@@ -198,11 +198,11 @@
             <option value="active" {% if status|default('') == 'active' %}selected{% endif %}>Active</option>
             <option value="inactive" {% if status|default('') == 'inactive' %}selected{% endif %}>Inactive</option>
         </select>
-        <select name="sort" class="search-input" id="sort-filter" style="width: auto; padding-left: 1rem;">
-            <option value="newest" {% if sort|default('newest') == 'newest' %}selected{% endif %}>Newest First</option>
-            <option value="name-asc" {% if sort|default('') == 'name-asc' %}selected{% endif %}>Name: A-Z</option>
-            <option value="name-desc" {% if sort|default('') == 'name-desc' %}selected{% endif %}>Name: Z-A</option>
-            <option value="city-asc" {% if sort|default('') == 'city-asc' %}selected{% endif %}>City</option>
+        <select name="sortBy" class="search-input" id="sort-filter" style="width: auto; padding-left: 1rem;">
+            <option value="newest" {% if sortBy|default('newest') == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="name-asc" {% if sortBy|default('') == 'name-asc' %}selected{% endif %}>Name: A-Z</option>
+            <option value="name-desc" {% if sortBy|default('') == 'name-desc' %}selected{% endif %}>Name: Z-A</option>
+            <option value="city-asc" {% if sortBy|default('') == 'city-asc' %}selected{% endif %}>City</option>
         </select>
     </form>
 
@@ -231,11 +231,11 @@
                             <div class="supp-email">{{ supplier.email ?: 'N/A' }}</div>
                         </td>
                         <td>
-                            <div style="white-space: pre-line; line-height: 1.4; color: #64748b;">
+                            <div style="white-space: pre-line; line-height: 1.4; color: #5d665d;">
                                 {{ supplier.phone ? supplier.phone|replace({' ': "\n"}) : 'N/A' }}
                             </div>
                         </td>
-                        <td style="color: #64748b;">
+                        <td style="color: #5d665d;">
                             {{ supplier.city ?: 'N/A' }}
                         </td>
                         <td>
@@ -259,7 +259,7 @@
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="6" style="text-align: center; padding: 3rem; color: #64748b;">
+                        <td colspan="6" style="text-align: center; padding: 3rem; color: #5d665d;">
                             No suppliers registered found.
                         </td>
                     </tr>
@@ -275,6 +275,8 @@
 
 {% block javascripts %}
     <script>
+        let supplierFetchController = null;
+
         const initSupplierSearch = () => {
             const filterForm = document.getElementById('filter-form');
             const statusFilter = document.getElementById('status-filter');
@@ -285,19 +287,35 @@
             
             function executeAjaxFilter() {
                 if (!filterForm) return;
+
+                // Abort previous fetch
+                if (supplierFetchController) {
+                    supplierFetchController.abort();
+                }
+                supplierFetchController = new AbortController();
                 
+                // Show loading state
+                if (tableBody) tableBody.style.opacity = '0.4';
+
                 const actionPath = filterForm.getAttribute('action');
                 const formData = new FormData(filterForm);
                 const params = new URLSearchParams(formData);
+                
+                // Reset to page 1 on new filter
+                params.set('page', '1'); 
+                
                 const fullUrl = actionPath + '?' + params.toString();
                 
-                // Update browser URL without reloading so sharing links works
                 window.history.replaceState({}, '', fullUrl);
 
                 fetch(fullUrl, {
+                    signal: supplierFetchController.signal,
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 })
-                .then(response => response.text())
+                .then(response => {
+                    if (!response.ok) throw new Error('Search failed');
+                    return response.text();
+                })
                 .then(html => {
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, "text/html");
@@ -307,16 +325,21 @@
                         tableBody.innerHTML = newTableBody.innerHTML;
                     }
                     
-                    const newCount = doc.getElementById('supplier-count');
-                    if (newCount && countLabel) {
-                        countLabel.textContent = newCount.textContent;
-                    }
+                    // Update Count and Pagination
+                    ['supplier-count', 'pagination-container'].forEach(id => {
+                        const newVal = doc.getElementById(id);
+                        const currentVal = document.getElementById(id);
+                        if (newVal && currentVal) {
+                            currentVal.innerHTML = newVal.innerHTML;
+                        }
+                    });
 
-                    const newPagination = doc.getElementById('pagination-container');
-                    const currentPagination = document.getElementById('pagination-container');
-                    if (newPagination && currentPagination) {
-                        currentPagination.innerHTML = newPagination.innerHTML;
-                    }
+                    if (tableBody) tableBody.style.opacity = '1';
+                })
+                .catch(error => {
+                    if (error.name === 'AbortError') return;
+                    console.error('Supplier search error:', error);
+                    if (tableBody) tableBody.style.opacity = '1';
                 });
             }
 

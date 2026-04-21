@@ -4,11 +4,11 @@
 	{{ parent() }}
 	<style>:root
 	{
-		--app-sidebar-bg: #0f172a;
-		--app-sidebar-text: #e2e8f0;
-		--app-sidebar-muted: #94a3b8;
-		--app-accent: #22d3ee;
-		--app-accent-hover: #06b6d4;
+		--app-sidebar-bg: #627255;
+		--app-sidebar-text: #fdfaf8;
+		--app-sidebar-muted: #E8EACC;
+		--app-accent: #fdfaf8;
+		--app-accent-hover: #b8c98a;
 		--app-main-bg: transparent;
 	}
 	@keyframes fadeInSlideUp {
@@ -76,16 +76,22 @@
 	.app-sidebar {
 		width: 240px;
 		flex-shrink: 0;
-		background:
-			radial-gradient(120% 80% at 0% 0%, rgba(34, 211, 238, 0.2) 0%, rgba(34, 211, 238, 0) 60%),
-			radial-gradient(100% 65% at 100% 100%, rgba(129, 140, 248, 0.18) 0%, rgba(129, 140, 248, 0) 65%),
-			linear-gradient(165deg, var(--app-sidebar-bg) 0%, #111827 45%, #0b1120 100%);
+		background: linear-gradient(165deg, #627255 0%, #8C9C7C 50%, #E8EACC 100%);
+		position: relative;
+		overflow: hidden;
 		color: var(--app-sidebar-text);
 		padding: 1rem 0 0.85rem;
 		display: flex;
 		flex-direction: column;
 		border-right: 1px solid rgba(148, 163, 184, 0.2);
 		box-shadow: 10px 0 28px rgba(2, 6, 23, 0.45);
+	}
+	.app-sidebar::before {
+		content: "";
+		position: absolute;
+		top: 0; left: 0; right: 0; bottom: 0;
+		background: linear-gradient(to right, rgba(200, 214, 162, 0.15), transparent);
+		pointer-events: none;
 	}
 	.app-sidebar__brand {
 		padding: 0 1.1rem 1.05rem;
@@ -94,7 +100,7 @@
 		letter-spacing: -0.02em;
 		border-bottom: 1px solid rgba(148, 163, 184, 0.18);
 		margin-bottom: 0.4rem;
-		background: linear-gradient(90deg, #e2e8f0, #67e8f9);
+		background: linear-gradient(90deg, #fdfaf8, #C8D6A2);
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
@@ -107,13 +113,18 @@
 		overflow-y: auto;
 	}
 	.app-sidebar__section-title {
-		margin: 1.1rem 0 0.2rem;
-		padding: 0 0.85rem;
-		font-size: 0.72rem;
-		font-weight: 700;
+		margin: 1.6rem 0 0.5rem;
+		padding: 0.5rem 0.85rem 0.2rem;
+		font-size: 0.75rem;
+		font-weight: 800;
 		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: rgba(148, 163, 184, 0.9);
+		letter-spacing: 0.1em;
+		color: rgba(226, 232, 240, 0.55);
+		border-top: 1px solid rgba(226, 232, 240, 0.08);
+	}
+	.app-sidebar__section-title:first-child {
+		margin-top: 0.5rem;
+		border-top: none;
 	}
 	.app-sidebar__nav a {
 		position: relative;
@@ -121,11 +132,11 @@
 		align-items: center;
 		padding: 0.58rem 0.82rem 0.58rem 1.45rem;
 		border-radius: 10px;
-		color: rgba(226, 232, 240, 0.92);
+		color: rgba(255, 255, 255, 0.9);
 		text-decoration: none;
 		font-size: 0.9rem;
 		font-weight: 600;
-		transition: background 0.18s, color 0.18s, transform 0.18s;
+		transition: all 0.2s;
 	}
 	.app-sidebar__nav a::before {
 		content: '';
@@ -134,25 +145,25 @@
 		width: 6px;
 		height: 6px;
 		border-radius: 999px;
-		background: rgba(148, 163, 184, 0.7);
+		background: rgba(255, 255, 255, 0.3);
 		transition: background 0.18s, transform 0.18s;
 	}
 	.app-sidebar__nav a:hover {
 		color: var(--app-sidebar-text);
-		background: rgba(148, 163, 184, 0.16);
+		background: rgba(255, 255, 255, 0.35);
 		transform: translateX(2px);
 	}
 	.app-sidebar__nav a:hover::before {
-		background: #67e8f9;
+		background: #748764;
 		transform: scale(1.2);
 	}
 	.app-sidebar__nav a.is-active {
-		color: #e0f2fe;
-		background: linear-gradient(90deg, rgba(34, 211, 238, 0.3), rgba(129, 140, 248, 0.22));
-		box-shadow: 0 10px 18px rgba(2, 6, 23, 0.38), inset 0 0 0 1px rgba(125, 211, 252, 0.28);
+		color: #fff;
+		background: rgba(255, 255, 255, 0.15);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 	}
 	.app-sidebar__nav a.is-active::before {
-		background: #67e8f9;
+		background: #C8D6A2;
 		transform: scale(1.35);
 	}
 	.app-sidebar__footer {
@@ -164,10 +175,10 @@
 	}
 	.app-sidebar__user {
 		font-weight: 700;
-		color: #f8fafc;
+		color: #ffffff;
 		margin-bottom: 0.5rem;
-		background: rgba(30, 41, 59, 0.7);
-		border: 1px solid rgba(103, 232, 249, 0.2);
+		background: rgba(0, 0, 0, 0.15);
+		border: 1px solid rgba(255, 255, 255, 0.1);
 		padding: 0.45rem 0.65rem;
 		border-radius: 8px;
 	}
@@ -178,9 +189,9 @@
         gap: 6px;
 		margin-top: 12px;
 		padding: 8px 15px;
-		background: rgba(15, 23, 42, 0.55);
-		border: 1px solid rgba(148, 163, 184, 0.35);
-		color: #e2e8f0 !important;
+		background: rgba(255, 255, 255, 0.12);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: #ffffff !important;
 		border-radius: 8px;
 		text-decoration: none;
 		font-weight: 600;
@@ -264,13 +275,17 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 0.45rem 1rem 1rem;
-		margin-bottom: 2rem;
-		border: 1px solid rgba(148, 163, 184, 0.22);
-		background: rgba(255, 255, 255, 0.62);
-		backdrop-filter: blur(10px);
-		border-radius: 16px;
-		box-shadow: 0 10px 28px rgba(30, 41, 59, 0.08);
+		padding: 0.35rem 1rem;
+		margin-bottom: 1.2rem;
+		position: relative;
+		background: 
+			padding-box linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.4)),
+			border-box linear-gradient(to right, #8C9C7C, #E8EACC);
+		border: 1px solid transparent;
+		backdrop-filter: blur(12px);
+		border-radius: 12px;
+		box-shadow: 0 8px 32px rgba(31, 38, 135, 0.04);
+		color: #1e293b;
 	}
 	.app-header-left {
 		display: flex;
@@ -278,8 +293,8 @@
 	}
 	.app-header-role {
 		font-weight: 700;
-		color: #0f172a;
-		font-size: 0.95rem;
+		color: #1e293b;
+		font-size: 0.9rem;
 		text-transform: capitalize;
 	}
 	.app-header-sub {
@@ -297,21 +312,21 @@
 		text-align: right;
 	}
 	.app-header-welcome {
-		font-weight: 600;
-		color: #0f172a;
-		font-size: 0.95rem;
+		font-weight: 700;
+		color: #1e293b;
+		font-size: 0.92rem;
 	}
 	.app-header-glad {
-		color: #6366f1;
-		font-size: 0.8rem;
+		color: #64748b;
+		font-size: 0.78rem;
 	}
 	.app-header-avatar {
-		width: 45px;
-		height: 45px;
+		width: 38px;
+		height: 38px;
 		border-radius: 50%;
-		background: linear-gradient(135deg, #0ea5e9, #6366f1);
-		color: #f8fafc;
-        box-shadow: 0 8px 20px rgba(14, 165, 233, 0.25);
+		background: linear-gradient(135deg, #748764, #C8D6A2);
+		color: #ffffff;
+        box-shadow: 0 4px 12px rgba(116, 135, 100, 0.15);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -327,14 +342,14 @@
 		height: 42px;
 		background: rgba(255, 255, 255, 0.92);
 		border-radius: 12px;
-		border: 1px solid rgba(125, 211, 252, 0.35);
+		border: 1px solid rgba(128, 92, 73, 0.35);
 		text-decoration: none;
 		transition: all 0.2s;
-		box-shadow: 0 8px 16px rgba(15, 23, 42, 0.1);
+		box-shadow: 0 8px 16px rgba(45, 34, 26, 0.1);
 	}
 	.cart-icon-btn:hover {
 		transform: translateY(-2px);
-		box-shadow: 0 10px 20px rgba(99, 102, 241, 0.26) !important;
+		box-shadow: 0 10px 20px rgba(128, 92, 73, 0.26) !important;
 	}
 	.locale-switcher {
 		display: flex;
@@ -355,11 +370,11 @@
 		transition: all 0.2s;
 	}
 	.locale-switcher__link:hover {
-		background: rgba(99, 102, 241, 0.12);
-		color: #1e293b;
+		background: rgba(200, 214, 162, 0.12);
+		color: #1a120d;
 	}
 	.locale-switcher__link.is-active {
-		background: linear-gradient(135deg, #0ea5e9, #6366f1);
+		background: linear-gradient(135deg, #C8D6A2, #748764);
 		color: #fff;
 	}
 	
@@ -387,17 +402,17 @@
 		box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
 	}
 	.pagination a:hover {
-		background: linear-gradient(135deg, #0ea5e9, #6366f1);
+		background: linear-gradient(135deg, #C8D6A2, #748764);
 		color: #ffffff;
-		border-color: rgba(224, 231, 255, 0.35);
+		border-color: rgba(200, 214, 162, 0.35);
 		transform: translateY(-1px);
-		box-shadow: 0 10px 18px rgba(99, 102, 241, 0.3);
+		box-shadow: 0 10px 18px rgba(128, 92, 73, 0.3);
 	}
 	.pagination .current {
-		background: linear-gradient(135deg, #0ea5e9, #6366f1);
+		background: linear-gradient(135deg, #C8D6A2, #748764);
 		color: #ffffff;
-		border-color: rgba(224, 231, 255, 0.35);
-		box-shadow: inset 0 2px 4px rgba(15, 23, 42, 0.18);
+		border-color: rgba(200, 214, 162, 0.35);
+		box-shadow: inset 0 2px 4px rgba(45, 34, 26, 0.18);
 	}
 	
 	/* --- PATIENT TOP NAV STYLES --- */
@@ -690,81 +705,79 @@
 	<aside class="app-sidebar" aria-label="Main navigation">
 		<div class="app-sidebar__brand">{{ 'brand.name'|trans }}</div>
 		<nav class="app-sidebar__nav">
-			<a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'is-active' : '' }}">Home</a>
-			
-			{% if is_granted('ROLE_PATIENT') and not is_granted('ROLE_ADMIN') %}
-				<a href="{{ path('app_patient_dashboard') }}" class="{{ route == 'app_patient_dashboard' ? 'is-active' : '' }}">Therapists</a>
+			{# --- 1. General --- #}
+			<div class="app-sidebar__section-title">General</div>
+			<a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'is-active' : '' }}">{{ 'nav.home'|trans }}</a>
+			<a href="{{ path('app_blog_web_index') }}" class="{{ route == 'app_blog_web_index' ? 'is-active' : '' }}">Explore Blogs</a>
+			{% if is_granted('ROLE_THERAPIST') and not is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_blog_web_my_blogs') }}" class="{{ route == 'app_blog_web_my_blogs' ? 'is-active' : '' }}">My Writing</a>
 			{% endif %}
 
+			{# --- 2. Wellness & Quizzes --- #}
+			<div class="app-sidebar__section-title">Wellness & Quizzes</div>
 			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_assessment_index') }}" class="{{ route starts with 'app_assessment' ? 'is-active' : '' }}">{{ 'nav.assessments'|trans }}</a>
 			{% endif %}
-
 			{% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_quiz_index') }}" class="{{ route starts with 'app_quiz' ? 'is-active' : '' }}">Quizzes</a>
 				<a href="{{ path('app_question_index') }}" class="{{ route starts with 'app_question' ? 'is-active' : '' }}">Questions</a>
-				<a href="{{ path('app_availability_manage') }}" class="{{ route starts with 'app_availability' ? 'is-active' : '' }}">Availability</a>
+			{% endif %}
+			{% if is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_admin_quiz_dashboard') }}" class="{{ route == 'app_admin_quiz_dashboard' ? 'is-active' : '' }}">Quiz Analytics</a>
+				<a href="{{ path('app_admin_quiz_reviews') }}" class="{{ route starts with 'app_admin_quiz' ? 'is-active' : '' }}">Quiz Requests</a>
 			{% endif %}
 
+			{# --- 3. Appointments --- #}
+			<div class="app-sidebar__section-title">Appointments</div>
 			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
-				<a href="{{ path('app_product_index') }}" class="{{ route starts with 'app_product' ? 'is-active' : '' }}">{{ 'nav.products'|trans }}</a>
-                {% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') %}
-                    {% if not is_granted('ROLE_ADMIN') and app.user.role|lower != 'admin' %}
-                        <a href="{{ path('app_orders_index') }}" class="{{ route starts with 'app_orders' ? 'is-active' : '' }}">My Orders</a>
-                    {% endif %}
-                {% endif %}
 				<a href="{{ path('app_appointments_calendar') }}" class="{{ route starts with 'app_appointments' and route != 'app_appointments_history' ? 'is-active' : '' }}">Appointments</a>
 				<a href="{{ path('app_appointments_history') }}" class="{{ route == 'app_appointments_history' ? 'is-active' : '' }}">Appointments History</a>
 			{% endif %}
-
-			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
-				<a href="{{ path('app_event_index') }}" class="{{ route starts with 'app_event' ? 'is-active' : '' }}">{{ 'nav.events'|trans }}</a>
+			{% if is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_availability_manage') }}" class="{{ route starts with 'app_availability' ? 'is-active' : '' }}">Availability</a>
 			{% endif %}
 
+			{# --- 4. Well-being Shop & Dashboard --- #}
+			<div class="app-sidebar__section-title">Well-being Shop & Dashboard</div>
+			{% if is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_admin_dashboard') }}" class="{{ route == 'app_admin_dashboard' ? 'is-active' : '' }}">Main Dashboard</a>
+			{% endif %}
+			{% if is_granted('ROLE_THERAPIST') and not is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_therapist_dashboard') }}" class="{{ route == 'app_therapist_dashboard' ? 'is-active' : '' }}">My Dashboard</a>
+			{% endif %}
 			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_product_index') }}" class="{{ route starts with 'app_product' ? 'is-active' : '' }}">{{ 'nav.products'|trans }}</a>
+				{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') %}
+					{% if not is_granted('ROLE_ADMIN') and app.user.role|lower != 'admin' %}
+						<a href="{{ path('app_orders_index') }}" class="{{ route starts with 'app_orders' ? 'is-active' : '' }}">My Orders</a>
+					{% endif %}
+				{% endif %}
+			{% endif %}
+			{% if is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_admin_orders_index') }}" class="{{ route starts with 'app_admin_orders' ? 'is-active' : '' }}">Manage Orders</a>
+				<a href="{{ path('app_supplier_index') }}" class="{{ route starts with 'app_supplier' ? 'is-active' : '' }}">Suppliers</a>
+			{% endif %}
+
+			{# --- 5. Events & Community --- #}
+			<div class="app-sidebar__section-title">Events & Community</div>
+			{% if is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') or is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_event_index') }}" class="{{ route starts with 'app_event' ? 'is-active' : '' }}">{{ 'nav.events'|trans }}</a>
 				<a href="{{ path('app_event_registration_list') }}" class="{{ route starts with 'app_event_registration' ? 'is-active' : '' }}">Registrations</a>
 			{% endif %}
 
-            {# === Blog System === #}
-            <a href="{{ path('app_blog_web_index') }}" class="{{ route == 'app_blog_web_index' ? 'is-active' : '' }}">Explore Blogs</a>
-            
-            {% if is_granted('ROLE_THERAPIST') and not is_granted('ROLE_ADMIN')  %}
-                <a href="{{ path('app_blog_web_my_blogs') }}" class="{{ route == 'app_blog_web_my_blogs' ? 'is-active' : '' }}">My Writing</a>
-            {% endif %}
-
-			{% if app.user and app.user.role == 'patient' %}
-				<a href="{{ path('app_chat_index') }}" class="{{ route starts with 'app_chat' ? 'is-active' : '' }}" style="display:flex; align-items:center; gap:6px;">
-					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-					Messages
-				</a>
-        {% endif %}
-
-			{% if is_granted('ROLE_PATIENT') and not is_granted('ROLE_ADMIN') %}
-				<a href="{{ path('app_patient_dashboard') }}" class="{{ route == 'app_patient_dashboard' ? 'is-active' : '' }}">Therapists</a>
-
-			{% endif %}
-	
-
-			{% if is_granted('ROLE_ADMIN') %}
-				<div class="app-sidebar__section-title">Admin Area</div>
-				<a href="{{ path('app_admin_dashboard') }}" class="{{ route == 'app_admin_dashboard' ? 'is-active' : '' }}">Main Dashboard</a>
-				<a href="{{ path('app_admin_quiz_dashboard') }}" class="{{ route == 'app_admin_quiz_dashboard' ? 'is-active' : '' }}">Quiz Analytics</a>
-				<a href="{{ path('app_admin_user_index') }}" class="{{ route starts with 'app_admin_user' ? 'is-active' : '' }}">Users</a>
-				<a href="{{ path('app_admin_therapist_index') }}" class="{{ route starts with 'app_admin_therapist' ? 'is-active' : '' }}">Therapists</a>
-				<a href="{{ path('app_admin_quiz_reviews') }}" class="{{ route starts with 'app_admin_quiz' ? 'is-active' : '' }}">Quiz Requests</a>
-				<a href="{{ path('app_supplier_index') }}" class="{{ route starts with 'app_supplier' ? 'is-active' : '' }}">Suppliers</a>
-				<a href="{{ path('app_admin_orders_index') }}" class="{{ route starts with 'app_admin_orders' ? 'is-active' : '' }}">Manage Orders</a>
-			{% endif %}
-	
-
-			{% if is_granted('ROLE_THERAPIST') and not is_granted('ROLE_ADMIN') %}
-				<div class="app-sidebar__section-title">Therapist Space</div>
-				<a href="{{ path('app_therapist_dashboard') }}" class="{{ route == 'app_therapist_dashboard' ? 'is-active' : '' }}">My Dashboard</a>
-				<a href="{{ path('app_therapist_directory') }}" class="{{ route == 'app_therapist_directory' ? 'is-active' : '' }}">Therapists</a>
-				<a href="{{ path('app_chat_index') }}" class="{{ route starts with 'app_chat' ? 'is-active' : '' }}" style="display:flex; align-items:center; gap:6px;">
-					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-					Messages
-				</a>
+			{# --- 6. Administration --- #}
+			{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_PATIENT') or is_granted('ROLE_THERAPIST') %}
+				<div class="app-sidebar__section-title">Administration</div>
+				{% if is_granted('ROLE_ADMIN') %}
+					<a href="{{ path('app_admin_user_index') }}" class="{{ route starts with 'app_admin_user' ? 'is-active' : '' }}">Users</a>
+					<a href="{{ path('app_admin_therapist_index') }}" class="{{ route starts with 'app_admin_therapist' ? 'is-active' : '' }}">Therapists</a>
+				{% endif %}
+				{% if is_granted('ROLE_PATIENT') and not is_granted('ROLE_ADMIN') %}
+					<a href="{{ path('app_patient_dashboard') }}" class="{{ route == 'app_patient_dashboard' ? 'is-active' : '' }}">Therapists</a>
+				{% endif %}
+				{% if is_granted('ROLE_THERAPIST') and not is_granted('ROLE_ADMIN') %}
+					<a href="{{ path('app_therapist_directory') }}" class="{{ route == 'app_therapist_directory' ? 'is-active' : '' }}">Therapists</a>
+				{% endif %}
 			{% endif %}
 		</nav>
 		<div class="app-sidebar__footer">
@@ -854,8 +867,8 @@
 
 						<div class="patient-top-nav__user">
 							<div style="display:flex; flex-direction:column; align-items:flex-end; margin-right:0.25rem;">
-								<span style="font-size:0.85rem; font-weight:700; color:#1e293b;">{{ app.user.firstName|default('Patient')|capitalize }}</span>
-								<span style="font-size:0.7rem; color:#64748b;">Ready to heal</span>
+								<span style="font-size:0.85rem; font-weight:700; color:#3d2b1f;">{{ app.user.firstName|default('Patient')|capitalize }}</span>
+								<span style="font-size:0.7rem; color:#665544;">Ready to heal</span>
 							</div>
 							<a href="{{ path('app_profile_index') }}" class="patient-avatar" title="My Profile">{{ app.user.firstName|default('P')|first|upper }}</a>
 							<a href="{{ path('app_logout') }}" class="patient-logout" title="Log out">
@@ -987,7 +1000,7 @@
 				</div>
 				<span style="font-size: 1.2rem; font-weight: 800; background: linear-gradient(90deg, #3d4a32, #748764); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.02em;">Slimenify</span>
 			</div>
-			<p style="font-size: 0.75rem; color: #94a3b8; margin: 0; letter-spacing: 0.02em;">
+			<p style="font-size: 0.75rem; color: #948b83; margin: 0; letter-spacing: 0.02em;">
 				Well-being &amp; Recovery Platform &copy; {{ "now"|date("Y") }}
 			</p>
 		</footer>

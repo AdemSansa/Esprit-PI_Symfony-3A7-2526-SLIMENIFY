@@ -59,7 +59,7 @@
 
         .circle-bg {
             fill: none;
-            stroke: #f1f5f9;
+            stroke: #fdfaf8;
             stroke-width: 2.5;
         }
 
@@ -79,7 +79,7 @@
         }
 
         .percentage-text {
-            fill: #0f172a;
+            fill: #1a2a1a;
             font-family: inherit;
             font-weight: 800;
             font-size: 0.6em;
@@ -88,7 +88,7 @@
         }
 
         .percentage-symbol {
-            fill: #64748b;
+            fill: #5d665d;
             font-size: 0.25em;
             font-weight: 600;
         }
@@ -120,7 +120,7 @@
 
         .action-btn {
             display: inline-block;
-            background: #0f172a;
+            background: linear-gradient(135deg, #748764, #546549);
             color: white;
             text-decoration: none;
             padding: 1rem 3rem;
@@ -131,12 +131,12 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             z-index: 10;
-            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.4);
+            box-shadow: 0 10px 25px -5px rgba(116, 135, 100, 0.4);
         }
 
         .action-btn:hover {
             transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.5);
+            box-shadow: 0 20px 25px -5px rgba(116, 135, 100, 0.5);
             color: white;
         }
 
@@ -209,7 +209,7 @@
             {{ severityText }}
         </div>
         
-        <h1 style="margin: 0 0 0.5rem; font-size: 2.5rem; color: #0f172a; letter-spacing: -0.03em; position: relative; z-index: 10;">
+        <h1 style="margin: 0 0 0.5rem; font-size: 2.5rem; color: #2d1e16; letter-spacing: -0.03em; position: relative; z-index: 10;">
             {{ quiz.title }} Results
         </h1>
 
@@ -244,12 +244,12 @@
 
         <div class="result-details">
             <div class="detail-box">
-                <span style="display: block; color: #64748b; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.05em;">Calculated Score</span>
-                <strong style="color: #0f172a; font-size: 1.8rem; font-weight: 800;">{{ result.score }} <span style="font-size: 1rem; color: #94a3b8; font-weight: 600;">/ {{ quiz.questions|length * 5 }}</span></strong>
+                <span style="display: block; color: #5d665d; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.05em;">Calculated Score</span>
+                <strong style="color: #1a2a1a; font-size: 1.8rem; font-weight: 800;">{{ result.score }} <span style="font-size: 1rem; color: #948b83; font-weight: 600;">/ {{ quiz.questions|length * 5 }}</span></strong>
             </div>
             <div class="detail-box">
-                <span style="display: block; color: #64748b; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.05em;">Evaluation Date</span>
-                <strong style="color: #0f172a; font-size: 1.3rem; font-weight: 700;">{{ result.takenAt|date('F j, Y') }}</strong>
+                <span style="display: block; color: #5d665d; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.05em;">Evaluation Date</span>
+                <strong style="color: #1a2a1a; font-size: 1.3rem; font-weight: 700;">{{ result.takenAt|date('F j, Y') }}</strong>
             </div>
         </div>
 
