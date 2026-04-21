@@ -10,6 +10,8 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class ProfileType extends AbstractType
 {
@@ -32,7 +34,22 @@ class ProfileType extends AbstractType
             ->add('dateNaissance', DateType::class, [
                 'widget' => 'single_text',
                 'required' => false,
-                'label' => 'Date of Birth'
+                'label' => 'Date of Birth',
+                'constraints' => [
+                    new Callback(function ($date, ExecutionContextInterface $context) {
+                        if (!$date) return;
+                        
+                        $user = $context->getRoot()->getData();
+                        // Apply the +20 years old check to all users modifying their profile
+                        if ($user instanceof User) {
+                            $twentyYearsAgo = new \DateTime('-20 years');
+                            if ($date > $twentyYearsAgo) {
+                                $context->buildViolation('You must be at least 20 years old.')
+                                    ->addViolation();
+                            }
+                        }
+                    }),
+                ]
             ])
             ->add('gender', ChoiceType::class, [
                 'choices'  => [
@@ -41,10 +58,17 @@ class ProfileType extends AbstractType
                 ],
                 'expanded' => true,
                 'multiple' => false,
-                'required' => false,
-                'label' => 'Gender'
+                'required' => true,
+                'label' => 'Gender',
+                'constraints' => [
+                    new \Symfony\Component\Validator\Constraints\NotBlank(['message' => 'Please select your gender (Male or Female).'])
+                ]
             ])
-            ->add('photoUrl', TextType::class, ['label' => 'Photo URL', 'required' => false])
+            ->add('photoUrl', \Symfony\Component\Form\Extension\Core\Type\FileType::class, [
+                'label' => 'Profile Photo (Image file)', 
+                'mapped' => false, 
+                'required' => false
+            ])
         ;
     }
 

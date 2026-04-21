@@ -1,0 +1,301 @@
+{% extends 'layout/app_shell.html.twig' %}
+
+{% block title %}Chat - Messages{% endblock %}
+
+{% block app_content %}
+<div class="chat-container" data-controller="chat">
+    <div class="chat-sidebar">
+        <div class="chat-sidebar-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>Messages</h3>
+            {% if app.user.role == 'patient' %}
+                <a href="{{ path('app_patient_dashboard') }}" style="color: #687560; font-size: 0.85rem; text-decoration: none; font-weight: bold; background: #EAF0E4; padding: 4px 10px; border-radius: 12px;">&larr; Back</a>
+            {% else %}
+                <a href="{{ path('app_home') }}" style="color: #687560; font-size: 0.85rem; text-decoration: none; font-weight: bold; background: #EAF0E4; padding: 4px 10px; border-radius: 12px;">&larr; Back</a>
+            {% endif %}
+        </div>
+        <div class="chat-list">
+            {% for conv in conversations %}
+                {% set isTherapist = app.user.role == 'therapist' %}
+                {% set otherParty = isTherapist ? conv.user.firstName ~ ' ' ~ conv.user.lastName : 'Dr. ' ~ conv.therapist.firstName ~ ' ' ~ conv.therapist.lastName %}
+                
+                <a href="{{ path('app_chat_show', {id: conv.id}) }}" class="chat-list-item {% if activeConversation and activeConversation.id == conv.id %}active{% endif %}">
+                    <div class="chat-avatar">
+                        {{ otherParty|first|upper }}
+                    </div>
+                    <div class="chat-info">
+                        <strong>{{ otherParty }}</strong>
+                        <span class="chat-time">{{ conv.createdAt|date('d/m/Y') }}</span>
+                    </div>
+                </a>
+            {% else %}
+                <div style="padding: 20px; text-align: center; color: #A8866E;">
+                    No conversations yet.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="chat-main">
+        {% if activeConversation %}
+            {% set isTherapist = app.user.role == 'therapist' %}
+            {% set otherParty = isTherapist ? activeConversation.user.firstName ~ ' ' ~ activeConversation.user.lastName : 'Dr. ' ~ activeConversation.therapist.firstName ~ ' ' ~ activeConversation.therapist.lastName %}
+            
+            <div class="chat-header">
+                <h3>{{ otherParty }}</h3>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages-container" data-chat-target="messagesContainer" data-conversation-id="{{ activeConversation.id }}" data-current-role="{{ isTherapist ? 'therapist' : 'user' }}">
+                <div class="chat-spinner" data-chat-target="spinner" style="display: none;">Loading new messages...</div>
+                
+                <!-- Messages will be injected here by Stimulus -->
+                {% for message in activeConversation.messages %}
+                    {% set isMine = (isTherapist and message.senderType == 'therapist') or (not isTherapist and message.senderType == 'user') %}
+                    <div class="chat-bubble-wrapper {{ isMine ? 'mine' : 'theirs' }}">
+                        <div class="chat-bubble">
+                            {{ message.content }}
+                            <div class="chat-timestamp">{{ message.createdAt|date('H:i') }}</div>
+                        </div>
+                        
+                        {% if isTherapist and message.senderType == 'user' and message.sensitivityLevel and message.sensitivityLevel != 'low' %}
+                            {% set cfg = {'medium': {icon: '🟡', label: 'Anxiété légère', color: '#b7791f', bg: '#fefcbf', border: '#f6e05e'}, 'high': {icon: '🔴', label: 'Détresse élevée', color: '#c53030', bg: '#fff5f5', border: '#fc8181'}, 'critical': {icon: '🚨', label: 'ALERTE CRITIQUE', color: '#fff', bg: '#c53030', border: '#9b2c2c'}} %}
+                            {% set currentCfg = cfg[message.sensitivityLevel] %}
+                            <div class="ai-badge ai-badge--{{ message.sensitivityLevel }}" style="display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 5px 12px; background: {{ currentCfg.bg }}; color: {{ currentCfg.color }}; border: 1px solid {{ currentCfg.border }}; border-radius: 20px; font-size: 0.75rem; font-weight: 700; max-width: 100%; {% if message.sensitivityLevel == 'critical' %}animation: criticalPulse 1.5s ease infinite;{% endif %}">
+                                <span>{{ currentCfg.icon }} {{ currentCfg.label }}</span>
+                                {% if message.aiAnalysis %}
+                                    <span style="font-weight:400; opacity:0.85;">— {{ message.aiAnalysis }}</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="chat-input-area">
+                <form data-action="submit->chat#send" class="chat-form">
+                    <input type="text" data-chat-target="input" placeholder="Type a message..." required class="chat-input">
+                    <button type="submit" class="chat-send-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="chat-empty-state">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#A8866E" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <h3>Select a conversation</h3>
+                <p>Choose a contact from the sidebar to start securely messaging.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .chat-container {
+        display: flex;
+        height: 75vh;
+        background: #FDFDFD;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(122, 91, 73, 0.08);
+        border: 1px solid rgba(122, 91, 73, 0.1);
+        overflow: hidden;
+    }
+    
+    /* Sidebar */
+    .chat-sidebar {
+        width: 300px;
+        border-right: 1px solid #EBE6DF;
+        display: flex;
+        flex-direction: column;
+        background: #F9F8F5;
+    }
+    .chat-sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid #EBE6DF;
+    }
+    .chat-sidebar-header h3 {
+        margin: 0;
+        color: #5D4A3E;
+        font-size: 1.2rem;
+    }
+    .chat-list {
+        flex: 1;
+        overflow-y: auto;
+    }
+    .chat-list-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #EBE6DF;
+        text-decoration: none;
+        color: inherit;
+        transition: background 0.2s;
+    }
+    .chat-list-item:hover {
+        background: #F0EEEA;
+        text-decoration: none;
+    }
+    .chat-list-item.active {
+        background: #EAF0E4;
+        border-left: 4px solid #687560;
+    }
+    .chat-avatar {
+        width: 40px;
+        height: 40px;
+        background: #A8866E;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 12px;
+    }
+    .chat-list-item.active .chat-avatar {
+        background: #687560;
+    }
+    .chat-info {
+        flex: 1;
+    }
+    .chat-info strong {
+        display: block;
+        color: #2D2D2D;
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+    }
+    .chat-time {
+        font-size: 0.75rem;
+        color: #A8866E;
+    }
+
+    /* Main Area */
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: url('data:image/svg+xml;utf8,<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="1" fill="%23A8866E" opacity="0.1"/></svg>') repeat;
+    }
+    .chat-header {
+        padding: 20px;
+        background: #FFF;
+        border-bottom: 1px solid #EBE6DF;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        z-index: 10;
+    }
+    .chat-header h3 {
+        margin: 0;
+        color: #5D4A3E;
+    }
+    .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .chat-bubble-wrapper {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    .chat-bubble-wrapper.theirs {
+        align-items: flex-start;
+    }
+    .chat-bubble-wrapper.mine {
+        align-items: flex-end;
+    }
+    .chat-bubble {
+        max-width: 65%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        position: relative;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+    .mine .chat-bubble {
+        background: #687560;
+        color: white;
+        border-bottom-right-radius: 2px;
+    }
+    .theirs .chat-bubble {
+        background: white;
+        color: #2D2D2D;
+        border: 1px solid #EBE6DF;
+        border-bottom-left-radius: 2px;
+    }
+    .chat-timestamp {
+        font-size: 0.7rem;
+        margin-top: 5px;
+        text-align: right;
+        opacity: 0.8;
+    }
+    .mine .chat-timestamp {
+        color: #EAF0E4;
+    }
+    .theirs .chat-timestamp {
+        color: #A8866E;
+    }
+    
+    /* Input Area */
+    .chat-input-area {
+        padding: 20px;
+        background: #FFF;
+        border-top: 1px solid #EBE6DF;
+    }
+    .chat-form {
+        display: flex;
+        gap: 10px;
+    }
+    .chat-input {
+        flex: 1;
+        padding: 12px 20px;
+        border: 1px solid #EBE6DF;
+        border-radius: 24px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .chat-input:focus {
+        border-color: #687560;
+    }
+    .chat-send-btn {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: #687560;
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.1s, background 0.2s;
+    }
+    .chat-send-btn:hover {
+        background: #4F5D44;
+        transform: scale(1.05);
+    }
+    .chat-send-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .chat-empty-state {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #2D2D2D;
+    }
+    .chat-empty-state h3 {
+        color: #5D4A3E;
+        margin-top: 15px;
+    }
+
+    @keyframes criticalPulse {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(197, 48, 48, 0.7); }
+        50% { transform: scale(1.02); box-shadow: 0 0 0 8px rgba(197, 48, 48, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(197, 48, 48, 0); }
+    }
+</style>
+{% endblock %}
