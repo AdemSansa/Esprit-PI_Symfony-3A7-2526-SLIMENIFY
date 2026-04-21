@@ -108,16 +108,55 @@ class AdminDashboardController extends AbstractController
 
         $recentOrders = $commandeRepository->findBy([], ['createdAt' => 'DESC'], 10);
 
+        // --- CHART DATA ---
+        // 1. Supplier Revenue Map for Pie Chart
+        $supplierRevenueMap = [];
+        if (!empty($allProductIdsInOrders)) {
+            $allProducts = $productRepository->findBy(['id' => array_keys($allProductIdsInOrders)]);
+            foreach ($allProducts as $product) {
+                if ($product->getSupplier()) {
+                    $sName = $product->getSupplier()->getName();
+                    $rev = $allProductIdsInOrders[$product->getId()];
+                    $supplierRevenueMap[$sName] = ($supplierRevenueMap[$sName] ?? 0) + $rev;
+                }
+            }
+            arsort($supplierRevenueMap);
+        }
+
+        // 2. Monthly Revenue Line Chart (last 6 months, delivered orders only)
+        $monthlyRevenue = [];
+        $monthlyLabels = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = new \DateTime("first day of -$i months");
+            $monthlyLabels[] = $date->format('M Y');
+            $monthlyRevenue[$date->format('Y-m')] = 0;
+        }
+
+        foreach ($orders as $order) {
+            $rawStatus = strtolower(trim($order->getStatus()));
+            $unifiedStatus = $statusMap[$rawStatus] ?? 'other';
+            if ($unifiedStatus === 'delivered' && $order->getCreatedAt()) {
+                $monthKey = $order->getCreatedAt()->format('Y-m');
+                if (isset($monthlyRevenue[$monthKey])) {
+                    $monthlyRevenue[$monthKey] += $order->getTotalAmount();
+                }
+            }
+        }
+
         return $this->render('admin/dashboard/index.html.twig', [
-            'total_products' => $totalProducts,
-            'low_stock_products' => $lowStockProducts,
-            'total_suppliers' => $totalSuppliers,
-            'total_revenue' => $totalRevenue,
-            'order_count' => $orderCount,
-            'status_breakdown' => $statusBreakdown,
-            'recent_orders' => $recentOrders,
-            'best_supplier' => $bestSupplier,
-            'best_supplier_revenue' => $bestSupplierRevenue,
+            'total_products'          => $totalProducts,
+            'low_stock_products'      => $lowStockProducts,
+            'total_suppliers'         => $totalSuppliers,
+            'total_revenue'           => $totalRevenue,
+            'order_count'             => $orderCount,
+            'status_breakdown'        => $statusBreakdown,
+            'recent_orders'           => $recentOrders,
+            'best_supplier'           => $bestSupplier,
+            'best_supplier_revenue'   => $bestSupplierRevenue,
+            'supplier_revenue_map'    => $supplierRevenueMap,
+            'monthly_revenue_labels'  => $monthlyLabels,
+            'monthly_revenue_values'  => array_values($monthlyRevenue),
         ]);
+
     }
 }
