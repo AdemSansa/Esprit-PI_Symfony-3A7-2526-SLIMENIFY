@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\RegistrationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RegistrationRepository::class)]
 #[ORM\Table(name: 'registrations')]
@@ -38,6 +39,9 @@ class Registration
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $participantNotes = null;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $participantLocation = null;
+
     #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'registrations')]
     #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'id_event', nullable: false, onDelete: 'CASCADE')]
     private Event $event;
@@ -64,4 +68,7 @@ class Registration
     public function setParticipantNotes(?string $v): static { $this->participantNotes = $v; return $this; }
     public function getEvent(): Event { return $this->event; }
     public function setEvent(Event $v): static { $this->event = $v; return $this; }
+
+    public function getParticipantLocation(): ?string { return $this->participantLocation; }
+    public function setParticipantLocation(?string $v): static { $this->participantLocation = $v; return $this; }
 }

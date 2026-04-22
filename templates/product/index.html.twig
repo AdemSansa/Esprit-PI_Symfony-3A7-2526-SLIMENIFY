@@ -433,7 +433,7 @@
 				<circle cx="11" cy="11" r="8"></circle>
 				<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
 			</svg>
-			<input type="text" name="search" value="{{ search|default('') }}" class="search-input" id="search-input" placeholder="Search products..." style="font-size: 1rem; padding: 0.65rem 1rem 0.65rem 2.5rem;">
+			<input type="text" name="search" value="{{ search|default('') }}" class="search-input" id="search-input" placeholder="Search products..." style="font-size: 1rem; padding: 0.65rem 1rem 0.65rem 2.5rem;" autocomplete="off">
 		</div>
 		<select name="category" class="filter-select" id="category-filter">
 			<option value="all" {% if category|default('all') == 'all' %} selected {% endif %}>All Categories</option>

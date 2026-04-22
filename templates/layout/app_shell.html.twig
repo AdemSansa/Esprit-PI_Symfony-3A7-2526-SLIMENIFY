@@ -242,6 +242,30 @@
 		.app-main .alert-error {
 			box-shadow: 0 4px 14px rgba(45, 42, 38, 0.06);
 		}
+
+        /* 🔔 NOTIFICATION DROPDOWN STYLES */
+        .notif-item {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.2s;
+            cursor: pointer;
+            display: flex;
+            gap: 1rem;
+        }
+        .notif-item:hover { background: #f8fafc; }
+        .notif-item.unread { background: #f0f4ff; border-left: 4px solid #6366f1; }
+        .notif-content { flex: 1; }
+        .notif-title { font-weight: 700; color: #1e293b; font-size: 0.9rem; margin-bottom: 0.25rem; }
+        .notif-desc { font-size: 0.8rem; color: #64748b; line-height: 1.4; margin-bottom: 0.5rem; }
+        .notif-time { font-size: 0.72rem; color: #94a3b8; font-weight: 600; }
+        
+        #notifBadge {
+            display: none; position: absolute; top: -6px; right: -6px; 
+            background: #ef4444; color: white; border-radius: 50%; 
+            width: 18px; height: 18px; font-size: 0.65rem; font-weight: 800; 
+            display: flex; align-items: center; justify-content: center; 
+            border: 2px solid #fff; pointer-events: none;
+        }
 	}
 	.app-header {
 		display: flex;
@@ -254,6 +278,8 @@
 		backdrop-filter: blur(10px);
 		border-radius: 16px;
 		box-shadow: 0 10px 28px rgba(30, 41, 59, 0.08);
+        position: relative;
+        z-index: 2000;
 	}
 	.app-header-left {
 		display: flex;
@@ -356,6 +382,23 @@
 		border-color: rgba(224, 231, 255, 0.35);
 		box-shadow: inset 0 2px 4px rgba(15, 23, 42, 0.18);
 	}
+
+    /* 🔔 NOTIFICATION STYLES */
+    .notif-item { padding: 1rem; border-bottom: 1px solid #f8fafc; transition: background 0.2s; cursor: pointer; display: flex; gap: 0.75rem; text-decoration: none; color: inherit; }
+    .notif-item:hover { background: #f1f5f9; }
+    .notif-item.unread { background: #f2f8ff; }
+    .notif-item.unread::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; margin-top: 5px; flex-shrink: 0; }
+    .notif-content { flex: 1; }
+    .notif-title { font-weight: 800; font-size: 0.85rem; margin-bottom: 0.2rem; color: #0f172a; }
+    .notif-desc { font-size: 0.8rem; color: #475569; line-height: 1.4; margin: 0; }
+    .notif-time { font-size: 0.7rem; color: #94a3b8; margin-top: 0.4rem; display: block; }
+    .notif-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+    .notif-icon-soon { background: #fff7ed; color: #f97316; }
+    .notif-icon-live { background: #f0fdf4; color: #22c55e; }
+    .notif-icon-end  { background: #fef2f2; color: #ef4444; }
+    .notif-icon-sub  { background: #eef2ff; color: #6366f1; }
+    #notifDropdown { animation: fadeInScale 0.2s ease-out; }
+    @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95) translateY(-10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 	</style>
 {% endblock %}
 
@@ -453,16 +496,7 @@
 							<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
 						</svg>
 						{% if favCount > 0 %}
-							<span style="
-								position: absolute; top: -6px; right: -6px;
-								background: #fb7185;
-								color: white;
-								border-radius: 50%;
-								width: 18px; height: 18px;
-								font-size: 0.65rem; font-weight: 800;
-								display: flex; align-items: center; justify-content: center;
-								border: 2px solid #fff;
-							">{{ favCount }}</span>
+							<span style="position: absolute; top: -6px; right: -6px; background: #fb7185; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #fff;">{{ favCount }}</span>
 						{% endif %}
 					</a>
 
@@ -474,19 +508,33 @@
 							<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
 						</svg>
 						{% if cartCount > 0 %}
-							<span style="
-								position: absolute; top: -6px; right: -6px;
-								background: #b2936a;
-								color: white;
-								border-radius: 50%;
-								width: 18px; height: 18px;
-								font-size: 0.65rem; font-weight: 800;
-								display: flex; align-items: center; justify-content: center;
-								border: 2px solid #f6f5ed;
-							">{{ cartCount }}</span>
+							<span style="position: absolute; top: -6px; right: -6px; background: #b2936a; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #f6f5ed;">{{ cartCount }}</span>
 						{% endif %}
 					</a>
 				{% endif %}
+
+                {# 🔔 Notifications Bell #}
+                {% if app.user %}
+                    <div class="notification-wrap" style="position: relative; z-index: 3000;">
+                        <button class="cart-icon-btn" id="notifBell" title="Notifications">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                            <span id="notifBadge" style="display: none; position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #fff;">0</span>
+                        </button>
+                        <div id="notifDropdown" style="display: none; position: absolute; top: 130%; right: 0; width: 340px; background: white; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px rgba(0,0,0,0.25); overflow: hidden; z-index: 3001;">
+                            <div style="padding: 1.25rem; border-bottom: 1px solid #f1f5f9; font-weight: 800; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; background: #fafafa;">
+                                Notifications
+                                <span id="clearNotifs" style="font-size: 0.72rem; font-weight: 600; color: #6366f1; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">Clear notifications</span>
+                            </div>
+                            <div id="notifList" style="max-height: 450px; overflow-y: auto;">
+                                <div style="padding: 2rem; text-align: center; color: #94a3b8; font-size: 0.9rem;">No notifications yet</div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
 				<div class="app-header-greeting">
 					<div class="app-header-welcome">Welcome, {{ app.user ? app.user.firstName|capitalize : 'User' }}</div>
 					<div class="app-header-glad">Glad to see you again 👋</div>
@@ -499,44 +547,31 @@
 			</div>
 		</header>
 
-		<div class="app-main__inner">
-			<div id="app-flash-messages" class="app-flash-stack" role="region" aria-label="Notifications">
-			{% for label, messages in app.flashes %}
-				{% for message in messages %}
-					<div class="alert alert-{{ label }}" role="{{ label == 'error' ? 'alert' : 'status' }}"{% if label == 'error' %} aria-live="assertive"{% endif %}>
-						{% if label == 'success' %}
-							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-								<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-								<polyline points="22 4 12 14.01 9 11.01"></polyline>
-							</svg>
-						{% else %}
-							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-								<circle cx="12" cy="12" r="10"></circle>
-								<line x1="12" y1="8" x2="12" y2="12"></line>
-								<line x1="12" y1="16" x2="12.01" y2="16"></line>
-							</svg>
-						{% endif %}
-						<span>{{ message }}</span>
-					
-					</div>
-				{% endfor %}
-			{% endfor %}
 		<div class="app-main__inner" data-turbo-cache="false">
-			{% for label, messages in app.flashes %}
-				{% for message in messages %}
-					<script>
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-end',
-                            icon: '{{ label == "success" ? "success" : "error" }}',
-                            title: '{{ message }}',
-                            showConfirmButton: false,
-                            timer: 4000,
-                            timerProgressBar: true
-                        });
-					</script>
-				{% endfor %}
-			{% endfor %}
+			<div id="app-flash-messages" class="app-flash-stack" role="region" aria-label="Notifications">
+                {% for label, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ label }}" role="{{ label == 'error' ? 'alert' : 'status' }}"{% if label == 'error' %} aria-live="assertive"{% endif %}>
+                            {% if label == 'success' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            {% endif %}
+                            <span>{{ message }}</span>
+                        </div>
+                        <script>
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: '{{ label == "success" ? "success" : "error" }}',
+                                title: '{{ message }}',
+                                showConfirmButton: false,
+                                timer: 4000,
+                                timerProgressBar: true
+                            });
+                        </script>
+                    {% endfor %}
+                {% endfor %}
 			</div>
 
 			{% block app_content %}{% endblock %}
@@ -583,6 +618,118 @@
             }
             document.addEventListener('DOMContentLoaded', bindSweetAlertDelete);
             document.addEventListener('turbo:load', bindSweetAlertDelete);
+
+            // 🔔 NOTIFICATION SYSTEM JS
+            (function() {
+                let isDropdownOpen = false;
+                const bell = document.getElementById('notifBell');
+                const dropdown = document.getElementById('notifDropdown');
+                const list = document.getElementById('notifList');
+                const badge = document.getElementById('notifBadge');
+
+                if (!bell) return;
+
+                bell.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    isDropdownOpen = !isDropdownOpen;
+                    dropdown.style.display = isDropdownOpen ? 'block' : 'none';
+                    if (isDropdownOpen) pollNotifications();
+                });
+
+                document.addEventListener('click', () => {
+                    if (isDropdownOpen) {
+                        isDropdownOpen = false;
+                        dropdown.style.display = 'none';
+                    }
+                });
+
+                dropdown.addEventListener('click', (e) => e.stopPropagation());
+
+                async function pollNotifications() {
+                    try {
+                        const response = await fetch('{{ path('app_notification_poll') }}');
+                        const data = await response.json();
+                        
+                        // Update badge
+                        const unreadCount = parseInt(data.unread) || 0;
+                        if (unreadCount > 0) {
+                            badge.innerText = unreadCount > 9 ? '9+' : unreadCount;
+                            badge.style.display = 'flex';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+
+                        // Update list
+                        if (data.notifications && data.notifications.length > 0) {
+                            list.innerHTML = data.notifications.map(n => {
+                                const eventUrl = n.eventId ? `/events/${n.eventId}` : '#';
+                                let icon = 'bell';
+                                let iconClass = 'notif-icon-sub';
+                                
+                                if (n.title.toLowerCase().includes('soon')) { icon = 'calendar-clock'; iconClass = 'notif-icon-soon'; }
+                                else if (n.title.toLowerCase().includes('live')) { icon = 'play-circle'; iconClass = 'notif-icon-live'; }
+                                else if (n.title.toLowerCase().includes('ended')) { icon = 'check-circle-2'; iconClass = 'notif-icon-end'; }
+                                else if (n.title.toLowerCase().includes('confirm')) { icon = 'ticket'; iconClass = 'notif-icon-sub'; }
+
+                                return `
+                                <a href="${eventUrl}" class="notif-item ${n.isRead ? '' : 'unread'}" onclick="markAsRead(event, ${n.id}, this, '${eventUrl}')">
+                                    <div class="notif-icon ${iconClass}">
+                                        <i data-lucide="${icon}" style="width: 18px; height: 18px;"></i>
+                                    </div>
+                                    <div class="notif-content">
+                                        <div class="notif-title">${n.title}</div>
+                                        <p class="notif-desc">${n.message}</p>
+                                        <span class="notif-time">${n.time}</span>
+                                    </div>
+                                </a>`;
+                            }).join('');
+                            lucide.createIcons();
+                        } else {
+                            list.innerHTML = '<div style="padding: 2rem; text-align: center; color: #94a3b8; font-size: 0.85rem;">Nothing new to report!</div>';
+                        }
+                    } catch (e) {
+                        console.error("Poll failed", e);
+                    }
+                }
+
+                window.markAsRead = async function(event, id, el, url) {
+                    // Mark as read in background
+                    try {
+                        fetch(`/notifications/read/${id}`, { method: 'POST' });
+                        el.classList.remove('unread');
+                        // Update badge immediately if we can
+                        const badge = document.getElementById('notifBadge');
+                        if (badge && badge.innerText !== '0') {
+                            const current = parseInt(badge.innerText) || 0;
+                            if (current > 0) {
+                                badge.innerText = current - 1;
+                                if (current - 1 <= 0) badge.style.display = 'none';
+                            }
+                        }
+                    } catch (e) {}
+                    
+                    // The link (href) will handle the navigation naturally
+                };
+
+                const clearBtn = document.getElementById('clearNotifs');
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', async () => {
+                        if (confirm('Clear all notifications permanently?')) {
+                            try {
+                                const res = await fetch('{{ path('app_notification_clear_all') }}', { method: 'POST' });
+                                if (res.ok) {
+                                    list.innerHTML = '<div style="padding: 2rem; text-align: center; color: #94a3b8; font-size: 0.85rem;">Nothing new to report!</div>';
+                                    badge.style.display = 'none';
+                                }
+                            } catch (e) {}
+                        }
+                    });
+                }
+
+                // Heartbeat polling every 30 seconds
+                setInterval(pollNotifications, 30000);
+                pollNotifications(); // Initial
+            })();
         </script>
 
 	</main>
