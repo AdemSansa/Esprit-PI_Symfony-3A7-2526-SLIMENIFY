@@ -326,6 +326,9 @@
                     </svg>
                     <span>Favoris</span>
                 </button>
+                <button id="listen-btn" onclick="readBlog()">🔊 Listen to this post</button>
+<button id="stop-btn" onclick="stopAudio()" style="display:none;">⏹ Stop</button>
+<audio id="audio-player" controls style="display:none; width:100%; margin-top:10px;"></audio>
             {% endif %}
         </div>
     </article>
@@ -508,5 +511,55 @@ document.querySelectorAll('input[name="rating_stars"]').forEach(input => {
         }
     });
 });
+
+
+const VOICERSS_KEY = '{{ voicerss_key }}';  
+const blogText     = {{ (blog.title ~ '. ' ~ blog.content)|striptags|json_encode|raw }};
+
+async function readBlog() {
+    const btn    = document.getElementById('listen-btn');
+    const stop   = document.getElementById('stop-btn');
+    const player = document.getElementById('audio-player');
+
+    btn.disabled    = true;
+    btn.textContent = '⏳ Generating...';
+
+    try {
+        const params = new URLSearchParams({
+            key: VOICERSS_KEY,
+            src: blogText.substring(0, 4096),
+            hl:  'en-us',
+            v:   'Linda',
+            r:   '0',
+            c:   'MP3',
+            f:   '44khz_16bit_stereo',
+        });
+
+        const response = await fetch('https://api.voicerss.org/?' + params.toString());
+
+        if (!response.ok) throw new Error('Request failed');
+
+        const blob = await response.blob();
+        player.src          = URL.createObjectURL(blob);
+        player.style.display = 'block';
+        stop.style.display  = 'inline';
+        player.play();
+        btn.textContent = '🔊 Listen again';
+
+    } catch (e) {
+        alert('Error: ' + e.message);
+        btn.textContent = '🔊 Listen to this post';
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+function stopAudio() {
+    const player = document.getElementById('audio-player');
+    player.pause();
+    player.currentTime    = 0;
+    document.getElementById('stop-btn').style.display  = 'none';
+}
 </script>
+
 {% endblock %}

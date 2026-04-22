@@ -31,7 +31,8 @@ services:
             $geminiApiKey: '%app.gemini_api_key%'
             $hfToken: '%app.hf_token%'
             $projectDir: '%kernel.project_dir%'
-           
+            $elevenApiKey: '%env(ELEVENLABS_API_KEY)%'
+            $openai_api_key: '%env(OPENAI_API_KEY)%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -60,3 +61,10 @@ services:
     App\Service\ImageGenerator:
         arguments:
             $hfModel: '%env(default:default_hf_image_model:HF_IMAGE_MODEL)%'
+
+
+
+
+    App\Service\AudioGeneratorService:
+        arguments:
+            $voiceRssApiKey: '%env(VOICERSS_API_KEY)%'
