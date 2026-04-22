@@ -31,6 +31,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Service\ImageGenerator;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use App\Service\AudioGeneratorService;
+
+
 
 #[Route('/blogs')]
 class BlogWebController extends AbstractController
@@ -444,6 +448,7 @@ class BlogWebController extends AbstractController
             'commentForm' => $newForm,
             'editCommentForm' => $editForm,
             'editingCommentId' => $editingComment?->getId(),
+            'voicerss_key' => $_ENV['VOICERSS_API_KEY'],
         ]);
     }
 
@@ -564,4 +569,28 @@ class BlogWebController extends AbstractController
             ], 500);
         }
     }
+    #[Route('/{id}/audio', name: 'app_blog_audio', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function audio(Blog $blog, AudioGeneratorService $audioGenerator): Response
+    {
+        try {
+            $text = $blog->getTitle() . '. ' . $blog->getContent();
+            $audioContent = $audioGenerator->textToSpeech($text);
+
+            return new Response($audioContent, 200, [
+                'Content-Type'        => 'audio/mpeg',
+                'Content-Disposition' => 'inline; filename="blog-' . $blog->getId() . '.mp3"',
+                'Cache-Control'       => 'public, max-age=3600',
+            ]);
+        } catch (\Exception $e) {
+            return $this->render('blog/show.html.twig', [
+    'blog'            => $blog,
+    'commentForm'     => $newForm,
+    'editCommentForm' => $editForm,
+    'editingCommentId'=> $editingComment?->getId(),
+    'voicerss_key'    => $_ENV['VOICERSS_API_KEY'],  // ← add this line
+]);
+        }
+    }
+
 }
+
