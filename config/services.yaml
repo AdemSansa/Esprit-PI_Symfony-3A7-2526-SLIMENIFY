@@ -56,6 +56,9 @@ services:
         arguments:
             $profanityCheck: '@profanity.checker'
             $profanityCheckEnabled: '%env(bool:PROFANITY_CHECK_ENABLED)%'
+
+    App\Service\GeolocationService: ~
+
     
 
     App\Service\ImageGenerator:

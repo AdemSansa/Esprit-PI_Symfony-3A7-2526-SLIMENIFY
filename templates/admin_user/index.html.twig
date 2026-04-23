@@ -144,7 +144,7 @@
     <div class="main-card">
         <div class="toolbar">
             <form id="searchForm" method="GET" action="{{ path('app_admin_user_index') }}" style="display: flex; gap: 15px; align-items: center; flex: 1;">
-                <input type="text" name="q" class="search-input" placeholder="Search users by name or email..." value="{{ searchQuery }}">
+                <input type="text" name="q" class="search-input" placeholder="Search users by name or email..." value="{{ searchQuery }}" autocomplete="off">
                 <select name="role" class="search-input" style="width: 150px; appearance: auto; cursor: pointer;">
                     <option value="">All Roles</option>
                     <option value="patient" {% if roleFilter == 'patient' %}selected{% endif %}>Patient</option>

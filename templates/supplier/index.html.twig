@@ -191,7 +191,7 @@
     <form method="GET" action="{{ path('app_supplier_index') }}" class="toolbar" id="filter-form" style="flex-wrap: wrap;" data-turbo="false">
         <div class="search-container" style="flex: 2; min-width: 200px;">
             <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" name="search" value="{{ search|default('') }}" class="search-input" id="supplier-search" placeholder="Search suppliers by name, email or city..." style="font-size: 1rem; padding: 0.65rem 1rem 0.65rem 2.5rem;">
+            <input type="text" name="search" value="{{ search|default('') }}" class="search-input" id="supplier-search" placeholder="Search suppliers by name, email or city..." style="font-size: 1rem; padding: 0.65rem 1rem 0.65rem 2.5rem;" autocomplete="off">
         </div>
         <select name="status" class="search-input" id="status-filter" style="width: auto; padding-left: 1rem;">
             <option value="all" {% if status|default('all') == 'all' %}selected{% endif %}>All Statuses</option>

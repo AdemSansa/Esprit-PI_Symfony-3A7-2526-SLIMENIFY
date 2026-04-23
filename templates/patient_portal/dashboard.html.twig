@@ -131,7 +131,7 @@
     
     <form id="searchForm" class="filter-wrapper" method="GET" action="{{ path('app_patient_dashboard') }}">
         <label for="searchName">Search:</label>
-        <input type="text" name="q" id="searchName" class="form-control" placeholder="By name..." value="{{ searchQuery }}">
+        <input type="text" name="q" id="searchName" class="form-control" placeholder="By name..." value="{{ searchQuery }}" autocomplete="off">
 
         <label for="filterSpecialty" style="margin-left: 10px;">Specialty:</label>
         <select name="specialty" id="filterSpecialty" class="form-control">
