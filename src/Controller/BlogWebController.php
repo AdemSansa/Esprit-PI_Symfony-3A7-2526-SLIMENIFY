@@ -3,12 +3,18 @@
 namespace App\Controller;
 
 use App\Entity\Blog;
+use App\Entity\BlogFavorite;
 use App\Entity\Comment;
 use App\Form\BlogType;
 use App\Form\CommentType;
+use App\Repository\BlogFavoriteRepository;
 use App\Repository\BlogRepository;
+use App\Repository\CategoryRepository;
 use App\Repository\CommentRepository;
 use App\Repository\TherapistRepository;
+use App\Repository\UserRepository;
+use App\Repository\NotificationRepository;
+use App\Entity\Notification;
 use App\Service\ModerationService;
 use App\Service\TranslationService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,6 +30,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use App\Service\ImageGenerator;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use App\Service\AudioGeneratorService;
+
+
 
 #[Route('/blogs')]
 class BlogWebController extends AbstractController
@@ -31,12 +42,17 @@ class BlogWebController extends AbstractController
     #[Route('', name: 'app_blog_web_index', methods: ['GET'])]
     public function index(
         BlogRepository $blogRepository,
+        BlogFavoriteRepository $favRepo,
+        CategoryRepository $categoryRepository,
+        NotificationRepository $notificationRepository,
         PaginatorInterface $paginator,
         Request $request
     ): Response {
         $search = $request->query->get('q');
+        $categoryId = $request->query->get('category');
 
         $qb = $blogRepository->createQueryBuilder('b')
+            ->leftJoin('b.category', 'c')->addSelect('c')
             ->orderBy('b.createdAt', 'DESC');
 
         if ($search) {
@@ -44,21 +60,70 @@ class BlogWebController extends AbstractController
                 ->setParameter('search', '%'.$search.'%');
         }
 
-        $query = $qb->getQuery();
+        if ($categoryId) {
+            $qb->andWhere('b.category = :category')
+                ->setParameter('category', $categoryId);
+        }
 
         $pagination = $paginator->paginate(
-            $query,
+            $qb->getQuery(),
             $request->query->getInt('page', 1),
-            3
+            6
         );
 
         if ($pagination instanceof SlidingPaginationInterface) {
             $pagination->setUsedRoute('app_blog_web_index');
         }
 
+        $unreadCount = 0;
+        if ($this->getUser()) {
+            $unreadCount = $notificationRepository->countUnread($this->getUser());
+        }
+
+        $statsData = [];
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $statsData = [
+                'byCategory' => $blogRepository->getBlogsCountByCategory(),
+                'evolution' => $blogRepository->getBlogsEvolution(),
+                'popular' => $blogRepository->getPopularCategoryByInteractions(),
+                'totalBlogs' => $blogRepository->count([]),
+            ];
+        }
+
         return $this->render('blog/index.html.twig', [
             'pagination' => $pagination,
             'search' => $search ?? '',
+            'categories' => $categoryRepository->findAllOrdered(),
+            'activeCategory' => $categoryId,
+            'unreadNotificationsCount' => $unreadCount,
+            'statsData' => $statsData,
+        ]);
+    }
+
+    #[Route('/favorites', name: 'app_blog_web_favorites', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function favorites(
+        BlogFavoriteRepository $favRepo,
+        PaginatorInterface $paginator,
+        Request $request
+    ): Response {
+        $user = $this->getUser();
+        
+        $qb = $favRepo->createQueryBuilder('f')
+            ->innerJoin('f.blog', 'b')->addSelect('b')
+            ->leftJoin('b.therapist', 't')->addSelect('t')
+            ->where('f.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('b.createdAt', 'DESC');
+
+        $pagination = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            6
+        );
+
+        return $this->render('blog/favorites.html.twig', [
+            'pagination' => $pagination,
         ]);
     }
 
@@ -66,6 +131,7 @@ class BlogWebController extends AbstractController
     public function searchJson(Request $request, BlogRepository $blogRepository): JsonResponse
     {
         $q = trim((string) $request->query->get('q', ''));
+        $categoryId = $request->query->get('category');
         if (mb_strlen($q) > 200) {
             $q = mb_substr($q, 0, 200);
         }
@@ -81,6 +147,11 @@ class BlogWebController extends AbstractController
                 ->setParameter('search', '%'.$q.'%');
         }
 
+        if ($categoryId) {
+            $qb->andWhere('b.category = :category')
+                ->setParameter('category', $categoryId);
+        }
+
         $blogs = $qb->getQuery()->getResult();
         $data = [];
         foreach ($blogs as $blog) {
@@ -94,6 +165,7 @@ class BlogWebController extends AbstractController
                 'author' => $author,
                 'date' => $blog->getCreatedAt()->format('M d, Y'),
                 'likesCount' => $blog->getLikes()->count(),
+                'category' => $blog->getCategory() ? $blog->getCategory()->getName() : null,
             ];
         }
 
@@ -122,7 +194,7 @@ class BlogWebController extends AbstractController
 
     #[Route('/new', name: 'app_blog_web_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_THERAPIST')]
-    public function new(Request $request, EntityManagerInterface $entityManager, TherapistRepository $therapistRepository, SluggerInterface $slugger): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, TherapistRepository $therapistRepository, UserRepository $userRepository, SluggerInterface $slugger): Response
     {
         $blog = new Blog();
         $form = $this->createForm(BlogType::class, $blog);
@@ -140,6 +212,7 @@ class BlogWebController extends AbstractController
 
             /** @var UploadedFile|null $photoFile */
             $photoFile = $form->get('photo')->getData();
+            $generatedPhoto = (string) $request->request->get('generated_photo');
 
             if ($photoFile) {
                 $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
@@ -155,17 +228,26 @@ class BlogWebController extends AbstractController
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Could not upload photo.');
                 }
-            } else {
-                $this->addFlash('error', 'Please upload a photo from your PC.');
-
-                return $this->render('blog/new.html.twig', [
-                    'blog' => $blog,
-                    'form' => $form,
-                ]);
+            } elseif ($generatedPhoto !== '') {
+                // User used the AI generator
+                $blog->setPhoto($generatedPhoto);
             }
+            // If neither is provided, $blog->getPhoto() remains what it was (null or existing)
 
             $blog->setTherapist($therapist);
             $entityManager->persist($blog);
+            
+            
+            $allUsers = $userRepository->findAll();
+            foreach ($allUsers as $u) {
+                $notification = new Notification();
+                $notification->setTitle('New Blog Published');
+                $notification->setMessage('Check out the new blog: ' . $blog->getTitle());
+                $notification->setUser($u);
+                $notification->setBlog($blog);
+                $entityManager->persist($notification);
+            }
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Blog created successfully!');
@@ -366,6 +448,7 @@ class BlogWebController extends AbstractController
             'commentForm' => $newForm,
             'editCommentForm' => $editForm,
             'editingCommentId' => $editingComment?->getId(),
+            'voicerss_key' => $_ENV['VOICERSS_API_KEY'],
         ]);
     }
 
@@ -452,4 +535,62 @@ class BlogWebController extends AbstractController
 
         return $this->redirectToRoute('app_blog_web_my_blogs');
     }
+    
+
+    #[Route('/generate-image', name: 'generate_image', methods: ['POST'])]
+    #[IsGranted('ROLE_THERAPIST')]
+    public function generateImage(Request $request, ImageGenerator $imageGenerator): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+
+            if (!is_array($data)) {
+                return new JsonResponse([
+                    'error' => 'Invalid JSON',
+                ], 400);
+            }
+
+            $text = $data['text'] ?? 'A professional blog post illustration';
+
+            $imageUrl = $imageGenerator->generate($text);
+
+            if (!$imageUrl) {
+                return new JsonResponse([
+                    'error' => 'Image generation failed',
+                ], 500);
+            }
+
+            return new JsonResponse([
+                'image' => $imageUrl,
+            ]);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    #[Route('/{id}/audio', name: 'app_blog_audio', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function audio(Blog $blog, AudioGeneratorService $audioGenerator): Response
+    {
+        try {
+            $text = $blog->getTitle() . '. ' . $blog->getContent();
+            $audioContent = $audioGenerator->textToSpeech($text);
+
+            return new Response($audioContent, 200, [
+                'Content-Type'        => 'audio/mpeg',
+                'Content-Disposition' => 'inline; filename="blog-' . $blog->getId() . '.mp3"',
+                'Cache-Control'       => 'public, max-age=3600',
+            ]);
+        } catch (\Exception $e) {
+            return $this->render('blog/show.html.twig', [
+    'blog'            => $blog,
+    'commentForm'     => $newForm,
+    'editCommentForm' => $editForm,
+    'editingCommentId'=> $editingComment?->getId(),
+    'voicerss_key'    => $_ENV['VOICERSS_API_KEY'],  // ← add this line
+]);
+        }
+    }
+
 }
+

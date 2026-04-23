@@ -3,74 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #334155; margin: 0; padding: 0; background-color: #f8fafc; }
-        .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .header { background: linear-gradient(135deg, #748764 0%, #627255 100%); padding: 30px; text-align: center; color: white; }
-        .content { padding: 30px; }
-        .footer { background: #f1f5f9; padding: 20px; text-align: center; font-size: 0.8rem; color: #64748b; }
-        .order-summary { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        .order-summary th { text-align: left; border-bottom: 2px solid #e2e8f0; padding: 10px; color: #64748b; font-size: 0.75rem; text-transform: uppercase; }
-        .order-summary td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; }
-        .total-row { font-weight: 800; font-size: 1.1rem; color: #1e293b; }
-        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-        .badge-success { background: #dcfce7; color: #166534; }
-        .btn { display: inline-block; background: #627255; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 700; margin-top: 20px; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #2d3748; margin: 0; padding: 0; background-color: #f1f4ee; }
+        .wrapper { width: 100%; table-layout: fixed; background-color: #f1f4ee; padding: 40px 0; }
+        .container { max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+
+        /* Header */
+        .header {
+            background: linear-gradient(160deg, #3d4a32 0%, #627255 100%);
+            padding: 48px 40px 40px;
+            text-align: center;
+        }
+        .logo { width: 130px; margin-bottom: 20px; }
+        .header-tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.85);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 5px 14px;
+            border-radius: 20px;
+            margin-bottom: 14px;
+        }
+        .welcome-title { font-size: 26px; font-weight: 800; color: #ffffff; margin: 0 0 8px; letter-spacing: -0.03em; }
+        .welcome-subtitle { font-size: 14px; color: rgba(255,255,255,0.65); margin: 0; }
+
+        /* Content */
+        .content { padding: 44px 44px 32px; }
+
+        .greeting { font-size: 17px; color: #3d4a32; margin-bottom: 32px; }
+        .greeting strong { color: #3d4a32; }
+
+        /* Info Grid */
+        .info-grid { display: table; width: 100%; border-collapse: separate; border-spacing: 16px 0; margin-bottom: 36px; }
+        .info-cell { display: table-cell; width: 50%; vertical-align: top; }
+
+        .info-card {
+            background: #f8faf6;
+            border: 1px solid #e6ede0;
+            border-radius: 12px;
+            padding: 20px 22px;
+        }
+        .info-card-label {
+            font-size: 10px;
+            font-weight: 800;
+            color: #627255;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 10px;
+        }
+        .info-card p { margin: 0 0 4px; font-size: 14px; color: #4a5568; }
+        .info-card p strong { color: #2d3748; font-weight: 700; }
+
+        /* Payment Method Badge */
+        .method-badge {
+            display: inline-block;
+            background: #627255;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 5px 12px;
+            border-radius: 6px;
+            margin-top: 6px;
+        }
+
+        /* Invoice */
+        .section-label {
+            font-size: 10px;
+            font-weight: 800;
+            color: #627255;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            margin-bottom: 14px;
+        }
+
+        .invoice-table { width: 100%; border-collapse: collapse; }
+        .invoice-table thead tr {
+            background: #f8faf6;
+            border-bottom: 2px solid #e6ede0;
+        }
+        .invoice-table th {
+            padding: 10px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #808c75;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            text-align: left;
+        }
+        .invoice-table th:last-child { text-align: right; }
+        .invoice-table th:nth-child(2) { text-align: center; }
+
+        .invoice-table tbody tr { border-bottom: 1px solid #f0f4ee; }
+        .invoice-table tbody td { padding: 16px 14px; font-size: 14px; color: #2d3748; }
+        .invoice-table tbody td:nth-child(2) { text-align: center; font-weight: 600; color: #627255; }
+        .invoice-table tbody td:last-child { text-align: right; font-weight: 800; color: #3d4a32; }
+
+        .item-name { font-weight: 700; color: #2d3748; }
+        .item-sub { font-size: 12px; color: #a0aec0; margin-top: 3px; }
+
+        /* Total Row */
+        .total-bar {
+            background: #f8faf6;
+            border: 1px solid #e6ede0;
+            border-radius: 10px;
+            padding: 18px 22px;
+            display: table;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 10px;
+        }
+        .total-label { display: table-cell; font-size: 13px; font-weight: 700; color: #808c75; text-transform: uppercase; letter-spacing: 0.06em; }
+        .total-amount { display: table-cell; text-align: right; font-size: 22px; font-weight: 900; color: #3d4a32; }
+
+        /* Quote */
+        .quote-section {
+            margin-top: 36px;
+            padding: 24px 28px;
+            border-left: 3px solid #b48c36;
+            background: #fdfaf4;
+            border-radius: 0 10px 10px 0;
+        }
+        .quote-text { font-size: 14px; font-style: italic; color: #6b7280; margin: 0; line-height: 1.7; }
+
+        /* Footer */
+        .footer {
+            background: #3d4a32;
+            padding: 34px 40px;
+            text-align: center;
+        }
+        .footer-brand { font-size: 15px; font-weight: 800; color: #ffffff; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+        .footer-tagline { font-size: 13px; color: rgba(255,255,255,0.5); margin: 0; }
+        .footer-copy { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 18px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1 style="margin: 0; font-size: 1.75rem;">Thank you for your order!</h1>
-            <p style="margin: 10px 0 0; opacity: 0.9;">Your order #{{ commande.id }} is confirmed.</p>
-        </div>
-        <div class="content">
-            <p>Hello {{ user.firstName }},</p>
-            <p>We have received your order and we are starting to prepare it with care. Here is a summary of your purchases:</p>
+    <table class="wrapper" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td align="center">
+                <div class="container">
 
-            <table class="order-summary">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th style="text-align: center;">Qty</th>
-                        <th style="text-align: right;">Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in commande.itemsDetails %}
-                        <tr>
-                            <td>
-                                <div style="font-weight: 600;">{{ item.name }}</div>
-                            </td>
-                            <td style="text-align: center;">{{ item.quantity }}</td>
-                            <td style="text-align: right;">{{ item.total_price|number_format(2) }} TND</td>
-                        </tr>
-                    {% endfor %}
-                    <tr class="total-row">
-                        <td colspan="2" style="padding-top: 20px;">Total</td>
-                        <td style="text-align: right; padding-top: 20px;">{{ commande.totalAmount|number_format(2) }} TND</td>
-                    </tr>
-                </tbody>
-            </table>
+                    <!-- HEADER -->
+                    <div class="header">
+                        <img src="cid:logo" alt="Slimenify" class="logo">
+                        <div class="header-tag">Order Confirmation</div>
+                        <h1 class="welcome-title">Thank you for your order</h1>
+                        <p class="welcome-subtitle">Order #{{ commande.id }} &mdash; {{ commande.createdAt|date('F j, Y') }}</p>
+                    </div>
 
-            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 20px;">
-                <h3 style="margin-top: 0; font-size: 0.9rem; color: #64748b; text-transform: uppercase;">Shipping Information</h3>
-                <p style="margin: 5px 0;"><strong>Address:</strong> {{ commande.shippingAddress }}</p>
-                <p style="margin: 5px 0;"><strong>Phone:</strong> {{ commande.contactPhone }}</p>
-                <p style="margin: 5px 0;"><strong>Payment:</strong> 
-                    <span class="badge badge-success">
-                        {{ commande.paymentMethod|replace({'_': ' '})|capitalize }}
-                    </span>
-                </p>
-            </div>
+                    <!-- CONTENT -->
+                    <div class="content">
 
-            <div style="text-align: center;">
-                <a href="#" class="btn">Track my order</a>
-            </div>
-        </div>
-        <div class="footer">
-            <p>&copy; {{ "now"|date("Y") }} Slimenify - Well-being & Recovery Platform</p>
-            <p>If you have any questions, feel free to contact us.</p>
-        </div>
-    </div>
+                        <p class="greeting">Dear <strong>{{ user.firstName }} {{ user.lastName }}</strong>,<br>
+                        We have received your order and are pleased to confirm it. Below is a summary of your purchase.</p>
+
+                        <!-- INFO GRID -->
+                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 36px;">
+                            <tr>
+                                <td width="49%" style="vertical-align: top;">
+                                    <div class="info-card">
+                                        <div class="info-card-label">Shipping Address</div>
+                                        <p><strong>{{ user.firstName }} {{ user.lastName }}</strong></p>
+                                        <p>{{ commande.shippingAddress }}</p>
+                                        <p>Tel: {{ commande.contactPhone }}</p>
+                                    </div>
+                                </td>
+                                <td width="2%"></td>
+                                <td width="49%" style="vertical-align: top;">
+                                    <div class="info-card">
+                                        <div class="info-card-label">Order Details</div>
+                                        <p><strong>Date:</strong> {{ commande.createdAt|date('M d, Y') }}</p>
+                                        <p><strong>Order ID:</strong> #{{ commande.id }}</p>
+                                        <div class="method-badge">{{ commande.paymentMethod|replace({'_': ' '})|capitalize }}</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- INVOICE TABLE -->
+                        <div class="section-label">Order Summary</div>
+                        <table class="invoice-table" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Qty</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in commande.itemsDetails %}
+                                    <tr>
+                                        <td>
+                                            <div class="item-name">{{ item.name }}</div>
+                                            <div class="item-sub">Well-being &amp; Recovery Product</div>
+                                        </td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>{{ item.total_price|number_format(2) }} TND</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <!-- TOTAL -->
+                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px;">
+                            <tr>
+                                <td class="total-bar">
+                                    <table width="100%">
+                                        <tr>
+                                            <td class="total-label">Total Amount</td>
+                                            <td class="total-amount">{{ commande.totalAmount|number_format(2) }} TND</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- QUOTE -->
+                        <div class="quote-section">
+                            <p class="quote-text">"Your mind is a garden. Your thoughts are the seeds. You can grow flowers or you can grow weeds."</p>
+                        </div>
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="footer">
+                        <p class="footer-brand">Slimenify</p>
+                        <p class="footer-tagline">Healing Minds &mdash; Growing Together</p>
+                        <p class="footer-copy">&copy; {{ "now"|date("Y") }} Slimenify. All Rights Reserved.</p>
+                    </div>
+
+                </div>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
