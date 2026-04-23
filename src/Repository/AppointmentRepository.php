@@ -91,4 +91,31 @@ class AppointmentRepository extends ServiceEntityRepository
 
         return (int) $qb->getQuery()->getSingleScalarResult() > 0;
     }
+
+    public function hasOverlapForPatient(
+        int $patientId,
+        \DateTimeInterface $date,
+        \DateTimeInterface $startTime,
+        \DateTimeInterface $endTime,
+        ?int $excludeAppointmentId = null
+    ): bool {
+        $qb = $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.patient = :patientId')
+            ->andWhere('a.appointmentDate = :date')
+            ->andWhere('a.status != :cancelled')
+            ->andWhere('a.startTime < :endTime')
+            ->andWhere('a.endTime > :startTime')
+            ->setParameter('patientId', $patientId)
+            ->setParameter('date', $date->format('Y-m-d'))
+            ->setParameter('cancelled', 'cancelled')
+            ->setParameter('startTime', $startTime->format('H:i:s'))
+            ->setParameter('endTime', $endTime->format('H:i:s'));
+
+        if ($excludeAppointmentId !== null) {
+            $qb->andWhere('a.id != :excludeId')->setParameter('excludeId', $excludeAppointmentId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult() > 0;
+    }
 }
