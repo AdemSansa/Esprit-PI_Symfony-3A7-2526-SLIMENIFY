@@ -14,8 +14,7 @@ class MainScheduleProvider implements ScheduleProviderInterface
     {
         return (new Schedule())
             ->add(
-                // Run the appointment reminder command every day at 8:00 AM
-                \Symfony\Component\Scheduler\RecurringMessage::cron('0 6 01 * *', new RunCommandMessage('app:appointment-reminders'))
+                \Symfony\Component\Scheduler\RecurringMessage::cron('54 4 * * *', new RunCommandMessage('app:appointment-reminders'))
             )
         ;
     }
