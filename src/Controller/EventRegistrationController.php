@@ -189,7 +189,7 @@ class EventRegistrationController extends AbstractController
 
 
     #[Route('/{id}/status/{status}', name: 'app_event_registration_status', methods: ['POST'])]
-    public function updateStatus(Request $request, Registration $registration, string $status, EntityManagerInterface $entityManager): Response
+    public function updateStatus(Request $request, Registration $registration, string $status, EntityManagerInterface $entityManager, NotificationService $ns): Response
     {
         // 🔐 Security: Only ROLE_ADMIN, the Event Organizer, OR the Participant themselves can modify status!
         $isParticipant = ($registration->getParticipantEmail() === $this->getUser()->getEmail());
