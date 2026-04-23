@@ -34,7 +34,7 @@ class AppointmentManagementController extends AbstractController
     #[Route('/calendar', name: 'calendar', methods: ['GET'])]
     public function calendar(Request $request): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $this->denyAccessUnlessGranted('ROLE_PATIENT');
         $therapists = $this->therapistRepository->findActive();
 
         $selectedTherapistId = $request->query->getInt('therapist_id');
@@ -61,10 +61,19 @@ class AppointmentManagementController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_PATIENT');
         $therapist = $this->resolveTherapistFromRequest($request);
         if ($therapist === null) {
-            return $this->json(['error' => 'Therapist not found'], Response::HTTP_BAD_REQUEST);
+            if ($this->isGranted('ROLE_PATIENT') && !$this->isGranted('ROLE_THERAPIST')) {
+                $user = $this->getUser();
+                if ($user instanceof \App\Entity\User) {
+                    $appointments = $this->appointmentRepository->findByPatient($user->getId());
+                } else {
+                    return $this->json(['error' => 'Not authenticated'], Response::HTTP_UNAUTHORIZED);
+                }
+            } else {
+                return $this->json(['error' => 'Therapist not found'], Response::HTTP_BAD_REQUEST);
+            }
+        } else {
+            $appointments = $this->appointmentRepository->findByTherapist($therapist->getId());
         }
-
-        $appointments = $this->appointmentRepository->findByTherapist($therapist->getId());
         $events = [];
         foreach ($appointments as $appointment) {
             if (!$this->canAccessAppointment($appointment)) {
@@ -75,9 +84,17 @@ class AppointmentManagementController extends AbstractController
             $start = $appointment->getStartTime()->format('H:i:s');
             $end = $appointment->getEndTime()->format('H:i:s');
             $status = strtolower((string) $appointment->getStatus());
+            
+            $title = sprintf('%s • %s', ucfirst((string) $appointment->getType()), ucfirst($status ?: 'pending'));
+            if ($this->isGranted('ROLE_THERAPIST')) {
+                $title .= sprintf(' (%s %s)', $appointment->getPatient()->getFirstName(), $appointment->getPatient()->getLastName());
+            } else {
+                $title .= sprintf(' (Dr. %s)', $appointment->getTherapist()->getLastName());
+            }
+
             $events[] = [
                 'id' => $appointment->getId(),
-                'title' => sprintf('%s • %s', ucfirst((string) $appointment->getType()), ucfirst($status ?: 'pending')),
+                'title' => $title,
                 'start' => $date . 'T' . $start,
                 'end' => $date . 'T' . $end,
                 'backgroundColor' => $this->statusColor($status),
@@ -172,6 +189,13 @@ class AppointmentManagementController extends AbstractController
         }
         $end = (clone $start)->modify('+60 minutes');
 
+        $patient = $this->getUser();
+        if ($patient instanceof \App\Entity\User) {
+            if ($this->appointmentRepository->hasOverlapForPatient($patient->getId(), $date, $start, $end)) {
+                return $this->json(['error' => 'You already have another appointment booked at this exact time!'], Response::HTTP_CONFLICT);
+            }
+        }
+
         $activeTherapists = $this->therapistRepository->findActive();
         $available = [];
 
@@ -235,6 +259,10 @@ class AppointmentManagementController extends AbstractController
             return $this->json(['error' => 'Selected slot overlaps an existing appointment'], Response::HTTP_CONFLICT);
         }
 
+        if ($this->appointmentRepository->hasOverlapForPatient($patient->getId(), $date, $start, $end)) {
+            return $this->json(['error' => 'You already have an appointment booked with another therapist at this time.'], Response::HTTP_CONFLICT);
+        }
+
         $appointment = new Appointment();
         $appointment->setTherapist($therapist);
         $appointment->setPatient($patient);
@@ -275,6 +303,10 @@ class AppointmentManagementController extends AbstractController
 
         if ($this->appointmentRepository->hasOverlapForTherapist($appointment->getTherapist()->getId(), $date, $start, $end, $appointment->getId())) {
             return $this->json(['error' => 'Slot overlaps another appointment'], Response::HTTP_CONFLICT);
+        }
+
+        if ($this->appointmentRepository->hasOverlapForPatient($appointment->getPatient()->getId(), $date, $start, $end, $appointment->getId())) {
+            return $this->json(['error' => 'You already have an appointment booked with another therapist at this time.'], Response::HTTP_CONFLICT);
         }
 
         $appointment->setAppointmentDate($date);
@@ -341,7 +373,7 @@ class AppointmentManagementController extends AbstractController
     }
 
     #[Route('/history', name: 'history', methods: ['GET'])]
-    public function history(): Response
+    public function history(Request $request, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
         $this->denyAccessUnlessGranted('ROLE_PATIENT');
 
@@ -358,9 +390,47 @@ class AppointmentManagementController extends AbstractController
             }
         }
 
+        // Filter by status
+        $statusFilter = strtolower($request->query->get('status', ''));
+        if ($statusFilter && $statusFilter !== 'all') {
+            $appointments = array_filter($appointments, function ($a) use ($statusFilter) {
+                return strtolower($a->getStatus() ?? 'pending') === $statusFilter;
+            });
+        }
+
+        // Custom Sorting
+        $now = new \DateTime();
+        $nowDateOnly = (clone $now)->setTime(0, 0);
+
+        usort($appointments, function ($a, $b) use ($nowDateOnly) {
+            $aIsFuture = $a->getAppointmentDate() >= $nowDateOnly;
+            $bIsFuture = $b->getAppointmentDate() >= $nowDateOnly;
+
+            if ($aIsFuture && !$bIsFuture)
+                return -1;
+            if (!$aIsFuture && $bIsFuture)
+                return 1;
+
+            if ($aIsFuture) {
+                // Future: closest time first (ascending)
+                return $a->getAppointmentDate() <=> $b->getAppointmentDate() ?: $a->getStartTime() <=> $b->getStartTime();
+            } else {
+                // Past: most recent first (descending)
+                return $b->getAppointmentDate() <=> $a->getAppointmentDate() ?: $b->getStartTime() <=> $a->getStartTime();
+            }
+        });
+
+        // Paginate the array
+        $pagination = $paginator->paginate(
+            $appointments,
+            $request->query->getInt('page', 1),
+            4 // 2 items per page for testing
+        );
+
         return $this->render('appointment/history.html.twig', [
-            'appointments' => $appointments,
+            'appointments' => $pagination,
             'is_therapist' => $this->isGranted('ROLE_THERAPIST'),
+            'current_filter' => $statusFilter,
         ]);
     }
 

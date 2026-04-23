@@ -454,11 +454,14 @@
                     }
                 },
                 events: (fetchInfo, successCallback, failureCallback) => {
-                    if (!activeTherapistId) {
-                        successCallback([]);
-                        return;
+                    const params = new URLSearchParams({
+                        _ts: Date.now()
+                    });
+                    if (activeTherapistId && activeTherapistId > 0) {
+                        params.append('therapist_id', activeTherapistId);
                     }
-                    fetch(`{{ path('app_appointments_events') }}?therapist_id=${activeTherapistId}&_ts=${Date.now()}`, {
+                    
+                    fetch(`{{ path('app_appointments_events') }}?${params.toString()}`, {
                         cache: 'no-store',
                     })
                         .then((res) => res.json())

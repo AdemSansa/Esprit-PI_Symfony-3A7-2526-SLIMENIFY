@@ -92,17 +92,23 @@
                         <strong>{{ appointment.patientMood }}</strong>
                     </p>
                 {% elseif is_granted('ROLE_PATIENT') and app.user.id == appointment.patient.id %}
-                    <form id="mood-form" method="post" action="{{ path('app_appointments_patient_mood', {id: appointment.id}) }}" style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
-                        <label for="patient_mood" style="color:#475569; font-size:0.95rem;">How are you feeling after this session?</label>
-                        <select name="patient_mood" id="patient_mood" required style="border:1px solid #cbd5e1; border-radius:8px; padding:0.45rem;">
-                            <option value="">Select your mood</option>
-                            <option value="Excellent">Excellent</option>
-                            <option value="Good">Good</option>
-                            <option value="Neutral">Neutral</option>
-                            <option value="Bad">Bad</option>
-                            <option value="Terrible">Terrible</option>
-                        </select>
-                        <button type="submit" style="border:none; background:#8b5cf6; color:#fff; border-radius:8px; padding:0.45rem 1rem; cursor:pointer;">Submit Mood</button>
+                    <form id="mood-form" method="post" action="{{ path('app_appointments_patient_mood', {id: appointment.id}) }}" style="display:block; margin-top:0.5rem;">
+                        <label for="patient_mood" style="color:#334155; font-weight:600; font-size:1.05rem; display:block; margin-bottom:1rem;">How are you feeling after this session?</label>
+                        
+                        <div class="mood-selector" style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+                            {% set moods = {'Excellent': '🤩 Excellent', 'Good': '😊 Good', 'Neutral': '😐 Neutral', 'Bad': '🙁 Bad', 'Terrible': '😢 Terrible'} %}
+                            {% for val, label in moods %}
+                                <label style="cursor:pointer; position:relative;">
+                                    <input type="radio" name="patient_mood" value="{{ val }}" required style="position:absolute; opacity:0; width:0; height:0;">
+                                    <div class="mood-card" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.5rem; padding:1rem 1.5rem; border:2px solid #e2e8f0; border-radius:16px; background:#f8fafc; transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1); min-width:105px;">
+                                        <span style="font-size:2.2rem; filter:drop-shadow(0 2px 4px rgb(0 0 0 / 0.1)); line-height:1;">{{ label|split(' ')|first }}</span>
+                                        <span style="font-weight:600; color:#475569; font-size:0.95rem;">{{ label|split(' ')|last }}</span>
+                                    </div>
+                                </label>
+                            {% endfor %}
+                        </div>
+
+                        <button type="submit" class="submit-mood-btn" style="border:none; background:#8b5cf6; color:#fff; border-radius:10px; padding:0.75rem 1.5rem; font-weight:600; cursor:pointer; font-size:1rem; box-shadow:0 4px 6px -1px rgb(139 92 246 / 0.3); transition:all 0.2s;">Submit Reflection</button>
                     </form>
                 {% else %}
                     <p style="color:#64748b; font-style:italic; font-size:0.9rem;">Patient has not yet submitted their mood feedback.</p>
@@ -222,18 +228,18 @@
                         if (now >= aptStart && now <= aptEnd) {
                             sessionStorage.setItem(jitsiKey, 'true');
                             clearInterval(window.jitsiInterval);
+                            
                             Swal.fire({
                                 title: 'Session Started',
-                                text: 'Your video consultation time has arrived. Join now?',
+                                text: 'Redirecting you to the video consultation session automatically...',
                                 icon: 'info',
-                                showCancelButton: true,
-                                confirmButtonText: 'Join',
-                                cancelButtonText: 'Later'
-                            }).then((r) => {
-                                if (r.isConfirmed) {
-                                    window.open("{{ jitsi_url }}", "_blank");
-                                }
+                                timer: 3000,
+                                showConfirmButton: false
                             });
+                            
+                            setTimeout(() => {
+                                window.location.href = "{{ jitsi_url }}";
+                            }, 1500);
                         }
                     }, 10000);
                 }
@@ -252,5 +258,21 @@
 
     <style>
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        .mood-selector label input:checked + .mood-card {
+            border-color: #8b5cf6 !important;
+            background: #f5f3ff !important;
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 10px 15px -3px rgb(139 92 246 / 0.15), 0 4px 6px -4px rgb(139 92 246 / 0.1);
+        }
+        .mood-selector label:hover .mood-card {
+            border-color: #c4b5fd;
+            background: #faf5ff;
+        }
+        .submit-mood-btn:hover {
+            background: #7c3aed !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px -1px rgb(139 92 246 / 0.4) !important;
+        }
     </style>
 {% endblock %}
