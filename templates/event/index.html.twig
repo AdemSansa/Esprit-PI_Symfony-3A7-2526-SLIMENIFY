@@ -260,8 +260,11 @@
         .btn-outline { background: white; color: var(--text-main); border: 1.5px solid #e2e8f0; }
         .btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
 
-        .btn-delete { color: #ef4444; border-color: #fecaca; }
-        .btn-delete:hover { background: #fef2f2; }
+        .btn-edit { color: #16a34a; border: 1.5px solid #bbf7d0; }
+        .btn-edit:hover { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+
+        .btn-delete { color: #dc2626; border: 1.5px solid #fecaca; }
+        .btn-delete:hover { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
 
         .empty-state {
             grid-column: 1 / -1; text-align: center; padding: 5rem 2rem;
@@ -443,10 +446,16 @@
                     {% endif %}
 
                     {% if is_granted('ROLE_ADMIN') or (is_granted('ROLE_THERAPIST') and event.organizerId == app.user.id) %}
-                        <a href="{{ path('app_event_edit', {id: event.id}) }}" class="btn-premium btn-outline" title="Edit">Edit</a>
-                        <form method="post" action="{{ path('app_event_delete', {id: event.id}) }}" onsubmit="return confirm('Delete this event?');">
+                        <a href="{{ path('app_event_edit', {id: event.id}) }}" class="btn-premium btn-edit" title="Edit" style="flex: 1;">
+                            <i data-lucide="edit-3" style="width: 16px; height: 16px; margin-right: 6px; display: inline-block; vertical-align: middle;"></i>
+                            Edit
+                        </a>
+                        <form method="post" action="{{ path('app_event_delete', {id: event.id}) }}" onsubmit="return confirm('Delete this event?');" style="flex: 1; display: flex;">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
-                            <button type="submit" class="btn-premium btn-outline btn-delete" title="Delete"><i data-lucide="trash-2" style="width: 16px; height: 16px;"></i></button>
+                            <button type="submit" class="btn-premium btn-delete" title="Delete" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                                Delete
+                            </button>
                         </form>
                     {% endif %}
                 </div>
