@@ -41,7 +41,7 @@ class SendAppointmentRemindersCommand extends Command
             ->where('a.appointmentDate = :date')
             ->andWhere('a.status IN (:statuses)')
             ->setParameter('date', $tomorrow->format('Y-m-d'))
-            ->setParameter('statuses', ['pending', 'confirmed'])
+            ->setParameter('statuses', ['confirmed'])
             ->getQuery()
             ->getResult();
 

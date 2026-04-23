@@ -4,51 +4,168 @@
 
 {% block app_content %}
     <meta name="turbo-cache-control" content="no-cache">
-    <h1 style="margin-top:0; color:#334155;">Appointment History</h1>
-
-    {% if appointments is empty %}
-        <p style="color:#64748b;">No appointments found.</p>
-    {% else %}
-        <div style="display:grid; gap:1rem;">
-            {% for appointment in appointments %}
-                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:0.5rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 style="margin:0; color:#334155; font-size:1.15rem;">
-                            {{ appointment.type|default('General')|capitalize }} Session
-                        </h3>
-                        <span style="font-weight:600; padding:0.25rem 0.6rem; border-radius:6px; font-size:0.8rem; background:{{
-                            appointment.status == 'confirmed' ? '#dcfce7' :
-                            (appointment.status == 'completed' ? '#dbeafe' :
-                            (appointment.status == 'cancelled' ? '#fee2e2' : '#fef9c3'))
-                        }}; color:{{
-                            appointment.status == 'confirmed' ? '#166534' :
-                            (appointment.status == 'completed' ? '#1e40af' :
-                            (appointment.status == 'cancelled' ? '#991b1b' : '#854d0e'))
-                        }};">
-                            {{ appointment.status|default('pending')|capitalize }}
-                        </span>
-                    </div>
-
-                    <p style="margin:0; color:#64748b; font-size:0.95rem;">
-                        <strong>Date:</strong> {{ appointment.appointmentDate|date('Y-m-d') }}<br>
-                        <strong>Time:</strong> {{ appointment.startTime|date('H:i') }} - {{ appointment.endTime|date('H:i') }}
-                    </p>
-
-                    <div style="margin-top:0.4rem; color:#475569; font-size:0.9rem;">
-                        {% if is_therapist %}
-                            <strong>Client:</strong> {{ appointment.patient.firstName }} {{ appointment.patient.lastName }}
-                        {% else %}
-                            <strong>Therapist:</strong> {{ appointment.therapist.firstName }} {{ appointment.therapist.lastName }}
-                        {% endif %}
-                    </div>
-
-                    <div style="margin-top:1rem;">
-                        <a href="{{ path('app_appointments_detail', {id: appointment.id}) }}" style="display:inline-block; text-decoration:none; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; padding:0.4rem 0.8rem; font-size:0.9rem; font-weight:500; transition:all 0.15s;">
-                            View Details
-                        </a>
-                    </div>
-                </div>
-            {% endfor %}
+    
+    <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+            <div>
+                <h1 style="margin:0; color:#1e293b; font-size:2rem; font-weight:800; letter-spacing:-0.025em;">Your Sessions</h1>
+                <p style="margin:0.25rem 0 0; color:#64748b; font-size:1rem;">Manage and review your appointment history</p>
+            </div>
+            
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; background:#f8fafc; padding:0.4rem; border-radius:999px; border:1px solid #e2e8f0; box-shadow:inset 0 2px 4px rgb(0 0 0 / 0.02);">
+                {% set statuses = {'all': 'All', 'pending': 'Pending', 'confirmed': 'Confirmed', 'completed': 'Completed'} %}
+                {% for val, label in statuses %}
+                    <a href="{{ path('app_appointments_history', {'status': val == 'all' ? '' : val}) }}" 
+                       class="filter-pill {{ (current_filter|default('all') == val) or (current_filter == '' and val == 'all') ? 'active' : '' }}"
+                       style="text-decoration:none; padding:0.4rem 1.25rem; border-radius:999px; font-size:0.9rem; font-weight:600; transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                              {{ (current_filter|default('all') == val) or (current_filter == '' and val == 'all') 
+                                 ? 'background:#8b5cf6; color:#fff; box-shadow:0 4px 6px -1px rgb(139 92 246 / 0.4);' 
+                                 : 'color:#64748b; hover:color:#334155;' }}">
+                        {{ label }}
+                    </a>
+                {% endfor %}
+            </div>
         </div>
-    {% endif %}
+
+        {% if appointments is empty %}
+            <div style="text-align:center; padding:4rem 2rem; background:linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border:1px dashed #cbd5e1; border-radius:24px;">
+                <span style="font-size:3rem; display:block; margin-bottom:1rem;">🛋️</span>
+                <h3 style="margin:0 0 0.5rem; color:#334155; font-size:1.25rem;">No appointments found</h3>
+                <p style="margin:0; color:#64748b;">You don't have any sessions matching this filter.</p>
+            </div>
+        {% else %}
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:1.25rem;">
+                {% for appointment in appointments %}
+                    <div class="appointment-card" style="background:#fff; border:1px solid #e2e8f0; border-radius:20px; padding:1.5rem; display:flex; flex-direction:column; gap:1rem; transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative; overflow:hidden;">
+                        
+                        {# Decorative gradient blob #}
+                        <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; border-radius:50%; background:{{
+                            appointment.status == 'confirmed' ? 'radial-gradient(circle, rgba(34,197,94,0.15) 0%, rgba(255,255,255,0) 70%)' :
+                            (appointment.status == 'completed' ? 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(255,255,255,0) 70%)' :
+                            'radial-gradient(circle, rgba(234,179,8,0.15) 0%, rgba(255,255,255,0) 70%)')
+                        }}; z-index:0;"></div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; position:relative; z-index:1;">
+                            <div style="display:flex; align-items:center; gap:0.75rem;">
+                                <div style="display:flex; align-items:center; justify-content:center; width:46px; height:46px; border-radius:14px; background:{{ appointment.type == 'video' ? '#f5f3ff' : '#f0fdf4' }}; color:{{ appointment.type == 'video' ? '#8b5cf6' : '#16a34a' }};">
+                                    {% if appointment.type == 'video' %}
+                                        <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                    {% else %}
+                                        <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                    {% endif %}
+                                </div>
+                                <h3 style="margin:0; color:#1e293b; font-size:1.15rem; font-weight:700;">
+                                    {{ appointment.type|default('General')|capitalize }}
+                                </h3>
+                            </div>
+                            <span style="font-weight:700; padding:0.35rem 0.8rem; border-radius:9px; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; background:{{
+                                appointment.status == 'confirmed' ? '#dcfce7' :
+                                (appointment.status == 'completed' ? '#dbeafe' : '#fef9c3')
+                            }}; color:{{
+                                appointment.status == 'confirmed' ? '#166534' :
+                                (appointment.status == 'completed' ? '#1e40af' : '#854d0e')
+                            }};">
+                                {{ appointment.status|default('pending') }}
+                            </span>
+                        </div>
+
+                        <div style="background:#f8fafc; border-radius:12px; padding:1rem; position:relative; z-index:1;">
+                            <div style="display:flex; align-items:center; gap:0.5rem; color:#475569; font-size:0.95rem; margin-bottom:0.5rem;">
+                                <svg style="width:16px; height:16px; color:#8b5cf6;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <strong>{{ appointment.appointmentDate|date('D, M j, Y') }}</strong>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:0.5rem; color:#64748b; font-size:0.9rem;">
+                                <svg style="width:16px; height:16px; color:#8b5cf6;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                {{ appointment.startTime|date('h:i A') }} - {{ appointment.endTime|date('h:i A') }}
+                            </div>
+                        </div>
+
+                        <div style="display:flex; align-items:center; gap:0.75rem; margin-top:auto; position:relative; z-index:1;">
+                            <div style="width:36px; height:36px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; color:#64748b; font-weight:700; font-size:0.9rem;">
+                                {% if is_therapist %}
+                                    {{ appointment.patient.firstName|first }}{{ appointment.patient.lastName|first }}
+                                {% else %}
+                                    {{ appointment.therapist.firstName|first }}{{ appointment.therapist.lastName|first }}
+                                {% endif %}
+                            </div>
+                            <div style="color:#334155; font-size:0.95rem; font-weight:600;">
+                                {% if is_therapist %}
+                                    {{ appointment.patient.firstName }} {{ appointment.patient.lastName }}
+                                {% else %}
+                                    Dr. {{ appointment.therapist.lastName }}
+                                {% endif %}
+                            </div>
+                            
+                            <a href="{{ path('app_appointments_detail', {id: appointment.id}) }}" class="view-btn" style="margin-left:auto; text-decoration:none; background:#8b5cf6; color:#fff; border-radius:10px; padding:0.5rem 1rem; font-size:0.85rem; font-weight:600; transition:all 0.2s; box-shadow:0 2px 4px rgb(139 92 246 / 0.2);">
+                                Open
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="custom-pagination" style="margin-top:3rem; display:flex; justify-content:center;">
+                {{ knp_pagination_render(appointments) }}
+            </div>
+        {% endif %}
+    </div>
+
+    <style>
+        .filter-pill:hover:not(.active) { background: #e2e8f0 !important; }
+        .appointment-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -8px rgba(139, 92, 246, 0.15), 0 4px 6px -4px rgba(139, 92, 246, 0.1);
+            border-color: #c4b5fd !important;
+        }
+        .appointment-card:hover .view-btn {
+            background: #7c3aed !important;
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px rgb(139 92 246 / 0.3) !important;
+        }
+
+        /* Customizing KnpPaginator classes */
+        .custom-pagination .pagination {
+            display: flex;
+            gap: 0.4rem;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .custom-pagination .page-item .page-link,
+        .custom-pagination span.current {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .custom-pagination .page-item:not(.active) .page-link {
+            background: #fff;
+            color: #64748b;
+            border: 1px solid #cbd5e1;
+        }
+        .custom-pagination .page-item:not(.active) .page-link:hover {
+            background: #f1f5f9;
+            color: #334155;
+            border-color: #94a3b8;
+        }
+        .custom-pagination span.current,
+        .custom-pagination .page-item.active .page-link {
+            background: #8b5cf6;
+            color: #fff;
+            border: 1px solid #7c3aed;
+            box-shadow: 0 4px 6px -1px rgb(139 92 246 / 0.4);
+        }
+        .custom-pagination .page-item.disabled .page-link {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f8fafc;
+            color: #94a3b8;
+        }
+    </style>
 {% endblock %}
