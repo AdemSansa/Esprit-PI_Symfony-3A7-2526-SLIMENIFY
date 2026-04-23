@@ -430,14 +430,23 @@
         function setupRoleToggle() {
             const roleSelect = document.getElementById('registration_form_role') || document.querySelector('.role-select-input');
             const therapistFields = document.getElementById('therapist-fields');
+            const dateInput = document.getElementById('registration_form_dateNaissance');
 
             if (!roleSelect || !therapistFields) return;
 
             function toggleFields() {
                 if (roleSelect.value === 'therapist') {
                     therapistFields.style.display = 'block';
+                    if (dateInput) {
+                        const today = new Date();
+                        const twentyYearsAgo = new Date(today.getFullYear() - 20, today.getMonth(), today.getDate());
+                        dateInput.max = twentyYearsAgo.toISOString().split('T')[0];
+                    }
                 } else {
                     therapistFields.style.display = 'none';
+                    if (dateInput) {
+                        dateInput.removeAttribute('max');
+                    }
                 }
             }
 

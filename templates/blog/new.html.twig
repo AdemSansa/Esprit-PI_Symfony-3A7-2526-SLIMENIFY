@@ -5,83 +5,221 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
+    .form-page-background {
+        background: radial-gradient(circle at 10% 20%, rgba(98, 114, 85, 0.05) 0%, rgba(255, 255, 255, 1) 90%);
+        min-height: 100vh;
+        padding: 4rem 1rem;
+    }
     .form-container {
-        max-width: 680px;
-        margin: 2rem auto;
-        background: white;
-        padding: 3rem;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        max-width: 800px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        padding: 3.5rem;
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.04);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        position: relative;
+        overflow: hidden;
+    }
+    .form-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, #627255, #9dad90);
     }
     .form-group {
-        margin-bottom: 2rem;
+        margin-bottom: 2.25rem;
+        position: relative;
     }
     .form-label {
         display: block;
-        font-weight: 600;
+        font-weight: 700;
         margin-bottom: 0.75rem;
         color: #1e293b;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
     .form-control {
         width: 100%;
-        padding: 12px 16px;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
+        padding: 14px 20px;
+        border: 2px solid #f1f5f9;
+        border-radius: 12px;
         font-size: 1rem;
-        transition: border-color 0.2s;
+        background: #f8fafc;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: #1e293b;
     }
     .form-control:focus {
         outline: none;
         border-color: #627255;
-        box-shadow: 0 0 0 3px rgba(98,114,85,0.1);
+        background: white;
+        box-shadow: 0 10px 20px rgba(98,114,85,0.08);
+        transform: translateY(-2px);
     }
     .btn-submit {
-        background: #627255;
+        background: linear-gradient(135deg, #627255 0%, #4f5d44 100%);
         color: white;
         border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
+        padding: 1rem 2rem;
+        border-radius: 12px;
         font-weight: 700;
         cursor: pointer;
         width: 100%;
         font-size: 1.1rem;
+        transition: all 0.3s;
+        box-shadow: 0 10px 20px rgba(98,114,85,0.2);
     }
     .btn-submit:hover {
-        background: #4f5d44;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(98,114,85,0.3);
+    }
+    .ai-box {
+        background: #f8fafc;
+        border: 2px dashed #e2e8f0;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2.5rem;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    .ai-box:hover {
+        border-color: #627255;
+        background: #f4f6f2;
+    }
+    #generate-image-btn {
+        background: #fff;
+        color: #627255;
+        border: 2px solid #627255;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+    }
+    #generate-image-btn:hover {
+        background: #627255;
+        color: white;
     }
     .form-error {
         color: #ef4444;
         font-size: 0.85rem;
         margin-top: 0.5rem;
+        font-weight: 500;
     }
 </style>
 {% endblock %}
 
 {% block app_content %}
-<div class="form-container">
-    <h1 style="margin-bottom: 0.5rem; font-weight: 800;">Write a new story</h1>
-    <p style="color: #64748b; margin-bottom: 2.5rem;">Share your expertise with the world. No emojis, just pure content.</p>
+<div class="form-page-background">
+    <div class="form-container">
+        <h1 style="margin-bottom: 0.5rem; font-weight: 800; font-size: 2.25rem; color: #1e293b;">Craft Your Story</h1>
+        <p style="color: #64748b; margin-bottom: 3rem; font-size: 1.1rem;">Share your unique perspective with our community.</p>
 
-    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
-        <div class="form-group">
-            {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
-            <div class="form-error">{{ form_errors(form.title) }}</div>
-        </div>
+        {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+            <div class="form-group">
+                {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'Type your title here...'}}) }}
+                <div class="form-error">{{ form_errors(form.title) }}</div>
+            </div>
 
-        <div class="form-group">
-            {{ form_label(form.photo, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.photo, {'attr': {'class': 'form-control'}}) }}
-            <div class="form-error">{{ form_errors(form.photo) }}</div>
-        </div>
+            <div class="form-group">
+                {{ form_label(form.photo, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.photo, {'attr': {'class': 'form-control'}}) }}
+                <div class="form-error">{{ form_errors(form.photo) }}</div>
+            </div>
 
-        <div class="form-group">
-            {{ form_label(form.content, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.content, {'attr': {'class': 'form-control'}}) }}
-            <div class="form-error">{{ form_errors(form.content) }}</div>
-        </div>
+            <div class="form-group">
+                {{ form_label(form.content, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.content, {'attr': {'class': 'form-control', 'style': 'min-height: 200px;', 'placeholder': 'Once upon a time...'}}) }}
+                <div class="form-error">{{ form_errors(form.content) }}</div>
+            </div>
 
-        <button type="submit" class="btn-submit">Publish Story</button>
-    {{ form_end(form) }}
+            <div class="ai-box">
+                <div style="margin-bottom: 1rem; color: #64748b; font-size: 0.9rem; font-weight: 600;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 5px;"><path d="M12 2v8"/><path d="m4.93 4.93 4.24 4.24"/><path d="M2 12h8"/><path d="m4.93 19.07 4.24-4.24"/><path d="M12 22v-8"/><path d="m19.07 19.07-4.24-4.24"/><path d="M22 12h-8"/><path d="m19.07 4.93-4.24 4.24"/></svg>
+                    AI CREATIVE ASSISTANT
+                </div>
+                <button type="button" id="generate-image-btn">
+                    Generate Cover Image from Content
+                </button>
+                <div id="generation-status" style="display: none; font-size: 0.9rem; color: #627255; margin-top: 1rem; animation: pulse 1.5s infinite;">
+                    Blending pixels and thoughts...
+                </div>
+                <img id="generated-image" style="max-width: 100%; border-radius: 12px; display: none; border: 1px solid #e2e8f0; margin-top: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <input type="hidden" name="generated_photo" id="generated-photo-input">
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.category, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.category, {'attr': {'class': 'form-control'}}) }}
+                <div class="form-error">{{ form_errors(form.category) }}</div>
+            </div>
+
+            <div style="margin-top: 3rem;">
+                <button type="submit" class="btn-submit">
+                    Publish Story Now
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
 </div>
+<style>
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+</style>
+<script>
+document.getElementById("generate-image-btn").addEventListener("click", function() {
+    let content = document.getElementById("blog_content").value;
+    if (!content.trim()) {
+        alert("Please write some content first so I can generate a relevant image!");
+        return;
+    }
+
+    const btn = this;
+    const status = document.getElementById("generation-status");
+    btn.disabled = true;
+    status.style.display = "block";
+
+    fetch("{{ path('generate_image') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text: content })
+    })
+    .then(async res => {
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => null);
+            throw new Error(errorData?.error || "Server error occurred");
+        }
+        return res.json();
+    })
+    .then(data => {
+        btn.disabled = false;
+        status.style.display = "none";
+
+        let img = document.getElementById("generated-image");
+        img.src = data.image;
+        img.style.display = "block";
+
+        const filename = data.image.split('/').pop();
+        document.getElementById("generated-photo-input").value = filename;
+    })
+    .catch(err => {
+        btn.disabled = false;
+        status.style.display = "none";
+        alert("Generation failed: " + err.message);
+    });
+});
+</script>
 {% endblock %}

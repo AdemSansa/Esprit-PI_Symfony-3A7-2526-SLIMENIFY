@@ -10,9 +10,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        /* Affiche le motif entier en se répétant */
         background: #f6f5ed url('{{ asset("psy.png") }}') top left repeat;
-        background-size: auto; /* Affiche la photo à sa taille réelle ou utilisez contain pour l'ajuster */
+        background-size: auto;
         padding: 2rem;
         font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     }
@@ -40,7 +39,7 @@
         width: 120px; /* Réduit de 140px */
         height: 120px; /* Réduit de 140px */
         border-radius: 50%;
-        border: 2px solid #f1f5f9;
+        border: 2px solid #fdfaf8;
         padding: 5px;
         margin-bottom: 1.25rem;
         display: flex;
@@ -66,12 +65,12 @@
         margin-bottom: 0.5rem;
         font-size: 0.9rem;
         font-weight: 500;
-        color: #475569;
+        color: #4a544a;
     }
     .form-input {
         width: 100%;
         padding: 0.65rem 0.9rem; /* Réduit de 0.75rem 1rem */
-        border: 1px solid #cbd5e1;
+        border: 1px solid #c2cdc2;
         border-radius: 10px; /* Un peu plus arrondi pour la douceur */
         font-size: 0.9rem; /* Réduit de 0.95rem */
         outline: none;
@@ -86,7 +85,7 @@
         display: block;
         text-align: right;
         font-size: 0.85rem;
-        color: #64748b;
+                color: #5d665d;
         text-decoration: none;
         margin-bottom: 2rem;
         transition: color 0.2s;
@@ -115,7 +114,7 @@
         text-align: center;
         margin-top: 1.5rem;
         font-size: 0.9rem;
-        color: #64748b;
+                color: #5d665d;
     }
     .register-link a {
         color: #627255;
@@ -143,16 +142,16 @@
                 <img src="{{ asset('logo.jpg') }}" alt="Logo Slimenify" style="max-width: 100%; max-height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.src='https://ui-avatars.com/api/?name=Slimenify&background=627255&color=fff&size=140'">
             </div>
             <h1 style="font-size: 2.5rem; font-weight: 800; margin: 0 0 0.5rem 0; background: linear-gradient(90deg, #3d4a32, #6a7c5c); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Slimenify</h1>
-            <p style="color: #64748b; font-size: 1.15rem; font-style: italic; margin: 0 0 2rem 0;">Votre bien-être, notre priorité.</p>
-            <p style="color: #94a3b8; font-size: 0.9rem; margin: 0; max-width: 250px; line-height: 1.5;">Rejoignez notre communauté de soins et de soutien.</p>
+            <p style="color: #665544; font-size: 1.15rem; font-style: italic; margin: 0 0 2rem 0;">Votre bien-être, notre priorité.</p>
+            <p style="color: #948b83; font-size: 0.9rem; margin: 0; max-width: 250px; line-height: 1.5;">Rejoignez notre communauté de soins et de soutien.</p>
         </div>
 
         <!-- Colonne Droite -->
         <div class="login-right">
             <form method="post" action="{{ path('app_login') }}">
                 
-                <h2 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0 0 0.25rem 0;">Connexion</h2>
-                <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 2rem 0;">Veuillez entrer vos identifiants</p>
+                <h2 style="font-size: 1.75rem; font-weight: 700; color: #2d1e16; margin: 0 0 0.25rem 0;">Connexion</h2>
+                <p style="color: #948b83; font-size: 0.85rem; margin: 0 0 2rem 0;">Veuillez entrer vos identifiants</p>
 
                 {% if error %}
                     <div style="background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; padding: 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1.5rem;">
@@ -196,7 +195,7 @@
                     Se connecter
                 </button>
 
-                <div style="margin: 1.5rem 0; display: flex; align-items: center; text-align: center; color: #94a3b8; font-size: 0.85rem;">
+                <div style="margin: 1.5rem 0; display: flex; align-items: center; text-align: center; color: #948b83; font-size: 0.85rem;">
                     <hr style="flex: 1; border: none; border-top: 1px solid #e2e8f0;">
                     <span style="padding: 0 10px;">OU</span>
                     <hr style="flex: 1; border: none; border-top: 1px solid #e2e8f0;">
@@ -211,15 +210,8 @@
                     Pas encore de compte ? <a href="{{ path('app_register') }}">S'inscrire</a>
                 </p>
 
-                <!-- DEV TOOLS (GARDÉ POUR VOS TESTS) -->
-                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px dashed #e2e8f0;">
-                    <p style="text-align: center; margin-bottom: 0.75rem; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Outils Développeur (Auto-fill)</p>
-                    <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-                        <button type="button" style="padding: 4px 8px; font-size: 0.75rem; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; color: #64748b; cursor: pointer;" onclick="document.getElementById('inputEmail').value='patient@gmail.com'; document.getElementById('inputPassword').value='123456';">Patient</button>
-                        <button type="button" style="padding: 4px 8px; font-size: 0.75rem; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; color: #64748b; cursor: pointer;" onclick="document.getElementById('inputEmail').value='therapist@gmail.com'; document.getElementById('inputPassword').value='123456';">Therapist</button>
-                        <button type="button" style="padding: 4px 8px; font-size: 0.75rem; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; color: #64748b; cursor: pointer;" onclick="document.getElementById('inputEmail').value='admin@gmail.com'; document.getElementById('inputPassword').value='123456';">Admin</button>
-                    </div>
-                </div>
+            
+               
             </form>
         </div>
     </div>

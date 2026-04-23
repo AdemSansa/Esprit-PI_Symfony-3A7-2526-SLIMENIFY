@@ -6,14 +6,16 @@ use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
-
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class RegistrationFormType extends AbstractType
 {
@@ -72,7 +74,27 @@ class RegistrationFormType extends AbstractType
                     ])
                 ]
             ])
-            ->add('dateNaissance')
+            ->add('dateNaissance', DateType::class, [
+                'widget' => 'single_text',
+                'required' => false,
+                'constraints' => [
+                    new Callback(function ($date, ExecutionContextInterface $context) {
+                        if (!$date) return;
+                        
+                        $form = $context->getRoot();
+                        $role = $form->has('role') ? $form->get('role')->getData() : null;
+                        
+                        // Apply the +20 years old check only if the selected role is therapist
+                        if ($role === 'therapist') {
+                            $twentyYearsAgo = new \DateTime('-20 years');
+                            if ($date > $twentyYearsAgo) {
+                                $context->buildViolation('As a therapist, you must be at least 20 years old.')
+                                    ->addViolation();
+                            }
+                        }
+                    }),
+                ],
+            ])
             ->add('gender', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
                 'choices'  => [
                     'Male' => 'Male',

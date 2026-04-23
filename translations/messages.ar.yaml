@@ -1,0 +1,17 @@
+brand:
+  name: سليمنيفاي
+common:
+  welcome: مرحبا!
+  user: مستخدم
+nav:
+  home: الرئيسية
+  assessments: التقييمات
+  products: المنتجات
+  events: الفعاليات
+  therapists: المعالجون
+auth:
+  login: تسجيل الدخول
+  register: إنشاء حساب
+  logout: تسجيل الخروج
+header:
+  welcome: أهلا

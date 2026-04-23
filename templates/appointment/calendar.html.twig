@@ -29,7 +29,7 @@
     <h1 style="margin-top:0; font-size:1.7rem; color:#334155;">Appointment Calendar</h1>
     <p style="color:#64748b; max-width:70ch;">
         {% if is_therapist %}
-            Drag or resize appointments to reschedule. Colors: pending (yellow), confirmed (green), completed (blue).
+            Drag or resize appointments to reschedule. Colors: pending (yellow), confirmed (green), completed (moss green).
         {% else %}
             Choose a therapist first, then select a free slot to create a booking.
         {% endif %}
@@ -55,12 +55,12 @@
     <div style="display:flex; gap:0.5rem; margin-bottom:0.7rem;">
         <span style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.85rem;"><span style="width:10px; height:10px; background:#eab308; border-radius:50%;"></span>Pending</span>
         <span style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.85rem;"><span style="width:10px; height:10px; background:#22c55e; border-radius:50%;"></span>Confirmed</span>
-        <span style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.85rem;"><span style="width:10px; height:10px; background:#3b82f6; border-radius:50%;"></span>Completed</span>
+        <span style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.85rem;"><span style="width:10px; height:10px; background:#748764; border-radius:50%;"></span>Completed</span>
     </div>
 
     <div id="calendar" style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:0.8rem;"></div>
 
-    <div id="booking-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.35); z-index:9999; align-items:center; justify-content:center;">
+    <div id="booking-modal" style="display:none; position:fixed; inset:0; background:rgba(45,34,26,0.35); z-index:9999; align-items:center; justify-content:center;">
         <div style="background:#fff; width:100%; max-width:440px; border-radius:14px; border:1px solid #e2e8f0; padding:1rem;">
             <h3 style="margin-top:0; color:#334155;">Book Appointment</h3>
             <p id="booking-range" style="margin:0 0 0.8rem; color:#64748b; font-size:0.9rem;"></p>

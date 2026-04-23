@@ -16,22 +16,24 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/events')]
 class EventWebController extends AbstractController
 {
     #[Route('/', name: 'app_event_index', methods: ['GET'])]
-    public function index(Request $request, EventRepository $eventRepository, RegistrationRepository $registrationRepository): Response
+    public function index(Request $request, EventRepository $eventRepository, RegistrationRepository $registrationRepository, PaginatorInterface $paginator): Response
     {
         $query = $request->query->get('q', '');
         $format = $request->query->get('format', 'all');
+        $mine = $request->query->getBoolean('mine', false);
         $user = $this->getUser();
         
-        // Build query based on role
+        // Build query
         $qb = $eventRepository->createQueryBuilder('e');
         
-        if ($this->isGranted('ROLE_THERAPIST') && !$this->isGranted('ROLE_ADMIN')) {
-            // Therapists only see their own events
+        if ($mine && $user) {
+            // Filter to show only user's events
             $qb->andWhere('e.organizerId = :organizerId')
                ->setParameter('organizerId', $user->getId());
         }
@@ -46,9 +48,14 @@ class EventWebController extends AbstractController
                ->setParameter('format', $format);
         }
         
-        $events = $qb->orderBy('e.dateStart', 'ASC')
-                     ->getQuery()
-                     ->getResult();
+        $queryBuilder = $qb->orderBy('e.dateStart', 'ASC')
+                     ->getQuery();
+
+        $events = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            4 // Items per page
+        );
 
         // 🌟 ANTICIPATED EVENTS (Top 5 Imminent)
         $anticipatedEvents = $eventRepository->createQueryBuilder('e')
@@ -76,6 +83,7 @@ class EventWebController extends AbstractController
             'anticipatedEvents' => $anticipatedEvents,
             'searchQuery' => $query,
             'currentFormat' => $format,
+            'isMine' => $mine,
             'userRegistrations' => $userRegistrations,
         ]);
     }
@@ -132,6 +140,7 @@ class EventWebController extends AbstractController
     {
         $user = $this->getUser();
         $userRegistration = null;
+
 
         if ($user) {
             // Check if the current user is already registered

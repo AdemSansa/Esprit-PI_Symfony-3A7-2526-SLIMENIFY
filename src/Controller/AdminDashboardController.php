@@ -31,40 +31,132 @@ class AdminDashboardController extends AbstractController
 
         // Supplier Stats
         $totalSuppliers = $supplierRepository->count([]);
-        $latestSuppliers = $supplierRepository->findBy([], ['createdAt' => 'DESC'], 5);
-
-        // Payment/Order Stats
+        
+        // Orders & Revenue
         $orders = $commandeRepository->findAll();
         $totalRevenue = 0;
         $orderCount = count($orders);
+        
+        // Unify Status Breakdown (Removing language duplicates)
         $statusBreakdown = [
-            'en_attente' => 0,
-            'payée' => 0,
-            'livrée' => 0,
-            'annulée' => 0,
+            'pending' => 0,
+            'paid' => 0,
+            'delivered' => 0,
+            'cancelled' => 0,
+        ];
+        
+        $statusMap = [
+            'en_attente' => 'pending',
+            'pending' => 'pending',
+            'payée' => 'paid',
+            'paid' => 'paid',
+            'livrée' => 'delivered',
+            'delivered' => 'delivered',
+            'annulée' => 'cancelled',
+            'cancelled' => 'cancelled',
+            'validated' => 'paid', // Mapping Validated to Paid for clarity
         ];
 
+        $supplierRevenue = [];
+        $allProductIdsInOrders = [];
+
         foreach ($orders as $order) {
-            $totalRevenue += $order->getTotalAmount();
-            $status = $order->getStatus();
-            if (isset($statusBreakdown[$status])) {
-                $statusBreakdown[$status]++;
-            } else {
-                $statusBreakdown[$status] = ($statusBreakdown[$status] ?? 0) + 1;
+            $rawStatus = strtolower(trim($order->getStatus()));
+            $unifiedStatus = $statusMap[$rawStatus] ?? 'other';
+            
+            // Increment status count
+            if ($unifiedStatus !== 'other') {
+                $statusBreakdown[$unifiedStatus]++;
+            }
+
+            // ONLY COUNT REVENUE FOR DELIVERED ORDERS
+            if ($unifiedStatus === 'delivered') {
+                $totalRevenue += $order->getTotalAmount();
+
+                // Track revenue per supplier for the "Best Supplier" stat
+                foreach ($order->getItemsDetails() as $item) {
+                    $productId = $item['id'] ?? null;
+                    $itemTotal = $item['total_price'] ?? 0;
+                    if ($productId) {
+                        $allProductIdsInOrders[$productId] = ($allProductIdsInOrders[$productId] ?? 0) + $itemTotal;
+                    }
+                }
+            }
+        }
+
+        // Identify Best Supplier
+        $bestSupplier = null;
+        $bestSupplierRevenue = 0;
+
+        if (!empty($allProductIdsInOrders)) {
+            $products = $productRepository->findBy(['id' => array_keys($allProductIdsInOrders)]);
+            $tempSupplierMap = [];
+            foreach ($products as $product) {
+                if ($product->getSupplier()) {
+                    $sName = $product->getSupplier()->getName();
+                    $rev = $allProductIdsInOrders[$product->getId()];
+                    $tempSupplierMap[$sName] = ($tempSupplierMap[$sName] ?? 0) + $rev;
+                }
+            }
+            
+            if (!empty($tempSupplierMap)) {
+                arsort($tempSupplierMap);
+                $bestSupplier = key($tempSupplierMap);
+                $bestSupplierRevenue = current($tempSupplierMap);
             }
         }
 
         $recentOrders = $commandeRepository->findBy([], ['createdAt' => 'DESC'], 10);
 
+        // --- CHART DATA ---
+        // 1. Supplier Revenue Map for Pie Chart
+        $supplierRevenueMap = [];
+        if (!empty($allProductIdsInOrders)) {
+            $allProducts = $productRepository->findBy(['id' => array_keys($allProductIdsInOrders)]);
+            foreach ($allProducts as $product) {
+                if ($product->getSupplier()) {
+                    $sName = $product->getSupplier()->getName();
+                    $rev = $allProductIdsInOrders[$product->getId()];
+                    $supplierRevenueMap[$sName] = ($supplierRevenueMap[$sName] ?? 0) + $rev;
+                }
+            }
+            arsort($supplierRevenueMap);
+        }
+
+        // 2. Monthly Revenue Line Chart (last 6 months, delivered orders only)
+        $monthlyRevenue = [];
+        $monthlyLabels = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = new \DateTime("first day of -$i months");
+            $monthlyLabels[] = $date->format('M Y');
+            $monthlyRevenue[$date->format('Y-m')] = 0;
+        }
+
+        foreach ($orders as $order) {
+            $rawStatus = strtolower(trim($order->getStatus()));
+            $unifiedStatus = $statusMap[$rawStatus] ?? 'other';
+            if ($unifiedStatus === 'delivered' && $order->getCreatedAt()) {
+                $monthKey = $order->getCreatedAt()->format('Y-m');
+                if (isset($monthlyRevenue[$monthKey])) {
+                    $monthlyRevenue[$monthKey] += $order->getTotalAmount();
+                }
+            }
+        }
+
         return $this->render('admin/dashboard/index.html.twig', [
-            'total_products' => $totalProducts,
-            'low_stock_products' => $lowStockProducts,
-            'total_suppliers' => $totalSuppliers,
-            'latest_suppliers' => $latestSuppliers,
-            'total_revenue' => $totalRevenue,
-            'order_count' => $orderCount,
-            'status_breakdown' => $statusBreakdown,
-            'recent_orders' => $recentOrders,
+            'total_products'          => $totalProducts,
+            'low_stock_products'      => $lowStockProducts,
+            'total_suppliers'         => $totalSuppliers,
+            'total_revenue'           => $totalRevenue,
+            'order_count'             => $orderCount,
+            'status_breakdown'        => $statusBreakdown,
+            'recent_orders'           => $recentOrders,
+            'best_supplier'           => $bestSupplier,
+            'best_supplier_revenue'   => $bestSupplierRevenue,
+            'supplier_revenue_map'    => $supplierRevenueMap,
+            'monthly_revenue_labels'  => $monthlyLabels,
+            'monthly_revenue_values'  => array_values($monthlyRevenue),
         ]);
+
     }
 }

@@ -98,6 +98,65 @@
     .form-card div {
         margin-bottom: 20px;
     }
+
+    /* Gender Cards (copied from register) */
+    .gender-cards-container {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+    .gender-card {
+        flex: 1;
+        cursor: pointer;
+        position: relative;
+    }
+    .gender-radio-input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .gender-card-content {
+        border: 2px solid #EBE6DF;
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: #A8866E;
+    }
+    .gender-icon {
+        width: 32px;
+        height: 32px;
+        margin: 0 auto 8px auto;
+        display: block;
+        stroke: currentColor;
+        transition: all 0.3s ease;
+    }
+    .gender-label {
+        display: block;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+    .gender-card:hover .gender-card-content {
+        border-color: #A8866E;
+        transform: translateY(-2px);
+        color: #A8866E;
+    }
+    .gender-radio-input:checked + .gender-card-content {
+        border-color: #687560;
+        color: #687560;
+        box-shadow: 0 4px 15px rgba(104, 117, 96, 0.15);
+        background: #FDFDFD;
+        transform: translateY(-2px);
+    }
+    .form-group ul {
+        color: #D9534F;
+        list-style: none;
+        padding: 0;
+        margin-top: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
 </style>
 
 <div class="form-header">
@@ -107,6 +166,10 @@
 <div class="form-card">
     {{ form_start(form) }}
         
+        <div style="color: #D9534F; font-size: 0.9rem; margin-bottom: 15px;">
+            {{ form_errors(form) }}
+        </div>
+
         <div class="form-group">
             {{ form_label(form.firstName) }}
             {{ form_widget(form.firstName) }}
@@ -133,8 +196,20 @@
 
         <div class="form-group">
             {{ form_label(form.gender) }}
-            <div style="display: flex; gap: 15px; align-items: center; justify-content: flex-start;">
-                {{ form_widget(form.gender) }}
+            <div class="gender-cards-container">
+                {% for child in form.gender %}
+                    <label class="gender-card">
+                        {{ form_widget(child, {'attr': {'class': 'gender-radio-input'}}) }}
+                        <div class="gender-card-content">
+                            {% if child.vars.value == 'Male' %}
+                                <svg class="gender-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="14" r="5"></circle><line x1="13.5" y1="10.5" x2="21" y2="3"></line><line x1="16" y1="3" x2="21" y2="3"></line><line x1="21" y1="3" x2="21" y2="8"></line></svg>
+                            {% else %}
+                                <svg class="gender-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="5"></circle><line x1="12" y1="15" x2="12" y2="22"></line><line x1="9" y1="19" x2="15" y2="19"></line></svg>
+                            {% endif %}
+                            <span class="gender-label">{{ child.vars.label }}</span>
+                        </div>
+                    </label>
+                {% endfor %}
             </div>
             {{ form_errors(form.gender) }}
         </div>
@@ -147,7 +222,7 @@
 
         <div class="form-group">
             {{ form_label(form.photoUrl) }}
-            {{ form_widget(form.photoUrl, {'attr': {'placeholder': 'Ex: https://image.com/myphoto.jpg'}}) }}
+            {{ form_widget(form.photoUrl) }}
             {{ form_errors(form.photoUrl) }}
         </div>
 
@@ -160,4 +235,15 @@
         </div>
     {{ form_end(form) }}
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dateInput = document.getElementById('profile_dateNaissance');
+        if (dateInput) {
+            const today = new Date();
+            const twentyYearsAgo = new Date(today.getFullYear() - 20, today.getMonth(), today.getDate());
+            dateInput.max = twentyYearsAgo.toISOString().split('T')[0];
+        }
+    });
+</script>
 {% endblock %}

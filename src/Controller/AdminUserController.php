@@ -109,4 +109,30 @@ class AdminUserController extends AbstractController
 
         return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
     }
+
+    #[Route('/{id}/toggle-block', name: 'app_admin_user_toggle_block', methods: ['POST'])]
+    public function toggleBlock(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('toggle_block'.$user->getId(), $request->getPayload()->getString('_token'))) {
+            $user->setIsBlocked(!$user->isBlocked());
+            $entityManager->flush();
+            $status = $user->isBlocked() ? 'bloqué' : 'débloqué';
+            $this->addFlash('success', "Le compte de l'utilisateur a été $status avec succès.");
+        }
+
+        return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{id}/toggle-archive', name: 'app_admin_user_toggle_archive', methods: ['POST'])]
+    public function toggleArchive(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('toggle_archive'.$user->getId(), $request->getPayload()->getString('_token'))) {
+            $user->setIsArchived(!$user->isArchived());
+            $entityManager->flush();
+            $status = $user->isArchived() ? 'archivé' : 'désarchivé';
+            $this->addFlash('success', "Le compte de l'utilisateur a été $status avec succès.");
+        }
+
+        return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
+    }
 }

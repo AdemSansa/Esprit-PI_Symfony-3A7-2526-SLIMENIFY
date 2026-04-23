@@ -7,9 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --primary-dark: #4f46e5;
+            --primary: #748764;
+            --primary-light: #748764;
+            --primary-dark: #2d1e16;
             --secondary: #ec4899;
             --bg-body: #f8fafc;
             --card-bg: #ffffff;
@@ -66,7 +66,7 @@
             align-items: center;
             gap: 0.5rem;
             background: rgba(99,102,241,0.2);
-            color: #818cf8;
+            color: #748764;
             padding: 0.5rem 1rem;
             border-radius: 99px;
             font-weight: 700;
@@ -141,6 +141,9 @@
             border: 1px solid #e2e8f0;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
         .event-card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.1); border-color: transparent; }
 
@@ -161,10 +164,71 @@
         .type-physique { background: rgba(236, 72, 153, 0.85); }
         .type-hybride  { background: rgba(14, 165, 233, 0.85); }
 
-        .card-content { padding: 2rem; }
+        /* 🏷️ STATUS BADGES */
+        .status-badge {
+            position: absolute; top: 1rem; right: 1rem;
+            padding: 0.5rem 1rem; border-radius: 12px;
+            font-size: 0.75rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            backdrop-filter: blur(8px);
+            color: white;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .status-upcoming { background: rgba(249, 115, 22, 0.9); } /* Orange */
+        .status-started { background: rgba(34, 197, 94, 0.9); }  /* Green */
+        .status-ended   { background: rgba(239, 68, 68, 0.9); }  /* Red */
+        
+        .status-dot { 
+            width: 8px; height: 8px; border-radius: 50%; background: white; 
+            box-shadow: 0 0 8px rgba(255,255,255,0.8);
+        }
+        .status-pulse { animation: status-pulse-animation 2s infinite; }
+        @keyframes status-pulse-animation { 
+            0% { transform: scale(1); opacity: 1; } 
+            50% { transform: scale(1.4); opacity: 0.6; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+
+        /* 🔔 NOTIFY BUTTON */
+        .notify-btn {
+            position: absolute; bottom: 1rem; right: 1rem;
+            width: 40px; height: 40px; border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 20; color: #64748b;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            backdrop-filter: blur(4px);
+        }
+        .notify-btn:hover { transform: scale(1.1); background: white; color: #6366f1; }
+        .notify-btn.active { background: #6366f1; color: white; }
+
+        .card-content { 
+            padding: 2rem; 
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
         
         .card-date { color: var(--primary); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
-        .card-title { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 1rem; line-height: 1.25; letter-spacing: -0.02em; }
+        .card-title { 
+            font-size: 1.5rem; 
+            font-weight: 800; 
+            color: #0f172a; 
+            margin-bottom: 1rem; 
+            line-height: 1.25; 
+            letter-spacing: -0.02em;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 3.75rem;
+        }
         
         .meta-row { display: flex; align-items: flex-start; gap: 0.75rem; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem; }
 
@@ -175,7 +239,14 @@
         .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light)); width: 0; transition: width 1.5s cubic-bezier(0.1, 0.5, 0.1, 1); }
         .progress-full { background: #ef4444; }
 
-        .card-footer { border-top: 1px solid #f1f5f9; padding: 1.5rem 2rem; background: #fafafa; display: flex; gap: 0.75rem; }
+        .card-footer { 
+            border-top: 1px solid #f1f5f9; 
+            padding: 1.5rem 2rem; 
+            background: #fafafa; 
+            display: flex; 
+            gap: 0.75rem; 
+            margin-top: auto;
+        }
 
         /* BUTTONS */
         .btn-premium {
@@ -206,6 +277,7 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             margin-bottom: 0.5rem;
+            flex-grow: 1;
         }
         /* 🎪 CAROUSEL WRAPPER */
         #hero-carousel { position: relative; margin-bottom: 3rem; border-radius: 32px; overflow: hidden; height: 400px; }
@@ -235,7 +307,14 @@
                             <div class="hero-pattern"></div>
                             <div class="hero-glow"></div>
                             <div class="hero-content">
-                                <div class="featured-tag">✨ Most Anticipated</div>
+                                <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1.5rem;">
+                                    <div class="featured-tag" style="margin-bottom: 0;"><i data-lucide="sparkles" style="width: 14px; height: 14px; margin-right: 4px;"></i> Most Anticipated</div>
+                                    {% set hStatus = event.getTimeStatus() %}
+                                    <div class="status-badge status-{{ hStatus }}" style="position: static; font-size: 0.7rem; padding: 0.4rem 0.8rem;">
+                                        {% if hStatus == 'started' %}<span class="status-dot status-pulse"></span>{% endif %}
+                                        {{ event.getStatusLabel() }}
+                                    </div>
+                                </div>
                                 <a href="{{ path('app_event_show', {id: event.id}) }}" style="text-decoration: none; color: inherit;">
                                     <h1 class="hero-title">{{ event.title }}</h1>
                                 </a>
@@ -268,7 +347,12 @@
     {# 🔍 CONTROL BAR: Filters & Search #}
     <div class="control-bar">
         <div class="format-filters">
-            <a href="{{ path('app_event_index', {format: 'all', q: searchQuery}) }}" class="filter-tab {{ currentFormat == 'all' ? 'active' : '' }}">All Events</a>
+            <a href="{{ path('app_event_index', {format: 'all', q: searchQuery}) }}" class="filter-tab {{ (currentFormat == 'all' and not isMine) ? 'active' : '' }}">All Events</a>
+            
+            {% if is_granted('ROLE_THERAPIST') %}
+                <a href="{{ path('app_event_index', {mine: 1}) }}" class="filter-tab {{ isMine ? 'active' : '' }}">My Events</a>
+            {% endif %}
+
             <a href="{{ path('app_event_index', {format: 'online', q: searchQuery}) }}" class="filter-tab {{ currentFormat == 'online' ? 'active' : '' }}">Online</a>
             <a href="{{ path('app_event_index', {format: 'physique', q: searchQuery}) }}" class="filter-tab {{ currentFormat == 'physique' ? 'active' : '' }}">In-Person</a>
             <a href="{{ path('app_event_index', {format: 'hybride', q: searchQuery}) }}" class="filter-tab {{ currentFormat == 'hybride' ? 'active' : '' }}">Hybrid</a>
@@ -276,8 +360,8 @@
 
         <form class="search-form" method="get" action="{{ path('app_event_index') }}">
             <input type="hidden" name="format" value="{{ currentFormat }}">
-            <span class="search-icon">🔍</span>
-            <input type="text" name="q" value="{{ searchQuery }}" placeholder="Search by event name..." class="search-input">
+            <span class="search-icon"><i data-lucide="search" style="width: 18px; height: 18px;"></i></span>
+            <input type="text" name="q" value="{{ searchQuery }}" placeholder="Search by event name..." class="search-input" autocomplete="off">
         </form>
 
         {% if is_granted('ROLE_THERAPIST') %}
@@ -298,9 +382,19 @@
                     {% if event.imageUrl %}
                         <img src="{{ asset(event.imageUrl) }}" alt="{{ event.title }}">
                     {% else %}
-                        <div style="width:100%; height:100%; background:linear-gradient(135deg, #eee, #ddd); display:flex; align-items:center; justify-content:center; font-size:3rem;">📅</div>
+                        <div style="width:100%; height:100%; background:linear-gradient(135deg, #f8fafc, #f1f5f9); display:flex; align-items:center; justify-content:center;">
+                            <i data-lucide="calendar" style="width: 48px; height: 48px; color: #cbd5e1;"></i>
+                        </div>
                     {% endif %}
                     <span class="type-badge type-{{ event.type }}">{{ event.type|replace({'physique': 'In-Person', 'hybride': 'Hybrid'})|upper }}</span>
+                    
+                    {% set timeStatus = event.getTimeStatus() %}
+                    <div class="status-badge status-{{ timeStatus }}">
+                        {% if timeStatus == 'started' %}
+                            <span class="status-dot status-pulse"></span>
+                        {% endif %}
+                        {{ event.getStatusLabel() }}
+                    </div>
                 </a >
 
                 <div class="card-content">
@@ -310,7 +404,7 @@
                     </a>
                     
                     <div class="meta-row">
-                        <span>📍</span>
+                        <i data-lucide="map-pin" style="width: 14px; height: 14px; margin-top: 3px;"></i>
                         <span>{{ event.location ?: 'Virtual Presence' }}</span>
                     </div>
 
@@ -333,9 +427,9 @@
                     {% if userRegistrations[event.id] is defined %}
                         <a href="{{ path('app_event_registration_ticket', {id: userRegistrations[event.id].id}) }}" class="btn-premium btn-main">
                             {% if userRegistrations[event.id].status == 'attended' %}
-                                ✨ Attended
+                                <i data-lucide="check-circle-2" style="width: 14px; height: 14px; margin-right: 4px; display: inline-block; vertical-align: middle;"></i> Attended
                             {% else %}
-                                🎫 View Ticket
+                                <i data-lucide="ticket" style="width: 14px; height: 14px; margin-right: 4px; display: inline-block; vertical-align: middle;"></i> View Ticket
                             {% endif %}
                         </a>
                     {% else %}
@@ -352,19 +446,23 @@
                         <a href="{{ path('app_event_edit', {id: event.id}) }}" class="btn-premium btn-outline" title="Edit">Edit</a>
                         <form method="post" action="{{ path('app_event_delete', {id: event.id}) }}" onsubmit="return confirm('Delete this event?');">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
-                            <button type="submit" class="btn-premium btn-outline btn-delete" title="Delete">🗑️</button>
+                            <button type="submit" class="btn-premium btn-outline btn-delete" title="Delete"><i data-lucide="trash-2" style="width: 16px; height: 16px;"></i></button>
                         </form>
                     {% endif %}
                 </div>
             </article>
         {% else %}
             <div class="empty-state">
-                <div style="font-size: 4rem; margin-bottom: 1.5rem;">🏖️</div>
+                <div style="margin-bottom: 1.5rem; color: #cbd5e1;"><i data-lucide="calendar-off" style="width: 64px; height: 64px;"></i></div>
                 <h3 style="font-size: 1.5rem; font-weight: 800;">No events found</h3>
                 <p>Try adjusting your filters or search keywords.</p>
                 <a href="{{ path('app_event_index') }}" class="btn-premium btn-main" style="display:inline-block; flex:none;">Clear all filters</a>
             </div>
         {% endfor %}
+    </div>
+
+    <div class="pagination-container" style="margin-top: 4rem; display: flex; justify-content: center;">
+        {{ knp_pagination_render(events) }}
     </div>
 
     <script>
@@ -427,8 +525,42 @@
 
             // Initialize observer
             progressBars.forEach(bar => progressObserver.observe(bar));
+
+            // Initialize icons
+            lucide.createIcons();
+
+            // 🔔 NOTIFICATION SUBSCRIPTION
+            window.toggleSub = async function(e, id, btn) {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                    const response = await fetch(`/notifications/subscribe/${id}`, { method: 'POST' });
+                    const data = await response.json();
+                    if (data.subscribed) {
+                        btn.classList.add('active');
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Subscribed to notifications!', showConfirmButton: false, timer: 2000 });
+                    } else {
+                        btn.classList.remove('active');
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Unsubscribed from notifications', showConfirmButton: false, timer: 2000 });
+                    }
+                } catch (err) {
+                    Swal.fire({ icon: 'error', title: 'Oops...', text: 'You must be logged in to subscribe to notifications!' });
+                }
+            };
+
+            // Check initial status for all notification buttons
+            document.querySelectorAll('.notify-btn').forEach(async btn => {
+                const id = btn.dataset.eventId;
+                try {
+                    const res = await fetch(`/notifications/status/${id}`);
+                    const data = await res.json();
+                    if (data.subscribed) btn.classList.add('active');
+                } catch(e) {}
+            });
         });
     </script>
 </div>
 {% endblock %}
+
+
 

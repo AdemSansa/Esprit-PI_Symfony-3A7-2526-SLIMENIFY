@@ -312,7 +312,7 @@
     <form method="GET" action="{{ path('app_admin_therapist_index') }}" class="filter-toolbar">
         <div class="filter-group" style="flex: 1; min-width: 200px;">
             <div class="filter-label">Search</div>
-            <input type="text" name="q" id="searchInput" class="filter-input" placeholder="Name, surname..." value="{{ searchQuery }}">
+            <input type="text" name="q" id="searchInput" class="filter-input" placeholder="Name, surname..." value="{{ searchQuery }}" autocomplete="off">
         </div>
         
         <div class="filter-group" style="width: 160px;">

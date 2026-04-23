@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\Category;
 
 #[ORM\Entity(repositoryClass: BlogRepository::class)]
 class Blog
@@ -25,7 +26,7 @@ class Blog
     #[ORM\Column(type: "text")]
     private ?string $content = null;
 
-    #[Assert\NotBlank(message: "photo is required")]
+    //#[Assert\NotBlank(message: "photo is required")]
     #[ORM\Column(length: 255)]
     private ?string $photo = null;
 
@@ -36,18 +37,27 @@ class Blog
     #[ORM\JoinColumn(nullable: false)]
     private $therapist;
 
-    // ✅ ADD THIS: COMMENTS RELATION
+    
     #[ORM\OneToMany(mappedBy: 'blog', targetEntity: Comment::class, cascade: ['remove'])]
     private Collection $comments;
 
     #[ORM\OneToMany(mappedBy: 'blog', targetEntity: BlogLike::class, cascade: ['remove'])]
     private Collection $likes;
 
+    #[ORM\OneToMany(mappedBy: 'blog', targetEntity: BlogFavorite::class, cascade: ['remove'])]
+    private Collection $favorites;
+
+    #[Assert\NotNull(message: "Category is required")]
+    #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'blogs')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Category $category = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
         $this->likes = new ArrayCollection();
-        $this->comments = new ArrayCollection(); // ✅ IMPORTANT
+        $this->comments = new ArrayCollection();
+        $this->favorites = new ArrayCollection();
     }
 
     // GETTERS & SETTERS
@@ -106,12 +116,21 @@ class Blog
         return $this;
     }
 
-    // ✅ COMMENTS GETTER (THIS FIXES YOUR ERROR)
+   
     public function getComments(): Collection
     {
         return $this->comments;
     }
+        public function getCategory(): ?Category
+{
+    return $this->category;
+}
 
+    public function setCategory(?Category $category): self
+    {
+        $this->category = $category;
+        return $this;
+    }
     /** @return Collection<int, BlogLike> */
     public function getLikes(): Collection
     {
@@ -135,5 +154,11 @@ class Blog
             }
         }
         return $this;
+    }
+
+    /** @return Collection<int, BlogFavorite> */
+    public function getFavorites(): Collection
+    {
+        return $this->favorites;
     }
 }

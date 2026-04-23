@@ -61,7 +61,7 @@
             width: 40px;
             height: 40px;
             background: #eef2ff;
-            color: #6366f1;
+            color: #748764;
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -74,13 +74,13 @@
         .participant-details div:last-child { color: #94a3b8; font-size: 0.8rem; }
 
         .event-link {
-            color: #6366f1;
+            color: #748764;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.9rem;
             transition: color 0.2s;
         }
-        .event-link:hover { color: #4f46e5; text-decoration: underline; }
+        .event-link:hover { color: #2d1e16; text-decoration: underline; }
 
         .status-badge {
             padding: 0.4rem 0.85rem;
@@ -140,11 +140,17 @@
 
 {% block app_content %}
 <div class="page-container">
-    <div class="header-section">
+    <div class="header-section" style="display: flex; justify-content: space-between; align-items: flex-end;">
         <div class="header-title">
             <h1>Attendance Hub</h1>
             <p>Manage and track all event registrations in one place.</p>
         </div>
+        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_THERAPIST') %}
+        <a href="{{ path('app_event_registration_export') }}" class="btn-premium btn-main" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; background: #10b981; border-color: #10b981;">
+            <i data-lucide="file-spreadsheet" style="width: 18px; height: 18px;"></i>
+            Export to Excel
+        </a>
+        {% endif %}
     </div>
 
     <div class="table-card">
@@ -156,7 +162,7 @@
                         <th>Event</th>
                         <th>Status</th>
                         <th>Date Registered</th>
-                        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_THERAPIST') %}
+                        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_THERAPIST') or (app.user and registrations|length > 0) %}
                             <th>Actions</th>
                         {% endif %}
                     </tr>
@@ -170,8 +176,12 @@
                                         {{ reg.participantName|slice(0, 1)|upper }}
                                     </div>
                                     <div class="participant-details">
-                                        <div>{{ reg.participantName }}</div>
-                                        <div>{{ reg.participantEmail }}</div>
+                                        <div style="font-weight: 700; color: #1e293b;">{{ reg.participantName }}</div>
+                                        <div style="font-size: 0.75rem; color: #64748b;">{{ reg.participantEmail }}</div>
+                                        <div style="font-size: 0.7rem; color: #6366f1; margin-top: 0.2rem; display: flex; align-items: center; gap: 4px;">
+                                            <i data-lucide="globe" style="width: 12px; height: 12px;"></i>
+                                            {{ reg.participantLocation ?: 'Location Pending' }}
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -190,37 +200,42 @@
                             <td>
                                 <span class="status-badge status-{{ reg.status }}">
                                     {% if reg.status == 'attended' %}
-                                        ✨ Attended
+                                        <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> Attended
                                     {% elseif reg.status == 'cancelled' %}
-                                        ⏳ Cancelled
+                                        <i data-lucide="clock" style="width: 14px; height: 14px;"></i> Cancelled
                                     {% else %}
-                                        🎫 Registered
+                                        <i data-lucide="ticket" style="width: 14px; height: 14px;"></i> Registered
                                     {% endif %}
                                 </span>
                             </td>
                             <td style="font-size: 0.85rem; color: #64748b;">
                                 {{ reg.registrationDate|date('M d, Y') }}
                             </td>
-                            {% if is_granted('ROLE_ADMIN') or reg.event.organizerId == app.user.id %}
+                            {% set isOwner = (app.user and reg.participantEmail == app.user.email) %}
+                            {% set isOrganizer = (app.user and reg.event.organizerId == app.user.id) %}
+                            {% if is_granted('ROLE_ADMIN') or isOrganizer or isOwner %}
                             <td>
                                 <div class="actions-group">
-                                    {% if reg.status != 'attended' %}
+                                    {# Only Admins/Organizers can Check-in #}
+                                    {% if (is_granted('ROLE_ADMIN') or isOrganizer) and reg.status != 'attended' %}
                                         <form method="post" action="{{ path('app_event_registration_status', {'id': reg.id, 'status': 'attended'}) }}" onsubmit="return confirm('Check-in {{ reg.participantName }}?');">
                                             <input type="hidden" name="_token" value="{{ csrf_token('status' ~ reg.id) }}">
-                                            <button type="submit" class="btn-action btn-checkin" title="Check-in">✓</button>
+                                            <button type="submit" class="btn-action btn-checkin" title="Check-in"><i data-lucide="check" style="width: 16px; height: 16px;"></i></button>
                                         </form>
                                     {% endif %}
                                     
+                                    {# Everyone (Admin, Org, Patient) can Cancel #}
                                     {% if reg.status != 'cancelled' %}
                                         <form method="post" action="{{ path('app_event_registration_status', {'id': reg.id, 'status': 'cancelled'}) }}" onsubmit="return confirm('Cancel this registration?');">
                                             <input type="hidden" name="_token" value="{{ csrf_token('status' ~ reg.id) }}">
-                                            <button type="submit" class="btn-action btn-cancel" title="Cancel">✕</button>
+                                            <button type="submit" class="btn-action btn-cancel" title="Cancel"><i data-lucide="x" style="width: 16px; height: 16px;"></i></button>
                                         </form>
                                     {% endif %}
                                     
+                                    {# Everyone (Admin, Org, Patient) can Delete #}
                                     <form method="post" action="{{ path('app_event_registration_delete', {'id': reg.id}) }}" onsubmit="return confirm('Delete record permanently?');">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reg.id) }}">
-                                        <button type="submit" class="btn-action btn-delete" title="Delete record">🗑️</button>
+                                        <button type="submit" class="btn-action btn-delete" title="Delete record"><i data-lucide="trash-2" style="width: 16px; height: 16px;"></i></button>
                                     </form>
                                 </div>
                             </td>
@@ -230,7 +245,7 @@
                         <tr>
                             <td colspan="{{ (is_granted('ROLE_ADMIN') or is_granted('ROLE_THERAPIST')) ? '5' : '4' }}">
                                 <div class="empty-state">
-                                    <div style="font-size: 3rem; margin-bottom: 1rem;">🎫</div>
+                                    <div style="margin-bottom: 1rem; color: #cbd5e1;"><i data-lucide="ticket" style="width: 48px; height: 48px;"></i></div>
                                     <h3>No registrations found</h3>
                                     <p>When someone signs up for an event, they will appear here.</p>
                                 </div>
@@ -240,6 +255,17 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="pagination-container" style="margin-top: 2rem; display: flex; justify-content: center;">
+            {{ knp_pagination_render(registrations) }}
+        </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+    });
+</script>
 {% endblock %}
+
+

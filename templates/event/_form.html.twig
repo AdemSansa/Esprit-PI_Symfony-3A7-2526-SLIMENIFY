@@ -3,8 +3,8 @@
 
 <style>
     :root {
-        --primary: #6366f1;
-        --primary-dark: #4f46e5;
+        --primary: #748764;
+        --primary-dark: #2d1e16;
         --secondary: #64748b;
         --success: #10b981;
         --danger: #ef4444;
@@ -73,7 +73,7 @@
         outline: none;
         border-color: var(--primary);
         background: #fff;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        box-shadow: 0 0 0 4px rgba(116, 135, 100, 0.1);
     }
 
     .grid-cols-2 {
@@ -97,7 +97,7 @@
     }
 
     .btn-ai {
-        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        background: linear-gradient(135deg, #748764 0%, #a855f7 100%);
         color: white;
         border: none;
         padding: 0.6rem 1.25rem;
@@ -114,7 +114,7 @@
 
     .btn-ai:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 10px 15px -3px rgba(116, 135, 100, 0.3);
         filter: brightness(1.1);
     }
 
@@ -190,28 +190,36 @@
         border-radius: 8px;
     }
 
-    .form-error {
-        color: var(--danger);
-        font-size: 0.8rem;
-        margin-top: 0.25rem;
-        font-weight: 500;
+    .form-group ul, 
+    .form-group ul li,
+    .form-error, 
+    .form-error ul {
+        color: #ef4444 !important;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        font-weight: 600;
+        list-style: none;
+        padding: 0;
+        margin-bottom: 0;
     }
 </style>
 
-{{ form_start(form, {'attr': {'id': 'event-form'}}) }}
+{{ form_start(form, {'attr': {'id': 'event-form', 'novalidate': 'novalidate'}}) }}
     <!-- Basic Info -->
     <div class="form-section">
         <h2 class="section-title">📝 Basic Information</h2>
         <div class="form-group">
-            {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'Enter event title...'}}) }}
-            <div class="form-error">{{ form_errors(form.title) }}</div>
+            {{ form_row(form.title, {
+                'label_attr': {'class': 'form-label'},
+                'attr': {'class': 'form-control', 'placeholder': 'Enter event title...'}
+            }) }}
         </div>
 
         <div class="form-group">
-            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '6', 'placeholder': 'Tell us about the event...'}}) }}
-            <div class="form-error">{{ form_errors(form.description) }}</div>
+            {{ form_row(form.description, {
+                'label_attr': {'class': 'form-label'},
+                'attr': {'class': 'form-control', 'rows': '6', 'placeholder': 'Tell us about the event...'}
+            }) }}
             
             <div class="ai-generate-wrapper">
                 <button type="button" class="btn btn-ai" id="generate-ai-btn">
@@ -227,51 +235,60 @@
         <h2 class="section-title">⏰ Schedule & Capacity</h2>
         <div class="grid-cols-2">
             <div class="form-group">
-                {{ form_label(form.dateStart, null, {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.dateStart, {'attr': {'class': 'form-control'}}) }}
-                <div class="form-error">{{ form_errors(form.dateStart) }}</div>
+                {{ form_row(form.dateStart, {
+                    'label_attr': {'class': 'form-label'},
+                    'attr': {'class': 'form-control'}
+                }) }}
             </div>
             <div class="form-group">
-                {{ form_label(form.dateEnd, null, {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.dateEnd, {'attr': {'class': 'form-control'}}) }}
-                <div class="form-error">{{ form_errors(form.dateEnd) }}</div>
+                {{ form_row(form.dateEnd, {
+                    'label_attr': {'class': 'form-label'},
+                    'attr': {'class': 'form-control'}
+                }) }}
             </div>
         </div>
 
         <div class="grid-cols-2">
             <div class="form-group">
-                {{ form_label(form.type, null, {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
-                <div class="form-error">{{ form_errors(form.type) }}</div>
+                {{ form_row(form.type, {
+                    'label_attr': {'class': 'form-label'},
+                    'attr': {'class': 'form-control'}
+                }) }}
             </div>
             <div class="form-group">
-                {{ form_label(form.maxParticipants, null, {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.maxParticipants, {'attr': {'class': 'form-control', 'placeholder': 'e.g. 50'}}) }}
-                <div class="form-error">{{ form_errors(form.maxParticipants) }}</div>
+                {{ form_row(form.maxParticipants, {
+                    'label_attr': {'class': 'form-label'},
+                    'attr': {'class': 'form-control', 'placeholder': 'e.g. 50'}
+                }) }}
             </div>
         </div>
     </div>
 
     <!-- Location & Media -->
     <div class="form-section">
-        <h2 class="section-title">📍 Location & Cover Image</h2>
-        <div class="form-group">
-            {{ form_label(form.location, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.location, {'attr': {'class': 'form-control', 'placeholder': 'Select address on map or type here...'}}) }}
-            
-            {# 📍 Rendering Hidden Coordinate Fields #}
-            {{ form_widget(form.latitude) }}
-            {{ form_widget(form.longitude) }}
-            
-            <div class="form-error">{{ form_errors(form.location) }}</div>
-            <p class="location-hint"><span>🗺️</span> Click anywhere on the map to set the exact location.</p>
-            <div id="map"></div>
+        <h2 class="section-title" id="location-section-title">📍 Location & Cover Image</h2>
+        
+        <div id="location-fields-wrapper">
+            <div class="form-group">
+                {{ form_row(form.location, {
+                    'label_attr': {'class': 'form-label'},
+                    'attr': {'class': 'form-control', 'placeholder': 'Select address on map or type here...'}
+                }) }}
+                
+                {# 📍 Rendering Hidden Coordinate Fields #}
+                {{ form_widget(form.latitude) }}
+                {{ form_widget(form.longitude) }}
+                
+                <p class="location-hint"><span>🗺️</span> Click anywhere on the map to set the exact location.</p>
+                <div id="map"></div>
+            </div>
         </div>
 
         <div class="form-group">
-            {{ form_label(form.imageFile, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
-            <div class="form-error">{{ form_errors(form.imageFile) }}</div>
+            {{ form_row(form.imageFile, {
+                'label_attr': {'class': 'form-label'},
+                'attr': {'class': 'form-control'}
+            }) }}
             
             {% if event.imageUrl %}
                 <div class="image-preview-container">
@@ -412,6 +429,28 @@
                         }).catch(e => console.error('Reverse Geocoding error:', e));
                 });
                 
+                // --- 🔄 Dynamic Location Toggle ---
+                const typeSelect = document.getElementById('{{ form.type.vars.id }}');
+                const locationWrapper = document.getElementById('location-fields-wrapper');
+                const sectionTitle = document.getElementById('location-section-title');
+                
+                function toggleLocationDisplay() {
+                    if (typeSelect.value === 'online') {
+                        locationWrapper.style.display = 'none';
+                        sectionTitle.innerHTML = '🖼️ Cover Image';
+                    } else {
+                        locationWrapper.style.display = 'block';
+                        sectionTitle.innerHTML = '📍 Location & Cover Image';
+                        // Refresh map layout after showing
+                        setTimeout(() => map.invalidateSize(), 100);
+                    }
+                }
+                
+                if (typeSelect && locationWrapper) {
+                    typeSelect.addEventListener('change', toggleLocationDisplay);
+                    toggleLocationDisplay(); // Initial state
+                }
+
                 // Force redraw after container is sure to be ready
                 setTimeout(() => {
                     map.invalidateSize();
@@ -421,3 +460,5 @@
         }
     })();
 </script>
+
+

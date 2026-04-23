@@ -9,11 +9,18 @@
 parameters:
     oauth_google_client_id: '%env(OAUTH_GOOGLE_CLIENT_ID)%'
     oauth_google_client_secret: '%env(OAUTH_GOOGLE_CLIENT_SECRET)%'
-    app.gemini_api_key: '%env(GEMINI_API_KEY)%'
+
+    gemini_api_key: '%env(GEMINI_API_KEY)%'
+    openai_api_key: '%env(OPENAI_API_KEY)%'
+
 
     stripe.secret_key: '%env(STRIPE_SECRET_KEY)%'
     env(PROFANITY_CHECK_ENABLED): '1'
+    app.gemini_api_key: '%env(GEMINI_API_KEY)%'
+    app.hf_token: '%env(HF_TOKEN)%'
+    default_hf_image_model: 'black-forest-labs/FLUX.1-schnell'
    
+
 
 services:
     # default configuration for services in *this* file
@@ -22,6 +29,10 @@ services:
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
         bind:
             $geminiApiKey: '%app.gemini_api_key%'
+            $hfToken: '%app.hf_token%'
+            $projectDir: '%kernel.project_dir%'
+            $elevenApiKey: '%env(ELEVENLABS_API_KEY)%'
+            $openai_api_key: '%env(OPENAI_API_KEY)%'
             $hfApiKey: '%env(default::HUGGINGFACE_API_KEY)%'
 
     # makes classes in src/ available to be used as services
@@ -36,6 +47,9 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    App\Service\AiAnalysisService:
+        arguments:
+            $openAiApiKey: '%openai_api_key%'
     profanity.checker:
         class: mofodojodino\ProfanityFilter\Check
 
@@ -43,3 +57,18 @@ services:
         arguments:
             $profanityCheck: '@profanity.checker'
             $profanityCheckEnabled: '%env(bool:PROFANITY_CHECK_ENABLED)%'
+
+    App\Service\GeolocationService: ~
+
+    
+
+    App\Service\ImageGenerator:
+        arguments:
+            $hfModel: '%env(default:default_hf_image_model:HF_IMAGE_MODEL)%'
+
+
+
+
+    App\Service\AudioGeneratorService:
+        arguments:
+            $voiceRssApiKey: '%env(VOICERSS_API_KEY)%'

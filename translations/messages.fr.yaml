@@ -1,0 +1,17 @@
+brand:
+  name: Slimenify
+common:
+  welcome: Bienvenue !
+  user: Utilisateur
+nav:
+  home: Accueil
+  assessments: Evaluations
+  products: Produits
+  events: Evenements
+  therapists: Therapeutes
+auth:
+  login: Connexion
+  register: Inscription
+  logout: Deconnexion
+header:
+  welcome: Bienvenue

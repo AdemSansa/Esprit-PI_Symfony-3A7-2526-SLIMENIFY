@@ -51,7 +51,10 @@ class Event
     private ?\DateTimeInterface $dateEnd = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Assert\NotBlank(message: "The event location or link is required.")]
+    #[Assert\Expression(
+        "this.getType() == 'online' or this.getLocation()",
+        message: "The event location or link is required for In-Person/Hybrid events."
+    )]
     private ?string $location = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
@@ -76,6 +79,7 @@ class Event
 
     #[ORM\Column(type: 'float', nullable: true)]
     private ?float $longitude = null;
+
 
     #[ORM\OneToMany(mappedBy: 'event', targetEntity: Registration::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $registrations;
@@ -114,4 +118,44 @@ class Event
     public function getLongitude(): ?float { return $this->longitude; }
     public function setLongitude(?float $v): static { $this->longitude = $v; return $this; }
     public function getRegistrations(): Collection { return $this->registrations; }
+
+    /**
+     * Get the current status of the event based on time.
+     * returns 'upcoming', 'started', or 'ended'
+     */
+    public function getTimeStatus(): string
+    {
+        $now = new \DateTime();
+        
+        if ($this->dateStart > $now) {
+            return 'upcoming';
+        }
+
+        if ($this->dateEnd !== null) {
+            if ($now > $this->dateEnd) {
+                return 'ended';
+            }
+            return 'started';
+        }
+
+        // Fallback if no end date: assume ended after 3 hours
+        $assumedEnd = (clone $this->dateStart)->modify('+3 hours');
+        if ($now > $assumedEnd) {
+            return 'ended';
+        }
+        
+        return 'started';
+    }
+
+    public function getStatusLabel(): string
+    {
+        $status = $this->getTimeStatus();
+        return match($status) {
+            'upcoming' => 'Upcoming',
+            'started' => 'Started',
+            'ended' => 'Ended',
+            default => 'Unknown',
+        };
+    }
+
 }

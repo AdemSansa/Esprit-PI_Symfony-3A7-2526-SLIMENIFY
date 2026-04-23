@@ -261,6 +261,11 @@
             const overlay = document.getElementById('smile-lock-overlay');
             if (!overlay) return;
 
+            if (sessionStorage.getItem('smileUnlocked') === 'true') {
+                overlay.style.display = 'none';
+                return;
+            }
+
             const video = document.getElementById('video');
             const statusMsg = document.getElementById('status-msg');
             const videoWrapper = document.getElementById('video-wrapper');
@@ -289,6 +294,7 @@
             }
 
             function unlockUI() {
+                sessionStorage.setItem('smileUnlocked', 'true');
                 if (streamRef) {
                     streamRef.getTracks().forEach(track => track.stop());
                 }

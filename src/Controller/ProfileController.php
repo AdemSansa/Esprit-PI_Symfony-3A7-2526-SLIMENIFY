@@ -30,6 +30,36 @@ class ProfileController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $photoFile */
+            $photoFile = $form->get('photoUrl')->getData();
+            if ($photoFile) {
+                $newFilename = uniqid().'.'.$photoFile->guessExtension();
+                try {
+                    $photoFile->move(
+                        $this->getParameter('kernel.project_dir').'/public/uploads/photos',
+                        $newFilename
+                    );
+                    $user->setPhotoUrl('/uploads/photos/'.$newFilename);
+                } catch (\Exception $e) {
+                    // Do not overwrite existing photo URL if upload fails, or set fallback
+                }
+            }
+
+            $entityManager->persist($user);
+            
+            // Sync with Therapist entity if user is a therapist
+            if ($user->getRole() === 'therapist') {
+                $therapist = $entityManager->getRepository(\App\Entity\Therapist::class)->findOneBy(['email' => $user->getEmail()]);
+                if ($therapist) {
+                    $therapist->setFirstName((string)$user->getFirstName());
+                    if ($user->getLastName()) $therapist->setLastName((string)$user->getLastName());
+                    $therapist->setEmail((string)$user->getEmail());
+                    if ($user->getPhone()) $therapist->setPhoneNumber((string)$user->getPhone());
+                    if ($user->getPhotoUrl()) $therapist->setPhotoUrl((string)$user->getPhotoUrl());
+                    $entityManager->persist($therapist);
+                }
+            }
+
             $entityManager->flush();
             $this->addFlash('success', 'Profile updated successfully.');
 

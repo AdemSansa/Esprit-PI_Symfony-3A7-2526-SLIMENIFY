@@ -8,21 +8,19 @@
     <p style="color: #64748b; font-size: 1.1rem;">Overview of your Well-being & Recovery shop performance.</p>
 </div>
 
-<div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+<div style="display: grid; grid-template-columns: 1fr 1fr 1fr 300px; gap: 1.5rem; margin-bottom: 2rem; align-items: stretch;">
     {# Revenue Card #}
     <div class="stat-card" style="background: linear-gradient(135deg, #748764 0%, #627255 100%); padding: 1.75rem; border-radius: 20px; color: white; box-shadow: 0 10px 25px rgba(98, 114, 85, 0.2); position: relative; overflow: hidden;">
         <div style="position: absolute; right: -20px; top: -20px; opacity: 0.1;">
             <svg width="150" height="150" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
         </div>
-        <div style="font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; opacity: 0.9;">Total Revenue</div>
-        <div style="font-size: 2.5rem; font-weight: 800;">{{ total_revenue|number_format(2, '.', ',') }} <span style="font-size: 1rem; opacity: 0.8;">TND</span></div>
-        <div style="margin-top: 1rem; font-size: 0.85rem; background: rgba(255,255,255,0.2); display: inline-block; padding: 4px 12px; border-radius: 20px;">
-            Total of {{ order_count }} orders
-        </div>
+        <div style="font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; opacity: 0.9;">Delivered Revenue</div>
+        <div style="font-size: 2.2rem; font-weight: 800;">{{ total_revenue|number_format(2, '.', ',') }} <span style="font-size: 1rem; opacity: 0.8;">TND</span></div>
+        <div style="margin-top: 1rem; font-size: 0.85rem; background: rgba(255,255,255,0.2); display: inline-block; padding: 4px 12px; border-radius: 20px;">Confirmed Earnings</div>
     </div>
 
     {# Products Card #}
-    <div class="stat-card" style="background: white; padding: 1.75rem; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+    <div class="stat-card" style="background: white; padding: 1.75rem; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
             <div style="background: #f1f5f9; padding: 10px; border-radius: 12px;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#627255" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
@@ -30,120 +28,218 @@
             {% if low_stock_products > 0 %}
                 <div style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 4px;">
                     <span style="width: 6px; height: 6px; background: #dc2626; border-radius: 50%; display: block;"></span>
-                    {{ low_stock_products }} low stock alerts
+                    {{ low_stock_products }} low stock
                 </div>
             {% endif %}
         </div>
         <div style="color: #64748b; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.25rem;">Active Products</div>
         <div style="font-size: 2rem; font-weight: 800; color: #1e293b;">{{ total_products }}</div>
-        <div style="margin-top: 1rem; display: flex; gap: 10px;">
+        <div style="margin-top: 1rem;">
             <a href="{{ path('app_product_index') }}" style="font-size: 0.8rem; color: #627255; text-decoration: none; font-weight: 700;">Manage Catalog →</a>
         </div>
     </div>
 
-    {# Suppliers Card #}
-    <div class="stat-card" style="background: white; padding: 1.75rem; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-        <div style="background: #f1f5f9; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; margin-bottom: 1.25rem;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#627255" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+    {# Best Supplier Card #}
+    <div class="stat-card" style="background: white; padding: 1.75rem; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+        <div style="background: #f1f5f9; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-bottom: 0.75rem; border: 3px solid #627255; box-shadow: 0 5px 15px rgba(98, 114, 85, 0.15);">
+             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#627255" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
         </div>
-        <div style="color: #64748b; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.25rem;">Partner Suppliers</div>
-        <div style="font-size: 2rem; font-weight: 800; color: #1e293b;">{{ total_suppliers }}</div>
-        <div style="margin-top: 1rem;">
-            <a href="{{ path('app_supplier_index') }}" style="font-size: 0.8rem; color: #627255; text-decoration: none; font-weight: 700;">View Partners →</a>
+        <div style="color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.25rem;">Top Partner</div>
+        <div style="font-size: 1.3rem; font-weight: 800; color: #1e293b; line-height: 1.3;">{{ best_supplier|default('N/A') }}</div>
+        {% if best_supplier_revenue > 0 %}
+            <div style="margin-top: 0.4rem; color: #627255; font-size: 0.9rem; font-weight: 700;">{{ best_supplier_revenue|number_format(0) }} TND</div>
+        {% endif %}
+    </div>
+
+    {# Orders Distribution — compact 4th column #}
+    <div style="background: white; padding: 1.5rem; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07);">
+        <h3 style="font-size: 0.8rem; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem;">Orders</h3>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% set statusLabels = {'pending': 'Pending', 'paid': 'Paid', 'delivered': 'Delivered', 'cancelled': 'Cancelled'} %}
+            {% set statusColors = {'pending': '#f59e0b', 'paid': '#10b981', 'delivered': '#3b82f6', 'cancelled': '#ef4444'} %}
+            {% for status, count in status_breakdown %}
+                <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 3px;">
+                        <span style="font-weight: 600; color: #64748b; display: flex; align-items: center; gap: 5px;">
+                            <span style="width: 7px; height: 7px; border-radius: 50%; background: {{ statusColors[status]|default('#64748b') }}; flex-shrink:0; display: inline-block;"></span>
+                            {{ statusLabels[status]|default(status|capitalize) }}
+                        </span>
+                        <span style="font-weight: 800; color: #334155;">{{ count }}</span>
+                    </div>
+                    <div style="height: 4px; background: #f1f5f9; border-radius: 10px; overflow: hidden;">
+                        {% set width = order_count > 0 ? (count / order_count * 100) : 0 %}
+                        <div style="width: {{ width }}%; height: 100%; background: {{ statusColors[status]|default('#64748b') }}; border-radius: 10px;"></div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Total</span>
+            <span style="font-size: 1.1rem; font-weight: 800; color: #334155;">{{ order_count }}</span>
         </div>
     </div>
 </div>
 
-<div class="dashboard-secondary-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
-    {# Recent Orders #}
-    <div class="content-panel" style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: #334155;">Recent Orders</h2>
-            <a href="{{ path('app_admin_orders_index') }}" style="color: #627255; font-size: 0.85rem; font-weight: 600; text-decoration: none;">View All</a>
-        </div>
-        <div class="table-container" style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: separate; border-spacing: 0 10px;">
-                <thead>
-                    <tr style="text-align: left; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                        <th style="padding: 0 1rem;">Customer / ID</th>
-                        <th style="padding: 0 1rem;">Status</th>
-                        <th style="padding: 0 1rem;">Date</th>
-                        <th style="padding: 0 1rem; text-align: right;">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for order in recent_orders %}
-                    <tr style="background: #f8fafc; border-radius: 12px; transition: transform 0.2s; cursor: pointer;" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
-                        <td style="padding: 1rem; border-radius: 12px 0 0 12px;">
-                            <div style="font-weight: 700; color: #334155;">{{ order.user.firstName }}</div>
-                            <div style="font-size: 0.75rem; color: #64748b;">#{{ order.id }}</div>
-                        </td>
-                        <td style="padding: 1rem;">
-                            {% set statusColors = {
-                                'en_attente': '#f59e0b',
-                                'payée': '#10b981',
-                                'livrée': '#3b82f6',
-                                'annulée': '#ef4444'
-                            } %}
-                            {% set statusMap = {
-                                'en_attente': 'Pending',
-                                'payée': 'Paid',
-                                'livrée': 'Delivered',
-                                'annulée': 'Cancelled'
-                            } %}
-                            <span style="background: {{ statusColors[order.status]|default('#64748b') }}15; color: {{ statusColors[order.status]|default('#64748b') }}; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
-                                {{ statusMap[order.status]|default(order.status) }}
-                            </span>
-                        </td>
-                        <td style="padding: 1rem; font-size: 0.85rem; color: #64748b;">
-                            {{ order.createdAt|date('d M Y') }}
-                        </td>
-                        <td style="padding: 1rem; border-radius: 0 12px 12px 0; text-align: right; font-weight: 800; color: #334155;">
-                            {{ order.totalAmount|number_format(2) }} TND
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4" style="text-align: center; padding: 2rem; color: #94a3b8;">No orders found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
 
-    {# Status Distribution / Quick Actions #}
-    <div class="side-panels" style="display: flex; flex-direction: column; gap: 2rem;">
-        <div style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0;">
-            <h3 style="font-size: 1.1rem; font-weight: 800; color: #334155; margin-bottom: 1.5rem;">Orders Distribution</h3>
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                {% for status, count in status_breakdown %}
-                    <div>
-                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;">
-                            {% set statusMap = {'en_attente': 'Pending', 'payée': 'Paid', 'livrée': 'Delivered', 'annulée': 'Cancelled'} %}
-                            <span style="font-weight: 600; color: #64748b; text-transform: capitalize;">{{ statusMap[status]|default(status) }}</span>
-                            <span style="font-weight: 800; color: #334155;">{{ count }}</span>
-                        </div>
-                        <div style="height: 6px; background: #f1f5f9; border-radius: 10px; overflow: hidden;">
-                            {% set width = order_count > 0 ? (count / order_count * 100) : 0 %}
-                            {% set color = '#64748b' %}
-                            {% if status == 'payée' %}{% set color = '#10b981' %}{% endif %}
-                            {% if status == 'en_attente' %}{% set color = '#f59e0b' %}{% endif %}
-                            {% if status == 'livrée' %}{% set color = '#3b82f6' %}{% endif %}
-                            {% if status == 'annulée' %}{% set color = '#ef4444' %}{% endif %}
-                            <div style="width: {{ width }}%; height: 100%; background: {{ color }}; border-radius: 10px;"></div>
-                        </div>
-                    </div>
-                {% endfor %}
+{# === CHARTS SECTION === #}
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-top: 2rem;">
+
+    {# --- Supplier Revenue Pie Chart --- #}
+    <div style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <div>
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: #334155; margin: 0;">Supplier Distribution</h3>
+                <p style="font-size: 0.8rem; color: #94a3b8; margin: 4px 0 0;">Revenue share by partner</p>
+            </div>
+            <div style="background: #f0f4ec; padding: 8px; border-radius: 10px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#627255" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
             </div>
         </div>
+        {% if supplier_revenue_map is not empty %}
+            <div style="position: relative; height: 250px; display: flex; align-items: center; justify-content: center;">
+                <canvas id="supplierPieChart"></canvas>
+            </div>
+            <div style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 8px;" id="supplier-legend"></div>
+        {% else %}
+            <div style="text-align: center; padding: 3rem 0; color: #94a3b8;">
+                <p>No delivered orders data yet.</p>
+            </div>
+        {% endif %}
+    </div>
 
-        <div style="background: #f8fafc; padding: 1.5rem; border-radius: 24px; border: 1px dashed #cbd5e1;">
-            <p style="font-size: 0.85rem; color: #64748b; line-height: 1.6; margin-bottom: 1rem;">Need help with management? Check the documentation or contact technical support.</p>
-            <button style="width: 100%; background: #627255; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#4f5d44'" onmouseout="this.style.background='#627255'">
-                Technical Support
-            </button>
+    {# --- Monthly Revenue Line Chart --- #}
+    <div style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <div>
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: #334155; margin: 0;">Revenue Growth</h3>
+                <p style="font-size: 0.8rem; color: #94a3b8; margin: 4px 0 0;">Delivered revenue — last 6 months</p>
+            </div>
+            <div style="background: #f0f4ec; padding: 8px; border-radius: 10px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#627255" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            </div>
+        </div>
+        <div style="position: relative; height: 250px;">
+            <canvas id="revenueLineChart"></canvas>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function() {
+    const palette = ['#627255','#8fa67a','#b2936a','#d4b896','#4b5841','#a8bda0','#c9a87c','#748764'];
+
+    // 1. Supplier Doughnut Chart
+    const supplierCanvas = document.getElementById('supplierPieChart');
+    if (supplierCanvas) {
+        const supplierData = {{ supplier_revenue_map|json_encode|raw }};
+        const supplierLabels = Object.keys(supplierData);
+        const supplierValues = Object.values(supplierData);
+        const supplierColors = supplierLabels.map((_, i) => palette[i % palette.length]);
+
+        new Chart(supplierCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: supplierLabels,
+                datasets: [{
+                    data: supplierValues,
+                    backgroundColor: supplierColors,
+                    borderWidth: 3,
+                    borderColor: '#fff',
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` ${ctx.label}: ${ctx.parsed.toFixed(2)} TND`
+                        }
+                    }
+                }
+            }
+        });
+
+        const legend = document.getElementById('supplier-legend');
+        if (legend) {
+            supplierLabels.forEach((label, i) => {
+                const total = supplierValues.reduce((a, b) => a + b, 0);
+                const pct = total > 0 ? ((supplierValues[i] / total) * 100).toFixed(1) : 0;
+                legend.innerHTML += `<div style="display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;padding:2px 0;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="width:10px;height:10px;border-radius:3px;background:${supplierColors[i]};flex-shrink:0;"></span>
+                        <span style="color:#475569;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${label}</span>
+                    </div>
+                    <span style="font-weight:800;color:#334155;">${pct}%</span>
+                </div>`;
+            });
+        }
+    }
+
+    // 2. Revenue Line Chart
+    const revenueCanvas = document.getElementById('revenueLineChart');
+    if (revenueCanvas) {
+        const labels = {{ monthly_revenue_labels|json_encode|raw }};
+        const values = {{ monthly_revenue_values|json_encode|raw }};
+
+        new Chart(revenueCanvas, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Revenue (TND)',
+                    data: values,
+                    fill: true,
+                    backgroundColor: 'rgba(98, 114, 85, 0.08)',
+                    borderColor: '#627255',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#627255',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 3,
+                    pointRadius: 6,
+                    pointHoverRadius: 9,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        titleColor: '#94a3b8',
+                        bodyColor: '#f8fafc',
+                        padding: 12,
+                        cornerRadius: 12,
+                        callbacks: {
+                            label: ctx => ` ${ctx.parsed.y.toFixed(2)} TND`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { size: 11, weight: '600' } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 11 },
+                            callback: v => v.toLocaleString() + ' TND'
+                        }
+                    }
+                }
+            }
+        });
+    }
+})();
+</script>
 {% endblock %}
