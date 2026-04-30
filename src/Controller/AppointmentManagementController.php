@@ -34,7 +34,6 @@ class AppointmentManagementController extends AbstractController
     #[Route('/calendar', name: 'calendar', methods: ['GET'])]
     public function calendar(Request $request): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_PATIENT');
         $therapists = $this->therapistRepository->findActive();
 
         $selectedTherapistId = $request->query->getInt('therapist_id');
