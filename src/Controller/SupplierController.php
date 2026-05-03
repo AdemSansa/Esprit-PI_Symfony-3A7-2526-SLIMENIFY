@@ -48,7 +48,7 @@ class SupplierController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_supplier_show', methods: ['GET'])]
-    public function show($id): JsonResponse
+    public function show(int $id): JsonResponse
     {
         $supplier = $this->supplierRepository->find($id);
 
@@ -99,7 +99,7 @@ class SupplierController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_supplier_update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, $id): JsonResponse
+    public function update(Request $request, int $id): JsonResponse
     {
         $supplier = $this->supplierRepository->find($id);
 
@@ -127,7 +127,7 @@ class SupplierController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_supplier_delete', methods: ['DELETE'])]
-    public function delete($id): JsonResponse
+    public function delete(int $id): JsonResponse
     {
         $supplier = $this->supplierRepository->find($id);
 

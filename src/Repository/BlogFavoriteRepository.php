@@ -6,6 +6,9 @@ use App\Entity\BlogFavorite;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<BlogFavorite>
+ */
 class BlogFavoriteRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -13,7 +16,10 @@ class BlogFavoriteRepository extends ServiceEntityRepository
         parent::__construct($registry, BlogFavorite::class);
     }
 
-    public function findOneByUserAndBlog($user, $blog)
+    /**
+     * @return BlogFavorite|null
+     */
+    public function findOneByUserAndBlog(\App\Entity\User $user, \App\Entity\Blog $blog): ?BlogFavorite
     {
         return $this->createQueryBuilder('f')
             ->andWhere('f.user = :user')

@@ -28,6 +28,7 @@ class EventRegistrationController extends AbstractController
     public function index(Request $request, RegistrationRepository $registrationRepository, PaginatorInterface $paginator): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
         if ($this->isGranted('ROLE_ADMIN')) {
@@ -71,6 +72,7 @@ class EventRegistrationController extends AbstractController
         $registration = new Registration();
         $registration->setEvent($event);
         
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         if ($user) {
             // Auto fill
@@ -192,10 +194,12 @@ class EventRegistrationController extends AbstractController
     public function updateStatus(Request $request, Registration $registration, string $status, EntityManagerInterface $entityManager, NotificationService $ns): Response
     {
         // 🔐 Security: Only ROLE_ADMIN, the Event Organizer, OR the Participant themselves can modify status!
-        $isParticipant = ($registration->getParticipantEmail() === $this->getUser()->getEmail());
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $isParticipant = ($registration->getParticipantEmail() === $user->getEmail());
         
         if (!$this->isGranted('ROLE_ADMIN') && 
-            $registration->getEvent()->getOrganizerId() !== $this->getUser()->getId() &&
+            $registration->getEvent()->getOrganizerId() !== $user->getId() &&
             !$isParticipant) {
             throw $this->createAccessDeniedException('You can only manage your own registrations.');
         }
@@ -225,10 +229,12 @@ class EventRegistrationController extends AbstractController
     public function delete(Request $request, Registration $registration, EntityManagerInterface $entityManager, NotificationService $ns): Response
     {
         // 🔐 Security: Only ROLE_ADMIN, the Event Organizer, OR the Participant themselves can delete!
-        $isParticipant = ($registration->getParticipantEmail() === $this->getUser()->getEmail());
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $isParticipant = ($registration->getParticipantEmail() === $user->getEmail());
 
         if (!$this->isGranted('ROLE_ADMIN') && 
-            $registration->getEvent()->getOrganizerId() !== $this->getUser()->getId() &&
+            $registration->getEvent()->getOrganizerId() !== $user->getId() &&
             !$isParticipant) {
             throw $this->createAccessDeniedException('You can only delete your own registrations.');
         }
@@ -255,6 +261,7 @@ class EventRegistrationController extends AbstractController
     public function exportExcel(RegistrationRepository $registrationRepository): StreamedResponse
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
         // 🔍 Fetch data based on roles

@@ -117,6 +117,9 @@ class GeminiAIService
 
     /**
      * Recommends products and therapists based on user symptoms.
+     * 
+     * @param array<int, mixed> $productsData
+     * @param array<int, mixed> $therapistsData
      */
     public function analyzeSymptomAndRecommend(string $message, array $productsData, array $therapistsData): string
     {
@@ -190,6 +193,8 @@ EOT;
 
     /**
      * Identifies a product from a base64 image snapshot using Gemini Vision.
+     * 
+     * @param array<int, string> $productNames
      */
     public function identifyProductFromImage(string $base64Image, array $productNames): string
     {

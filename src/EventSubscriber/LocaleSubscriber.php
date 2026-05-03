@@ -20,10 +20,6 @@ class LocaleSubscriber implements EventSubscriberInterface
         $request = $event->getRequest();
         $session = $request->getSession();
 
-        if (!$session) {
-            return;
-        }
-
         $locale = $session->get(self::LOCALE_SESSION_KEY, $request->getDefaultLocale());
         if (\in_array($locale, self::SUPPORTED_LOCALES, true)) {
             $request->setLocale($locale);

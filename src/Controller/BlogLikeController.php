@@ -22,6 +22,7 @@ class BlogLikeController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function likeBlog(Blog $blog, EntityManagerInterface $em, BlogLikeRepository $likeRepo, TherapistRepository $therapistRepository): JsonResponse
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $isTherapist = in_array('ROLE_THERAPIST', $user->getRoles());
         $therapist = $isTherapist ? $therapistRepository->findOneBy(['email' => $user->getUserIdentifier()]) : null;
@@ -57,6 +58,7 @@ class BlogLikeController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function likeComment(Comment $comment, EntityManagerInterface $em, CommentLikeRepository $likeRepo, TherapistRepository $therapistRepository): JsonResponse
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $isTherapist = in_array('ROLE_THERAPIST', $user->getRoles());
         $therapist = $isTherapist ? $therapistRepository->findOneBy(['email' => $user->getUserIdentifier()]) : null;

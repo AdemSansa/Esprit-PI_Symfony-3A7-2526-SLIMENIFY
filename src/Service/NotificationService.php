@@ -34,7 +34,7 @@ class NotificationService
             $registrations = $this->em->getRepository(Registration::class)->findBy(['participantEmail' => $userEmail]);
             foreach ($registrations as $reg) {
                 $e = $reg->getEvent();
-                if ($e && !in_array($e, $events, true)) {
+                if (!in_array($e, $events, true)) {
                     $events[] = $e;
                 }
             }
@@ -60,7 +60,9 @@ class NotificationService
             }
             
             if ($status === 'ended') {
-                $endDateTime = $event->getDateEnd() ?: (clone $event->getDateStart())->modify('+3 hours');
+                $start = $event->getDateStart();
+                /** @var \DateTime $start */
+                $endDateTime = $event->getDateEnd() ?: (clone $start)->modify('+3 hours');
                 $diffEnd = $now->diff($endDateTime);
                 
                 if ($diffEnd->days < 3) {
@@ -97,6 +99,9 @@ class NotificationService
         return $this->em->getRepository(Notification::class)->count(['user' => $user, 'isRead' => false]);
     }
 
+    /**
+     * @return Notification[]
+     */
     public function getRecentNotifications(User $user, int $limit = 5): array
     {
         return $this->em->getRepository(Notification::class)->findBy(

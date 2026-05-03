@@ -38,12 +38,15 @@ class Blog
     private $therapist;
 
     
+    /** @var Collection<int, Comment> */
     #[ORM\OneToMany(mappedBy: 'blog', targetEntity: Comment::class, cascade: ['remove'])]
     private Collection $comments;
 
+    /** @var Collection<int, BlogLike> */
     #[ORM\OneToMany(mappedBy: 'blog', targetEntity: BlogLike::class, cascade: ['remove'])]
     private Collection $likes;
 
+    /** @var Collection<int, BlogFavorite> */
     #[ORM\OneToMany(mappedBy: 'blog', targetEntity: BlogFavorite::class, cascade: ['remove'])]
     private Collection $favorites;
 
@@ -117,6 +120,7 @@ class Blog
     }
 
    
+    /** @return Collection<int, Comment> */
     public function getComments(): Collection
     {
         return $this->comments;

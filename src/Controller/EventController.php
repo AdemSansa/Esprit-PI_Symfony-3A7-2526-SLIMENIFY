@@ -76,6 +76,9 @@ class EventController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function serialize(Event $e): array
     {
         return [
