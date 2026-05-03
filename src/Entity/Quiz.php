@@ -61,6 +61,7 @@ class Quiz
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $updatedAt;
 
+    /** @var Collection<int, Question> */
     #[ORM\ManyToMany(targetEntity: Question::class, inversedBy: 'quizzes')]
     #[ORM\JoinTable(
         name: 'quiz_question',
@@ -70,6 +71,7 @@ class Quiz
     #[Assert\Count(min: 1, minMessage: 'You must select at least one question for this quiz.')]
     private Collection $questions;
 
+    /** @var Collection<int, QuizResult> */
     #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: QuizResult::class)]
     private Collection $results;
 
@@ -218,6 +220,7 @@ class Quiz
         $this->updatedAt = $v;
         return $this;
     }
+    /** @return Collection<int, Question> */
     public function getQuestions(): Collection
     {
         return $this->questions;
@@ -234,6 +237,7 @@ class Quiz
         $this->questions->removeElement($q);
         return $this;
     }
+    /** @return Collection<int, QuizResult> */
     public function getResults(): Collection
     {
         return $this->results;

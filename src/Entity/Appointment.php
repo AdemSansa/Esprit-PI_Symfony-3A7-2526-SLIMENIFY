@@ -42,6 +42,7 @@ class Appointment
     #[ORM\JoinColumn(name: 'patient_id', referencedColumnName: 'id', nullable: false)]
     private User $patient;
 
+    /** @var Collection<int, Note> */
     #[ORM\OneToMany(mappedBy: 'appointment', targetEntity: Note::class, cascade: ['remove'])]
     private Collection $notes;
 
@@ -71,6 +72,7 @@ class Appointment
     public function setTherapist(Therapist $v): static { $this->therapist = $v; return $this; }
     public function getPatient(): User { return $this->patient; }
     public function setPatient(User $v): static { $this->patient = $v; return $this; }
+    /** @return Collection<int, Note> */
     public function getNotes(): Collection { return $this->notes; }
     public function getPatientMood(): ?string { return $this->patientMood; }
     public function setPatientMood(?string $v): static { $this->patientMood = $v; return $this; }

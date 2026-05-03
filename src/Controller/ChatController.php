@@ -22,6 +22,7 @@ class ChatController extends AbstractController
     #[Route('/', name: 'app_chat_index', methods: ['GET'])]
     public function index(EntityManagerInterface $em): Response
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $role = $user->getRole();
 
@@ -54,6 +55,7 @@ class ChatController extends AbstractController
     #[Route('/{id}', name: 'app_chat_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(Conversation $conversation, EntityManagerInterface $em): Response
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $role = $user->getRole();
 
@@ -91,6 +93,7 @@ class ChatController extends AbstractController
     #[Route('/api/{id}/messages', name: 'app_chat_fetch_messages', methods: ['GET'])]
     public function fetchMessages(Conversation $conversation): Response
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $isTherapist = $user->getRole() === 'therapist';
         $messages = $conversation->getMessages();
@@ -124,6 +127,7 @@ class ChatController extends AbstractController
         AiAnalysisService $aiService,
         MailerInterface $mailer
     ): Response {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $role = $user->getRole();
 
@@ -139,6 +143,7 @@ class ChatController extends AbstractController
         $message->setContent($content);
         $message->setSenderType($role === 'therapist' ? 'therapist' : 'user');
 
+        $analysis = ['level' => 'low', 'analysis' => ''];
         // Run AI analysis only for patient messages
         if ($role !== 'therapist') {
             $analysis = $aiService->analyzeMessage($content);
@@ -182,6 +187,7 @@ class ChatController extends AbstractController
     #[Route('/start/{therapistId}', name: 'app_chat_start', methods: ['GET'])]
     public function startConversation(int $therapistId, EntityManagerInterface $em): Response
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         if ($user->getRole() === 'therapist') {
             $this->addFlash('error', 'Therapists cannot initiate chat with other therapists.');

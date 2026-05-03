@@ -110,6 +110,7 @@
         }
     },
     "require-dev": {
+        "maennchen/zipstream-php": "3.1.0",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^11.5",
         "symfony/browser-kit": "6.4.*",

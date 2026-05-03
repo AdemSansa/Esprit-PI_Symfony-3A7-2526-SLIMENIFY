@@ -15,6 +15,9 @@ enum PsychologyCategory: string
     case Addiction = 'Addiction';
     case GeneralPsychology = 'General Psychology';
 
+    /**
+     * @return array<string, string>
+     */
     public static function choices(): array
     {
         $choices = [];

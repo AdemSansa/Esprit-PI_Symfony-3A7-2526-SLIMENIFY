@@ -50,6 +50,9 @@ class User implements UserInterface,PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $photoUrl = null;
 
+    /**
+     * @var Collection<int, QuizResult>
+     */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: QuizResult::class)]
     private Collection $quizResults;
 
@@ -89,6 +92,9 @@ class User implements UserInterface,PasswordAuthenticatedUserInterface
     public function setGender(?string $gender): static { $this->gender = $gender; return $this; }
     public function getPhotoUrl(): ?string { return $this->photoUrl; }
     public function setPhotoUrl(?string $photoUrl): static { $this->photoUrl = $photoUrl; return $this; }
+    /**
+     * @return Collection<int, QuizResult>
+     */
     public function getQuizResults(): Collection { return $this->quizResults; }
 
     /**

@@ -210,6 +210,7 @@ class AvailabilityManagementController extends AbstractController
             $availability->setDay(strtoupper($specificDate->format('l')));
         }
 
+        $existing = $this->availabilityRepository->findByTherapistId($therapist->getId());
         // Overlap check against others
         // If updating an exception, check if it's within business hours
         if ($availability->getSpecificDate() !== null && !$availability->isAvailable()) {
@@ -264,7 +265,7 @@ class AvailabilityManagementController extends AbstractController
 
         $user = $this->getUser();
         if ($user && method_exists($user, 'getEmail') && $user->getEmail()) {
-            return $this->therapistRepository->findOneByEmail((string) $user->getEmail());
+            return $this->therapistRepository->findOneBy(['email' => (string) $user->getEmail()]);
         }
 
         return null;

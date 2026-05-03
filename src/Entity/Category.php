@@ -19,6 +19,7 @@ class Category
     private ?string $name = null;
 
     // relation inverse (optionnel mais propre)
+    /** @var Collection<int, Blog> */
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Blog::class)]
     private Collection $blogs;
 
@@ -43,6 +44,7 @@ class Category
         return $this;
     }
 
+    /** @return Collection<int, Blog> */
     public function getBlogs(): Collection
     {
         return $this->blogs;
