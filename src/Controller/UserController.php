@@ -15,8 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class UserController extends AbstractController
 {
     public function __construct(
-        private UserRepository $repository,
-        private EntityManagerInterface $em
+        private UserRepository $repository
     ) {}
 
     #[Route('', name: 'index', methods: ['GET'])]
@@ -78,6 +77,7 @@ class UserController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    /** @return array<string, mixed> */
     private function serialize(User $u): array
     {
         return [

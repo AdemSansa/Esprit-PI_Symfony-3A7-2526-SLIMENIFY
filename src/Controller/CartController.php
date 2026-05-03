@@ -194,7 +194,8 @@ class CartController extends AbstractController
         }
 
         $commande = new Commande();
-        $commande->setUser($this->getUser());
+        $user = $this->getUser();
+        $commande->setUser($user instanceof \App\Entity\User ? $user : null);
         $commande->setShippingAddress($address);
         $commande->setContactPhone($phone);
         $commande->setPaymentMethod($paymentMethod);

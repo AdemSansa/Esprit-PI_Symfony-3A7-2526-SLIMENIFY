@@ -56,7 +56,7 @@ class ProductController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_product_show', methods: ['GET'])]
-    public function show($id): JsonResponse
+    public function show(int $id): JsonResponse
     {
         $product = $this->productRepository->find($id);
 
@@ -132,7 +132,7 @@ class ProductController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_product_update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, $id): JsonResponse
+    public function update(Request $request, int $id): JsonResponse
     {
         $product = $this->productRepository->find($id);
 
@@ -182,7 +182,7 @@ class ProductController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_product_delete', methods: ['DELETE'])]
-    public function delete($id): JsonResponse
+    public function delete(int $id): JsonResponse
     {
         $product = $this->productRepository->find($id);
 

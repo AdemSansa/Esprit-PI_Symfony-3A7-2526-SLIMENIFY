@@ -85,7 +85,11 @@ class AssessmentController extends AbstractController
 
                 $quizResult = new QuizResult();
                 $quizResult->setQuiz($quiz);
-                $quizResult->setUser($this->getUser());
+                $user = $this->getUser();
+                if (!$user instanceof \App\Entity\User) {
+                    throw $this->createAccessDeniedException('Login required.');
+                }
+                $quizResult->setUser($user);
                 $quizResult->setScore($score);
                 // We use result column to store the 0-100 percentage metric for now
                 $quizResult->setResult($percentageResult);

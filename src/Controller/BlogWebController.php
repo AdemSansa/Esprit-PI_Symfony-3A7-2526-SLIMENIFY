@@ -76,8 +76,9 @@ class BlogWebController extends AbstractController
         }
 
         $unreadCount = 0;
-        if ($this->getUser()) {
-            $unreadCount = $notificationRepository->countUnread($this->getUser());
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
+            $unreadCount = $notificationRepository->countUnread($user);
         }
 
         $statsData = [];
@@ -428,7 +429,7 @@ class BlogWebController extends AbstractController
                     $therapist = $therapistRepository->findOneBy(['email' => $user->getUserIdentifier()]);
                     $newComment->setTherapist($therapist);
                 } else {
-                    $newComment->setUser($user);
+                    $newComment->setUser($user instanceof \App\Entity\User ? $user : null);
                 }
 
                 $entityManager->persist($newComment);

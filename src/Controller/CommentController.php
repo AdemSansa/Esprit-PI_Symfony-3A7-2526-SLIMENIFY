@@ -50,7 +50,7 @@ class CommentController extends AbstractController
             return $this->redirectToRoute('comment_new');
         }
             // Set user
-            $comment->setUser($user);
+            $comment->setUser($user instanceof \App\Entity\User ? $user : null);
 
             // If user is therapist
             if (in_array('ROLE_THERAPIST', $user->getRoles())) {

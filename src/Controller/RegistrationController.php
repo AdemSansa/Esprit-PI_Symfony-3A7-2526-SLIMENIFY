@@ -67,7 +67,7 @@ class RegistrationController extends AbstractController
             // encode the plain password
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
 
-            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $photoFile */
+            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $photoFile */
             $photoFile = $form->get('photoUrl')->getData();
             if ($photoFile) {
                 $newFilename = uniqid().'.'.$photoFile->guessExtension();
@@ -108,7 +108,7 @@ class RegistrationController extends AbstractController
                     $therapist->setConsultationType((string)$consulValue);
                 }
                 
-                /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $diplomaFile */
+                /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $diplomaFile */
                 $diplomaFile = $form->get('diplomaPath')->getData();
                 if ($diplomaFile) {
                     $newFilename = uniqid().'.'.$diplomaFile->guessExtension();

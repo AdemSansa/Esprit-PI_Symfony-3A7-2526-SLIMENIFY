@@ -28,7 +28,7 @@ class EventRegistrationController extends AbstractController
     public function index(Request $request, RegistrationRepository $registrationRepository, PaginatorInterface $paginator): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-        /** @var \App\Entity\User $user */
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
 
         if ($this->isGranted('ROLE_ADMIN')) {
@@ -39,11 +39,11 @@ class EventRegistrationController extends AbstractController
             $queryBuilder = $registrationRepository->createQueryBuilder('r')
                 ->join('r.event', 'e')
                 ->where('e.organizerId = :organizerId')
-                ->setParameter('organizerId', $user->getId())
+                ->setParameter('organizerId', $user instanceof \App\Entity\User ? $user->getId() : 0)
                 ->orderBy('r.id', 'DESC');
         } else {
              // Filter registrations for the patient
-             $email = method_exists($user, 'getEmail') ? $user->getEmail() : null;
+             $email = $user instanceof \App\Entity\User ? $user->getEmail() : null;
              $queryBuilder = $registrationRepository->createQueryBuilder('r')
                 ->where('r.participantEmail = :email')
                 ->setParameter('email', $email)
@@ -74,19 +74,11 @@ class EventRegistrationController extends AbstractController
         
         /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
-        if ($user) {
+        if ($user instanceof \App\Entity\User) {
             // Auto fill
-            if (method_exists($user, 'getFirstName') && method_exists($user, 'getLastName')) {
-                $registration->setParticipantName($user->getFirstName() . ' ' . $user->getLastName());
-            } elseif (method_exists($user, 'getUserIdentifier')) {
-                $registration->setParticipantName($user->getUserIdentifier());
-            }
-            if (method_exists($user, 'getEmail')) {
-                $registration->setParticipantEmail($user->getEmail());
-            }
-            if (method_exists($user, 'getPhone')) {
-                $registration->setParticipantPhone($user->getPhone());
-            }
+            $registration->setParticipantName($user->getFirstName() . ' ' . $user->getLastName());
+            $registration->setParticipantEmail((string) $user->getEmail());
+            $registration->setParticipantPhone((string) $user->getPhone());
         }
 
         // 📍 Geolocation: Detect Participant Location from IP
@@ -194,8 +186,11 @@ class EventRegistrationController extends AbstractController
     public function updateStatus(Request $request, Registration $registration, string $status, EntityManagerInterface $entityManager, NotificationService $ns): Response
     {
         // 🔐 Security: Only ROLE_ADMIN, the Event Organizer, OR the Participant themselves can modify status!
-        /** @var \App\Entity\User $user */
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException('Login required.');
+        }
         $isParticipant = ($registration->getParticipantEmail() === $user->getEmail());
         
         if (!$this->isGranted('ROLE_ADMIN') && 
@@ -229,8 +224,11 @@ class EventRegistrationController extends AbstractController
     public function delete(Request $request, Registration $registration, EntityManagerInterface $entityManager, NotificationService $ns): Response
     {
         // 🔐 Security: Only ROLE_ADMIN, the Event Organizer, OR the Participant themselves can delete!
-        /** @var \App\Entity\User $user */
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException('Login required.');
+        }
         $isParticipant = ($registration->getParticipantEmail() === $user->getEmail());
 
         if (!$this->isGranted('ROLE_ADMIN') && 
@@ -261,8 +259,11 @@ class EventRegistrationController extends AbstractController
     public function exportExcel(RegistrationRepository $registrationRepository): StreamedResponse
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-        /** @var \App\Entity\User $user */
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException('You are not authorized to export registrations.');
+        }
 
         // 🔍 Fetch data based on roles
         if ($this->isGranted('ROLE_ADMIN')) {

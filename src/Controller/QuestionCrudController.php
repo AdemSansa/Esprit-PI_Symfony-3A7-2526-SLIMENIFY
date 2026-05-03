@@ -45,9 +45,9 @@ class QuestionCrudController extends AbstractController
     #[Route('/new', name: 'app_question_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, CloudinaryUploader $cloudinaryUploader): Response
     {
-        /** @var \App\Entity\User $user */
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
-        if (!$user || $user->getRole() !== 'therapist') {
+        if (!$user instanceof \App\Entity\User || $user->getRole() !== 'therapist') {
             throw $this->createAccessDeniedException('Only therapists can add questions.');
         }
 
@@ -85,9 +85,9 @@ class QuestionCrudController extends AbstractController
     #[Route('/{id}/edit', name: 'app_question_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Question $question, EntityManagerInterface $entityManager, CloudinaryUploader $cloudinaryUploader): Response
     {
-        /** @var \App\Entity\User $user */
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
-        if (!$user || $user->getRole() !== 'therapist') {
+        if (!$user instanceof \App\Entity\User || $user->getRole() !== 'therapist') {
             throw $this->createAccessDeniedException('Only therapists can edit questions.');
         }
 
@@ -123,9 +123,9 @@ class QuestionCrudController extends AbstractController
     #[Route('/{id}', name: 'app_question_delete', methods: ['POST'])]
     public function delete(Request $request, Question $question, EntityManagerInterface $entityManager): Response
     {
-        /** @var \App\Entity\User $user */
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
-        if (!$user || $user->getRole() !== 'therapist') {
+        if (!$user instanceof \App\Entity\User || $user->getRole() !== 'therapist') {
             throw $this->createAccessDeniedException('Only therapists can delete questions.');
         }
 

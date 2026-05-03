@@ -18,7 +18,7 @@ class NotificationController extends AbstractController
     public function poll(NotificationService $ns): JsonResponse
     {
         $user = $this->getUser();
-        if (!$user) return new JsonResponse(['unread' => 0, 'notifications' => []]);
+        if (!$user instanceof \App\Entity\User) return new JsonResponse(['unread' => 0, 'notifications' => []]);
 
         // Heartbeat check
         $ns->checkAndGenerate($user);
@@ -48,7 +48,7 @@ class NotificationController extends AbstractController
     public function toggleSubscribe(Event $event, EntityManagerInterface $em, NotificationService $ns): JsonResponse
     {
         $user = $this->getUser();
-        if (!$user) return new JsonResponse(['error' => 'Login required'], 401);
+        if (!$user instanceof \App\Entity\User) return new JsonResponse(['error' => 'Login required'], 401);
 
         $subRepo = $em->getRepository(EventSubscription::class);
         $existing = $subRepo->findOneBy(['user' => $user, 'event' => $event]);
@@ -95,7 +95,7 @@ class NotificationController extends AbstractController
     public function clearAll(EntityManagerInterface $em): JsonResponse
     {
         $user = $this->getUser();
-        if (!$user) return new JsonResponse(['error' => 'Login required'], 401);
+        if (!$user instanceof \App\Entity\User) return new JsonResponse(['error' => 'Login required'], 401);
 
         $repo = $em->getRepository(Notification::class);
         $notifications = $repo->findBy(['user' => $user]);
@@ -112,7 +112,7 @@ class NotificationController extends AbstractController
     public function checkSubscription(Event $event, EntityManagerInterface $em): JsonResponse
     {
         $user = $this->getUser();
-        if (!$user) return new JsonResponse(['subscribed' => false]);
+        if (!$user instanceof \App\Entity\User) return new JsonResponse(['subscribed' => false]);
 
         $sub = $em->getRepository(EventSubscription::class)->findOneBy(['user' => $user, 'event' => $event]);
         return new JsonResponse(['subscribed' => !!$sub]);
