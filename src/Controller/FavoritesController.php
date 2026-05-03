@@ -22,8 +22,11 @@ class FavoritesController extends AbstractController
         BlogFavoriteRepository $favRepo
     ): JsonResponse {
 
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
-        
+        if (!$user instanceof \App\Entity\User) {
+            return new JsonResponse(['error' => 'Login required'], 401);
+        }
         // Favorites are only for users (not therapists, as per latest requirement)
         $existingFavorite = $favRepo->findOneBy([
             'user' => $user,

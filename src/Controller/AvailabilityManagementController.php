@@ -264,7 +264,7 @@ class AvailabilityManagementController extends AbstractController
         }
 
         $user = $this->getUser();
-        if ($user && method_exists($user, 'getEmail') && $user->getEmail()) {
+        if ($user instanceof \App\Entity\User && $user->getEmail()) {
             return $this->therapistRepository->findOneBy(['email' => (string) $user->getEmail()]);
         }
 

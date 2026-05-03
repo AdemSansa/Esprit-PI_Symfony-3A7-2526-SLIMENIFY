@@ -19,6 +19,7 @@ class ProductRepository extends ServiceEntityRepository
     /**
      * Server-side filtered, searched, and sorted product query.
      */
+    /** @return \Doctrine\ORM\Query<mixed, mixed> */
     public function findFiltered(
         ?string $search = null,
         ?string $category = null,

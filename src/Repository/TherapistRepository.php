@@ -56,7 +56,7 @@ class TherapistRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return \Doctrine\ORM\Query
+     * @return \Doctrine\ORM\Query<mixed, mixed>
      */
     public function searchAndSortQuery(?string $searchQuery, ?string $specialty, ?string $modeFilter = null): \Doctrine\ORM\Query
     {

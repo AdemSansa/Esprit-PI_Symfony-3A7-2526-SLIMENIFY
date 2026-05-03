@@ -81,9 +81,9 @@ class QuizCrudController extends AbstractController
     #[Route('', name: 'app_quiz_index', methods: ['GET'])]
     public function index(Request $request, QuizRepository $quizRepository): Response
     {
-        /** @var \App\Entity\User $user */
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
-        if (!$user || $user->getRole() !== 'therapist') {
+        if (!$user instanceof \App\Entity\User || $user->getRole() !== 'therapist') {
             throw $this->createAccessDeniedException('Only therapists can manage quizzes.');
         }
 
@@ -101,9 +101,9 @@ class QuizCrudController extends AbstractController
     #[Route('/new', name: 'app_quiz_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
-        /** @var \App\Entity\User $user */
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
-        if (!$user || $user->getRole() !== 'therapist') {
+        if (!$user instanceof \App\Entity\User || $user->getRole() !== 'therapist') {
             throw $this->createAccessDeniedException('Only therapists can create quizzes.');
         }
 
@@ -147,9 +147,9 @@ class QuizCrudController extends AbstractController
     #[Route('/{id}/edit', name: 'app_quiz_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Quiz $quiz, EntityManagerInterface $entityManager): Response
     {
-        /** @var \App\Entity\User $user */
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
-        if (!$user || $user->getRole() !== 'therapist') {
+        if (!$user instanceof \App\Entity\User || $user->getRole() !== 'therapist') {
             throw $this->createAccessDeniedException('Only therapists can edit quizzes.');
         }
 
@@ -193,9 +193,9 @@ class QuizCrudController extends AbstractController
     #[Route('/{id}', name: 'app_quiz_delete', methods: ['POST'])]
     public function delete(Request $request, Quiz $quiz, EntityManagerInterface $entityManager): Response
     {
-        /** @var \App\Entity\User $user */
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
-        if (!$user || $user->getRole() !== 'therapist') {
+        if (!$user instanceof \App\Entity\User || $user->getRole() !== 'therapist') {
             throw $this->createAccessDeniedException('Only therapists can delete quizzes.');
         }
 

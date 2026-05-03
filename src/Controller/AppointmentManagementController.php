@@ -635,7 +635,7 @@ class AppointmentManagementController extends AbstractController
     private function resolveTherapistForCurrentUser(): ?Therapist
     {
         $user = $this->getUser();
-        if ($user && method_exists($user, 'getEmail') && $user->getEmail()) {
+        if ($user instanceof \App\Entity\User && $user->getEmail()) {
             return $this->therapistRepository->findOneByEmail((string) $user->getEmail());
         }
 
@@ -710,15 +710,7 @@ class AppointmentManagementController extends AbstractController
         return $user instanceof \App\Entity\User && $user->getId() === $appointment->getPatient()->getId();
     }
 
-    private function canCreateNoteNow(Appointment $appointment): bool
-    {
-        $startAt = \DateTimeImmutable::createFromFormat(
-            'Y-m-d H:i:s',
-            $appointment->getAppointmentDate()->format('Y-m-d') . ' ' . $appointment->getStartTime()->format('H:i:s')
-        );
 
-        return $startAt !== false && new \DateTimeImmutable() >= $startAt;
-    }
 
     private function statusColor(string $status): string
     {
@@ -734,6 +726,7 @@ class AppointmentManagementController extends AbstractController
         return in_array($next, $this->getNextStatuses($current), true);
     }
 
+    /** @return array<int, string> */
     private function getNextStatuses(string $current): array
     {
         return match ($current) {

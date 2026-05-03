@@ -35,7 +35,7 @@ class Blog
 
     #[ORM\ManyToOne(targetEntity: Therapist::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private $therapist;
+    private ?Therapist $therapist = null;
 
     
     /** @var Collection<int, Comment> */
@@ -108,12 +108,12 @@ class Blog
         return $this->createdAt;
     }
 
-    public function getTherapist()
+    public function getTherapist(): ?Therapist
     {
         return $this->therapist;
     }
 
-    public function setTherapist($therapist): self
+    public function setTherapist(?Therapist $therapist): self
     {
         $this->therapist = $therapist;
         return $this;
