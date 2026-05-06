@@ -109,8 +109,10 @@ class EventWebController extends AbstractController
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
 
                 try {
+                    $projectDir = $this->getParameter('kernel.project_dir');
+                    assert(is_string($projectDir));
                     $imageFile->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/events',
+                        $projectDir . '/public/uploads/events',
                         $newFilename
                     );
                     $event->setImageUrl('uploads/events/' . $newFilename);
@@ -196,8 +198,10 @@ class EventWebController extends AbstractController
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
 
                 try {
+                    $projectDir = $this->getParameter('kernel.project_dir');
+                    assert(is_string($projectDir));
                     $imageFile->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/events',
+                        $projectDir . '/public/uploads/events',
                         $newFilename
                     );
                     $event->setImageUrl('uploads/events/' . $newFilename);
@@ -227,7 +231,7 @@ class EventWebController extends AbstractController
             throw $this->createAccessDeniedException('You can only delete your own events.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$event->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$event->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($event);
             $entityManager->flush();
             $this->addFlash('success', 'Event deleted successfully!');

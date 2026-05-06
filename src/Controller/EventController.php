@@ -86,14 +86,14 @@ class EventController extends AbstractController
             'title'            => $e->getTitle(),
             'description'      => $e->getDescription(),
             'type'             => $e->getType(),
-            'date_start'       => $e->getDateStart()->format('Y-m-d H:i:s'),
+            'date_start'       => $e->getDateStart() ? $e->getDateStart()->format('Y-m-d H:i:s') : null,
             'date_end'         => $e->getDateEnd()?->format('Y-m-d H:i:s'),
             'location'         => $e->getLocation(),
             'max_participants' => $e->getMaxParticipants(),
             'status'           => $e->getStatus(),
             'organizer_id'     => $e->getOrganizerId(),
             'image_url'        => $e->getImageUrl(),
-            'created_at'       => $e->getCreatedAt()->format('Y-m-d H:i:s'),
+            'created_at'       => $e->getCreatedAt() ? $e->getCreatedAt()->format('Y-m-d H:i:s') : null,
         ];
     }
 }

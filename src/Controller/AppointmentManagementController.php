@@ -63,7 +63,7 @@ class AppointmentManagementController extends AbstractController
             if ($this->isGranted('ROLE_PATIENT') && !$this->isGranted('ROLE_THERAPIST')) {
                 $user = $this->getUser();
                 if ($user instanceof \App\Entity\User) {
-                    $appointments = $this->appointmentRepository->findByPatient($user->getId());
+                    $appointments = $this->appointmentRepository->findByPatient((int) $user->getId());
                 } else {
                     return $this->json(['error' => 'Not authenticated'], Response::HTTP_UNAUTHORIZED);
                 }
@@ -71,7 +71,7 @@ class AppointmentManagementController extends AbstractController
                 return $this->json(['error' => 'Therapist not found'], Response::HTTP_BAD_REQUEST);
             }
         } else {
-            $appointments = $this->appointmentRepository->findByTherapist($therapist->getId());
+            $appointments = $this->appointmentRepository->findByTherapist((int) $therapist->getId());
         }
         $events = [];
         foreach ($appointments as $appointment) {
@@ -123,7 +123,7 @@ class AppointmentManagementController extends AbstractController
             return $this->json(['error' => 'Therapist not found'], Response::HTTP_BAD_REQUEST);
         }
 
-        $availabilities = $this->availabilityRepository->findByTherapistId($therapist->getId());
+        $availabilities = $this->availabilityRepository->findByTherapistId((int) $therapist->getId());
         $dayMap = [
             'SUNDAY' => 0,
             'MONDAY' => 1,
@@ -173,9 +173,9 @@ class AppointmentManagementController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_PATIENT');
 
-        $dateStr = $request->query->get('date');
-        $startStr = $request->query->get('start_time');
-        $type = strtolower((string) $request->query->get('type', ''));
+        $dateStr = $request->query->getString('date');
+        $startStr = $request->query->getString('start_time');
+        $type = strtolower($request->query->getString('type'));
 
         if (!$dateStr || !$startStr) {
             return $this->json(['error' => 'Missing date or time'], Response::HTTP_BAD_REQUEST);
@@ -190,7 +190,7 @@ class AppointmentManagementController extends AbstractController
 
         $patient = $this->getUser();
         if ($patient instanceof \App\Entity\User) {
-            if ($this->appointmentRepository->hasOverlapForPatient($patient->getId(), $date, $start, $end)) {
+            if ($this->appointmentRepository->hasOverlapForPatient((int) $patient->getId(), $date, $start, $end)) {
                 return $this->json(['error' => 'You already have another appointment booked at this exact time!'], Response::HTTP_CONFLICT);
             }
         }
@@ -205,7 +205,7 @@ class AppointmentManagementController extends AbstractController
             if (!$this->isSlotInsideBusinessHours($therapist, $date, $start, $end)) {
                 continue;
             }
-            if ($this->appointmentRepository->hasOverlapForTherapist($therapist->getId(), $date, $start, $end)) {
+            if ($this->appointmentRepository->hasOverlapForTherapist((int) $therapist->getId(), $date, $start, $end)) {
                 continue;
             }
             $available[] = [
@@ -254,11 +254,11 @@ class AppointmentManagementController extends AbstractController
             return $this->json(['error' => 'Selected slot is outside business hours or blocked by exception'], Response::HTTP_BAD_REQUEST);
         }
 
-        if ($this->appointmentRepository->hasOverlapForTherapist($therapist->getId(), $date, $start, $end)) {
+        if ($this->appointmentRepository->hasOverlapForTherapist((int) $therapist->getId(), $date, $start, $end)) {
             return $this->json(['error' => 'Selected slot overlaps an existing appointment'], Response::HTTP_CONFLICT);
         }
 
-        if ($this->appointmentRepository->hasOverlapForPatient($patient->getId(), $date, $start, $end)) {
+        if ($this->appointmentRepository->hasOverlapForPatient((int) $patient->getId(), $date, $start, $end)) {
             return $this->json(['error' => 'You already have an appointment booked with another therapist at this time.'], Response::HTTP_CONFLICT);
         }
 
@@ -300,11 +300,11 @@ class AppointmentManagementController extends AbstractController
             return $this->json(['error' => 'Slot is outside business hours or blocked by exception'], Response::HTTP_BAD_REQUEST);
         }
 
-        if ($this->appointmentRepository->hasOverlapForTherapist($appointment->getTherapist()->getId(), $date, $start, $end, $appointment->getId())) {
+        if ($this->appointmentRepository->hasOverlapForTherapist((int) $appointment->getTherapist()->getId(), $date, $start, $end, $appointment->getId())) {
             return $this->json(['error' => 'Slot overlaps another appointment'], Response::HTTP_CONFLICT);
         }
 
-        if ($this->appointmentRepository->hasOverlapForPatient($appointment->getPatient()->getId(), $date, $start, $end, $appointment->getId())) {
+        if ($this->appointmentRepository->hasOverlapForPatient((int) $appointment->getPatient()->getId(), $date, $start, $end, $appointment->getId())) {
             return $this->json(['error' => 'You already have an appointment booked with another therapist at this time.'], Response::HTTP_CONFLICT);
         }
 
@@ -380,17 +380,17 @@ class AppointmentManagementController extends AbstractController
         if ($this->isGranted('ROLE_THERAPIST')) {
             $therapist = $this->resolveTherapistForCurrentUser();
             if ($therapist !== null) {
-                $appointments = $this->appointmentRepository->findByTherapist($therapist->getId());
+                $appointments = $this->appointmentRepository->findByTherapist((int) $therapist->getId());
             }
         } else {
             $user = $this->getUser();
             if ($user instanceof \App\Entity\User) {
-                $appointments = $this->appointmentRepository->findByPatient($user->getId());
+                $appointments = $this->appointmentRepository->findByPatient((int) $user->getId());
             }
         }
 
         // Filter by status
-        $statusFilter = strtolower($request->query->get('status', ''));
+        $statusFilter = strtolower($request->query->getString('status'));
         if ($statusFilter && $statusFilter !== 'all') {
             $appointments = array_filter($appointments, function ($a) use ($statusFilter) {
                 return strtolower($a->getStatus() ?? 'pending') === $statusFilter;
@@ -545,7 +545,7 @@ class AppointmentManagementController extends AbstractController
         $note->setAppointment($appointment);
         $note->setTherapist($therapist);
         $note->setContent($content);
-        $note->setMood($request->request->get('mood') ?: null);
+        $note->setMood(($m = $request->request->get('mood')) !== null ? (string) $m : null);
         $this->noteRepository->save($note);
 
         $this->addFlash('success', 'Note added successfully.');
@@ -565,7 +565,7 @@ class AppointmentManagementController extends AbstractController
         if ($content !== '') {
             $note->setContent($content);
         }
-        $note->setMood($request->request->get('mood') ?: null);
+        $note->setMood(($m = $request->request->get('mood')) !== null ? (string) $m : null);
         $this->noteRepository->save($note);
         $this->addFlash('success', 'Note updated.');
 
@@ -644,7 +644,7 @@ class AppointmentManagementController extends AbstractController
 
     private function isSlotInsideBusinessHours(Therapist $therapist, \DateTimeInterface $date, \DateTimeInterface $start, \DateTimeInterface $end): bool
     {
-        $availabilityRows = $this->availabilityRepository->findByTherapistId($therapist->getId());
+        $availabilityRows = $this->availabilityRepository->findByTherapistId((int) $therapist->getId());
         $day = strtoupper($date->format('l'));
         $hasCoveringBusinessHour = false;
 

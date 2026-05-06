@@ -28,7 +28,7 @@ class AvailabilityManagementController extends AbstractController
             throw $this->createNotFoundException('Therapist profile was not found for this user.');
         }
 
-        $availabilities = $this->availabilityRepository->findByTherapistId($therapist->getId());
+        $availabilities = $this->availabilityRepository->findByTherapistId((int) $therapist->getId());
         $businessHours = array_filter($availabilities, static fn (Availability $a) => $a->getSpecificDate() === null && $a->isAvailable());
         $exceptions = array_filter($availabilities, static fn (Availability $a) => $a->getSpecificDate() !== null && !$a->isAvailable());
 
@@ -102,7 +102,7 @@ class AvailabilityManagementController extends AbstractController
             return $this->redirectToRoute('app_availability_manage');
         }
 
-        $availabilityRows = $this->availabilityRepository->findByTherapistId($therapist->getId());
+        $availabilityRows = $this->availabilityRepository->findByTherapistId((int) $therapist->getId());
         $day = strtoupper($specificDate->format('l'));
         $isWithinBusinessHours = false;
         foreach ($availabilityRows as $row) {
@@ -210,7 +210,7 @@ class AvailabilityManagementController extends AbstractController
             $availability->setDay(strtoupper($specificDate->format('l')));
         }
 
-        $existing = $this->availabilityRepository->findByTherapistId($therapist->getId());
+        $existing = $this->availabilityRepository->findByTherapistId((int) $therapist->getId());
         // Overlap check against others
         // If updating an exception, check if it's within business hours
         if ($availability->getSpecificDate() !== null && !$availability->isAvailable()) {
