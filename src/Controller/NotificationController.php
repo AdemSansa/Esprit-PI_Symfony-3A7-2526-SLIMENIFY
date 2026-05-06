@@ -20,8 +20,6 @@ class NotificationController extends AbstractController
         $user = $this->getUser();
         if (!$user instanceof \App\Entity\User) return new JsonResponse(['unread' => 0, 'notifications' => []]);
 
-        // Heartbeat check
-        $ns->checkAndGenerate($user);
         
         $unread = $ns->getUnreadCount($user);
         $recent = $ns->getRecentNotifications($user);
