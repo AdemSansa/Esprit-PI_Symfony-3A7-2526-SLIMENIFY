@@ -582,13 +582,8 @@ class BlogWebController extends AbstractController
                 'Cache-Control'       => 'public, max-age=3600',
             ]);
         } catch (\Exception $e) {
-            return $this->render('blog/show.html.twig', [
-    'blog'            => $blog,
-    'commentForm'     => $newForm,
-    'editCommentForm' => $editForm,
-    'editingCommentId'=> $editingComment?->getId(),
-    'voicerss_key'    => $_ENV['VOICERSS_API_KEY'],  // ← add this line
-]);
+            $this->addFlash('error', 'Could not generate audio for this blog.');
+            return $this->redirectToRoute('app_blog_web_show', ['id' => $blog->getId()]);
         }
     }
 

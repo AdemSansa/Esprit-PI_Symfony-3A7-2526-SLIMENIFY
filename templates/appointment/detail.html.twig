@@ -207,8 +207,7 @@
                     });
                 }
 
-                // 2. Jitsi Auto-Join (only if video appointment and not already opened)
-                {% if jitsi_url and appointment.status != 'completed' and appointment.status != 'cancelled' %}
+                // 2. Jitsi Auto-Join (only if video appointment and not already opene{% if jitsi_url and appointment.status != 'completed' and appointment.status != 'cancelled' %}
                 const jitsiKey = 'jitsi_opened_' + {{ appointment.id }};
                 if (!sessionStorage.getItem(jitsiKey)) {
                     const aptStartStr = "{{ appointment.appointmentDate|date('Y-m-d') }}T{{ appointment.startTime|date('H:i:s') }}";
@@ -216,28 +215,17 @@
                     const aptStart = new Date(aptStartStr);
                     const aptEnd = new Date(aptEndStr);
 
-                    if (window.jitsiInterval) clearInterval(window.jitsiInterval);
                     window.jitsiInterval = setInterval(() => {
                         const now = new Date();
                         if (now >= aptStart && now <= aptEnd) {
                             sessionStorage.setItem(jitsiKey, 'true');
                             clearInterval(window.jitsiInterval);
-                            Swal.fire({
-                                title: 'Session Started',
-                                text: 'Your video consultation time has arrived. Join now?',
-                                icon: 'info',
-                                showCancelButton: true,
-                                confirmButtonText: 'Join',
-                                cancelButtonText: 'Later'
-                            }).then((r) => {
-                                if (r.isConfirmed) {
-                                    window.open("{{ jitsi_url }}", "_blank");
-                                }
-                            });
+                            // Open Jitsi video call automatically
+                            window.open("{{ jitsi_url }}", "_blank");
                         }
                     }, 10000);
                 }
-                {% endif %}
+                {% endif %}f %}
             }
 
             // Bind to all possible load events

@@ -212,6 +212,7 @@ class AvailabilityManagementController extends AbstractController
 
         // Overlap check against others
         // If updating an exception, check if it's within business hours
+        $existing = $this->availabilityRepository->findByTherapistId($therapist->getId());
         if ($availability->getSpecificDate() !== null && !$availability->isAvailable()) {
             $isWithinBusinessHours = false;
             foreach ($existing as $row) {
