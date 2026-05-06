@@ -71,13 +71,14 @@ class BlogWebController extends AbstractController
             6
         );
 
-        if ($pagination instanceof SlidingPaginationInterface) {
+        if ($pagination instanceof SlidingPaginationInterface && method_exists($pagination, 'setUsedRoute')) {
             $pagination->setUsedRoute('app_blog_web_index');
         }
 
         $unreadCount = 0;
-        if ($this->getUser()) {
-            $unreadCount = $notificationRepository->countUnread($this->getUser());
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
+            $unreadCount = $notificationRepository->countUnread($user);
         }
 
         $statsData = [];
@@ -177,6 +178,9 @@ class BlogWebController extends AbstractController
     public function myBlogs(BlogRepository $blogRepository, TherapistRepository $therapistRepository): Response
     {
         $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('You must be logged in.');
+        }
         $therapist = $therapistRepository->findOneBy(['email' => $user->getUserIdentifier()]);
 
         if (!$therapist) {
@@ -202,6 +206,9 @@ class BlogWebController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $user = $this->getUser();
+            if (!$user) {
+                throw $this->createAccessDeniedException('You must be logged in.');
+            }
             $therapist = $therapistRepository->findOneBy(['email' => $user->getUserIdentifier()]);
 
             if (!$therapist) {
@@ -220,8 +227,10 @@ class BlogWebController extends AbstractController
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$photoFile->guessExtension();
 
                 try {
+                    $projectDir = $this->getParameter('kernel.project_dir');
+                    assert(is_string($projectDir));
                     $photoFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/blogs',
+                        $projectDir.'/public/uploads/blogs',
                         $newFilename
                     );
                     $blog->setPhoto($newFilename);
@@ -244,7 +253,7 @@ class BlogWebController extends AbstractController
                 $notification->setTitle('New Blog Published');
                 $notification->setMessage('Check out the new blog: ' . $blog->getTitle());
                 $notification->setUser($u);
-                $notification->setBlog($blog);
+                $notification->setType('NEW_BLOG');
                 $entityManager->persist($notification);
             }
 
@@ -311,11 +320,14 @@ class BlogWebController extends AbstractController
         TherapistRepository $therapistRepository
     ): Response {
         $comment = $commentRepository->find($commentId);
-        if (!$comment || $comment->getBlog()->getId() !== $blogId) {
+        if (!$comment || !$comment->getBlog() || $comment->getBlog()->getId() !== $blogId) {
             throw $this->createNotFoundException();
         }
 
         $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('You must be logged in.');
+        }
         $therapist = in_array('ROLE_THERAPIST', $user->getRoles(), true)
             ? $therapistRepository->findOneBy(['email' => $user->getUserIdentifier()])
             : null;
@@ -362,6 +374,7 @@ class BlogWebController extends AbstractController
         if ($editCommentId > 0 && $this->isGranted('ROLE_USER')) {
             $candidate = $commentRepository->find($editCommentId);
             if ($candidate
+                && $candidate->getBlog() !== null
                 && $candidate->getBlog()->getId() === $blog->getId()
                 && $this->canUserEditComment($candidate, $therapistRepository)
             ) {
@@ -424,11 +437,14 @@ class BlogWebController extends AbstractController
                 }
 
                 $user = $this->getUser();
+                if (!$user) {
+                    throw $this->createAccessDeniedException('You must be logged in.');
+                }
                 if (in_array('ROLE_THERAPIST', $user->getRoles(), true)) {
                     $therapist = $therapistRepository->findOneBy(['email' => $user->getUserIdentifier()]);
                     $newComment->setTherapist($therapist);
                 } else {
-                    $newComment->setUser($user);
+                    $newComment->setUser($user instanceof \App\Entity\User ? $user : null);
                 }
 
                 $entityManager->persist($newComment);
@@ -473,6 +489,9 @@ class BlogWebController extends AbstractController
     public function edit(Request $request, Blog $blog, EntityManagerInterface $entityManager, TherapistRepository $therapistRepository, SluggerInterface $slugger): Response
     {
         $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('You must be logged in.');
+        }
         $therapist = $therapistRepository->findOneBy(['email' => $user->getUserIdentifier()]);
 
         if ($blog->getTherapist() !== $therapist && !$this->isGranted('ROLE_ADMIN')) {
@@ -492,8 +511,10 @@ class BlogWebController extends AbstractController
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$photoFile->guessExtension();
 
                 try {
+                    $projectDir = $this->getParameter('kernel.project_dir');
+                    assert(is_string($projectDir));
                     $photoFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/blogs',
+                        $projectDir.'/public/uploads/blogs',
                         $newFilename
                     );
 
@@ -521,6 +542,9 @@ class BlogWebController extends AbstractController
     public function delete(Request $request, Blog $blog, EntityManagerInterface $entityManager, TherapistRepository $therapistRepository): Response
     {
         $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('You must be logged in.');
+        }
         $therapist = $therapistRepository->findOneBy(['email' => $user->getUserIdentifier()]);
 
         if ($blog->getTherapist() !== $therapist && !$this->isGranted('ROLE_ADMIN')) {
@@ -582,13 +606,8 @@ class BlogWebController extends AbstractController
                 'Cache-Control'       => 'public, max-age=3600',
             ]);
         } catch (\Exception $e) {
-            return $this->render('blog/show.html.twig', [
-    'blog'            => $blog,
-    'commentForm'     => $newForm,
-    'editCommentForm' => $editForm,
-    'editingCommentId'=> $editingComment?->getId(),
-    'voicerss_key'    => $_ENV['VOICERSS_API_KEY'],  // ← add this line
-]);
+            $this->addFlash('error', 'Audio generation failed: ' . $e->getMessage());
+            return $this->redirectToRoute('app_blog_web_show', ['id' => $blog->getId()]);
         }
     }
 

@@ -38,6 +38,9 @@ class CommentController extends AbstractController
         $form->handleRequest($request);
 
         $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('You must be logged in.');
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
 
@@ -50,7 +53,7 @@ class CommentController extends AbstractController
             return $this->redirectToRoute('comment_new');
         }
             // Set user
-            $comment->setUser($user);
+            $comment->setUser($user instanceof \App\Entity\User ? $user : null);
 
             // If user is therapist
             if (in_array('ROLE_THERAPIST', $user->getRoles())) {
@@ -80,6 +83,9 @@ class CommentController extends AbstractController
     ): Response {
 
         $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('You must be logged in.');
+        }
 
         // If user is therapist
         $therapist = in_array('ROLE_THERAPIST', $user->getRoles())
@@ -117,6 +123,9 @@ class CommentController extends AbstractController
     ): Response {
 
         $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('You must be logged in.');
+        }
 
         // If user is therapist
         $therapist = in_array('ROLE_THERAPIST', $user->getRoles())

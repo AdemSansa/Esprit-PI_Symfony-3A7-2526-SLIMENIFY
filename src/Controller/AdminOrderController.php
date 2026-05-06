@@ -26,7 +26,7 @@ class AdminOrderController extends AbstractController
     #[Route('/{id}/status', name: 'app_admin_orders_update_status', methods: ['POST'])]
     public function updateStatus(Commande $commande, Request $request, EntityManagerInterface $em): Response
     {
-        $newStatus = $request->request->get('status');
+        $newStatus = $request->request->getString('status');
         if ($newStatus) {
             $commande->setStatus($newStatus);
             $em->flush();

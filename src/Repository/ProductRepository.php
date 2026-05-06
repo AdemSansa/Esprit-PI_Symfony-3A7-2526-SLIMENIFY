@@ -6,6 +6,9 @@ use App\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Product>
+ */
 class ProductRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,6 +19,7 @@ class ProductRepository extends ServiceEntityRepository
     /**
      * Server-side filtered, searched, and sorted product query.
      */
+    /** @return \Doctrine\ORM\Query<mixed, mixed> */
     public function findFiltered(
         ?string $search = null,
         ?string $category = null,

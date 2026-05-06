@@ -20,7 +20,7 @@ class AiCompanionController extends AbstractController
         GeminiAIService $aiService
     ): Response {
         $responseMarkdown = null;
-        $userMessage = $request->request->get('message');
+        $userMessage = $request->request->getString('message');
 
         if ($request->isMethod('POST') && !empty($userMessage)) {
             // Fetch relevant data to feed the AI

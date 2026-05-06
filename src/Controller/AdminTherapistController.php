@@ -19,9 +19,9 @@ class AdminTherapistController extends AbstractController
     #[Route('/', name: 'app_admin_therapist_index', methods: ['GET'])]
     public function index(Request $request, TherapistRepository $therapistRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
-        $searchQuery = $request->query->get('q');
-        $specialty = $request->query->get('specialty');
-        $mode = $request->query->get('mode');
+        $searchQuery = ($v = $request->query->get('q')) !== null ? (string) $v : null;
+        $specialty = ($v = $request->query->get('specialty')) !== null ? (string) $v : null;
+        $mode = ($v = $request->query->get('mode')) !== null ? (string) $v : null;
 
         $query = $therapistRepository->searchAndSortQuery($searchQuery, $specialty, $mode);
 
@@ -115,7 +115,7 @@ class AdminTherapistController extends AbstractController
     #[Route('/{id}', name: 'app_admin_therapist_delete', methods: ['POST'])]
     public function delete(Request $request, Therapist $therapist, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$therapist->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$therapist->getId(), $request->request->getString('_token'))) {
             $entityManager->remove($therapist);
             $entityManager->flush();
         }

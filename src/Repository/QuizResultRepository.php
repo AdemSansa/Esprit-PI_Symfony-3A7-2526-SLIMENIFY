@@ -6,6 +6,9 @@ use App\Entity\QuizResult;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<QuizResult>
+ */
 class QuizResultRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -29,6 +32,9 @@ class QuizResultRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getGlobalStats(): array
     {
         $qb = $this->createQueryBuilder('qr');
@@ -42,6 +48,9 @@ class QuizResultRepository extends ServiceEntityRepository
         ];
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function getTopAttemptedQuizzes(int $limit = 5): array
     {
         return $this->createQueryBuilder('qr')
@@ -54,6 +63,9 @@ class QuizResultRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function getScoresPerQuiz(int $limit = 5): array
     {
         return $this->createQueryBuilder('qr')
@@ -66,6 +78,9 @@ class QuizResultRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function getCompletionTrends(int $days = 30): array
     {
         $conn = $this->getEntityManager()->getConnection();
@@ -82,6 +97,9 @@ class QuizResultRepository extends ServiceEntityRepository
         return $result->fetchAllAssociative();
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function getRecentActivity(int $limit = 10): array
     {
         return $this->createQueryBuilder('qr')

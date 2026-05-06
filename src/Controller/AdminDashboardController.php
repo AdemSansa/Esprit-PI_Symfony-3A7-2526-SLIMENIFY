@@ -61,7 +61,7 @@ class AdminDashboardController extends AbstractController
         $allProductIdsInOrders = [];
 
         foreach ($orders as $order) {
-            $rawStatus = strtolower(trim($order->getStatus()));
+            $rawStatus = strtolower(trim((string) $order->getStatus()));
             $unifiedStatus = $statusMap[$rawStatus] ?? 'other';
             
             // Increment status count
@@ -133,7 +133,7 @@ class AdminDashboardController extends AbstractController
         }
 
         foreach ($orders as $order) {
-            $rawStatus = strtolower(trim($order->getStatus()));
+            $rawStatus = strtolower(trim((string) $order->getStatus()));
             $unifiedStatus = $statusMap[$rawStatus] ?? 'other';
             if ($unifiedStatus === 'delivered' && $order->getCreatedAt()) {
                 $monthKey = $order->getCreatedAt()->format('Y-m');

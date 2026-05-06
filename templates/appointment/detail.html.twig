@@ -222,7 +222,6 @@
                     const aptStart = new Date(aptStartStr);
                     const aptEnd = new Date(aptEndStr);
 
-                    if (window.jitsiInterval) clearInterval(window.jitsiInterval);
                     window.jitsiInterval = setInterval(() => {
                         const now = new Date();
                         if (now >= aptStart && now <= aptEnd) {

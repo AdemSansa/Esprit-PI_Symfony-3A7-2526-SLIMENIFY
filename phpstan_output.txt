@@ -1,0 +1,242 @@
+﻿vendor/bin/phpstan : Note: Using configuration file C:\Users\msi\Desktop\PI2\Psychology_symfony\phpstan.dist.neon.
+Au caractère Ligne:1 : 1
++ vendor/bin/phpstan analyse src --no-progress 2>&1 | Out-File -FilePat ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Note: Using con...stan.dist.neon.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  Line   Controller\AdminOrderController.php                                                                            
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  31     Parameter #1 $status of method App\Entity\Commande::setStatus() expects string, float|int<min, -1>|int<1, max  
+         >|string|true given.                                                                                           
+         ­ƒ¬¬  argument.type                                                                                              
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------------------- 
+  Line   Controller\AdminQuizReviewController.php                                                               
+ ------ ------------------------------------------------------------------------------------------------------- 
+  34     Parameter #2 $token of method                                                                          
+         Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null,  
+         bool|float|int|string|null given.                                                                      
+         ­ƒ¬¬  argument.type                                                                                      
+  48     Parameter #2 $token of method                                                                          
+         Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null,  
+         bool|float|int|string|null given.                                                                      
+         ­ƒ¬¬  argument.type                                                                                      
+ ------ ------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------------------- 
+  Line   Controller\AdminTherapistController.php                                                                
+ ------ ------------------------------------------------------------------------------------------------------- 
+  26     Parameter #1 $searchQuery of method App\Repository\TherapistRepository::searchAndSortQuery() expects   
+         string|null, bool|float|int|string|null given.                                                         
+         ­ƒ¬¬  argument.type                                                                                      
+  26     Parameter #2 $specialty of method App\Repository\TherapistRepository::searchAndSortQuery() expects     
+         string|null, bool|float|int|string|null given.                                                         
+         ­ƒ¬¬  argument.type                                                                                      
+  26     Parameter #3 $modeFilter of method App\Repository\TherapistRepository::searchAndSortQuery() expects    
+         string|null, bool|float|int|string|null given.                                                         
+         ­ƒ¬¬  argument.type                                                                                      
+  118    Parameter #2 $token of method                                                                          
+         Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null,  
+         bool|float|int|string|null given.                                                                      
+         ­ƒ¬¬  argument.type                                                                                      
+ ------ ------------------------------------------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------------------------------------------------- 
+  Line   Controller\AdminUserController.php                                                                            
+ ------ -------------------------------------------------------------------------------------------------------------- 
+  26     Parameter #1 $searchQuery of method App\Repository\UserRepository::searchAndSortQuery() expects string|null,  
+         bool|float|int|string|null given.                                                                             
+         ­ƒ¬¬  argument.type                                                                                             
+  26     Parameter #2 $roleFilter of method App\Repository\UserRepository::searchAndSortQuery() expects string|null,   
+         bool|float|int|string|null given.                                                                             
+         ­ƒ¬¬  argument.type                                                                                             
+ ------ -------------------------------------------------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------------------------------------------- 
+  Line   Controller\AiCompanionController.php                                                                       
+ ------ ----------------------------------------------------------------------------------------------------------- 
+  53     Parameter #1 $message of method App\Service\GeminiAIService::analyzeSymptomAndRecommend() expects string,  
+         float|int<min, -1>|int<1, max>|string|true given.                                                          
+         ­ƒ¬¬  argument.type                                                                                          
+ ------ ----------------------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  Line   Controller\AppointmentManagementController.php                                                                 
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  184    Parameter #2 $datetime of static method DateTime::createFromFormat() expects string, float|int<min, -1>|int<1  
+         , max>|string|true given.                                                                                      
+         ­ƒ¬¬  argument.type                                                                                              
+  185    Parameter #2 $datetime of static method DateTime::createFromFormat() expects string, float|int<min, -1>|int<1  
+         , max>|string|true given.                                                                                      
+         ­ƒ¬¬  argument.type                                                                                              
+  393    Parameter #1 $string of function strtolower expects string, bool|float|int|string|null given.                  
+         ­ƒ¬¬  argument.type                                                                                              
+  548    Parameter #1 $v of method App\Entity\Note::setMood() expects string|null, float|int<min, -1>|int<1, max>|stri  
+         ng|true|null given.                                                                                            
+         ­ƒ¬¬  argument.type                                                                                              
+  568    Parameter #1 $v of method App\Entity\Note::setMood() expects string|null, float|int<min, -1>|int<1, max>|stri  
+         ng|true|null given.                                                                                            
+         ­ƒ¬¬  argument.type                                                                                              
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------------------------- 
+  Line   Controller\BlogWebController.php                                                                             
+ ------ ------------------------------------------------------------------------------------------------------------- 
+  225    Binary operation "." between array|bool|float|int|string|UnitEnum|null and '/public/uploadsÔÇª' results in an  
+         error.                                                                                                       
+         ­ƒ¬¬  binaryOp.invalid                                                                                         
+  497    Binary operation "." between array|bool|float|int|string|UnitEnum|null and '/public/uploadsÔÇª' results in an  
+         error.                                                                                                       
+         ­ƒ¬¬  binaryOp.invalid                                                                                         
+ ------ ------------------------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  Line   Controller\CartController.php                                                                                  
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  199    Parameter #1 $shippingAddress of method App\Entity\Commande::setShippingAddress() expects string, float|int<m  
+         in, -1>|int<1, max>|string|true given.                                                                         
+         ­ƒ¬¬  argument.type                                                                                              
+  200    Parameter #1 $contactPhone of method App\Entity\Commande::setContactPhone() expects string, float|int<min, -1  
+         >|int<1, max>|string|true given.                                                                               
+         ­ƒ¬¬  argument.type                                                                                              
+  201    Parameter #1 $paymentMethod of method App\Entity\Commande::setPaymentMethod() expects string, float|int<min,   
+         -1>|int<1, max>|string|true given.                                                                             
+         ­ƒ¬¬  argument.type                                                                                              
+  247    Binary operation "*" between string|null and 100 results in an error.                                          
+         ­ƒ¬¬  binaryOp.invalid                                                                                           
+  264    Parameter #1 $apiKey of static method Stripe\Stripe::setApiKey() expects string,                               
+         array|bool|float|int|string|UnitEnum|null given.                                                               
+         ­ƒ¬¬  argument.type                                                                                              
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------------------- 
+  Line   Controller\EventRegistrationController.php                                                             
+ ------ ------------------------------------------------------------------------------------------------------- 
+  202    Parameter #2 $token of method                                                                          
+         Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null,  
+         bool|float|int|string|null given.                                                                      
+         ­ƒ¬¬  argument.type                                                                                      
+  240    Parameter #2 $token of method                                                                          
+         Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null,  
+         bool|float|int|string|null given.                                                                      
+         ­ƒ¬¬  argument.type                                                                                      
+ ------ ------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------------------------- 
+  Line   Controller\EventWebController.php                                                                            
+ ------ ------------------------------------------------------------------------------------------------------------- 
+  113    Binary operation "." between array|bool|float|int|string|UnitEnum|null and '/public/uploadsÔÇª' results in an  
+         error.                                                                                                       
+         ­ƒ¬¬  binaryOp.invalid                                                                                         
+  200    Binary operation "." between array|bool|float|int|string|UnitEnum|null and '/public/uploadsÔÇª' results in an  
+         error.                                                                                                       
+         ­ƒ¬¬  binaryOp.invalid                                                                                         
+  230    Parameter #2 $token of method                                                                                
+         Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid() expects string|null,        
+         bool|float|int|string|null given.                                                                            
+         ­ƒ¬¬  argument.type                                                                                            
+ ------ ------------------------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  Line   Controller\ForgotPasswordController.php                                                                        
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  44     Parameter #1 ...$addresses of method Symfony\Component\Mime\Email::to() expects                                
+         string|Symfony\Component\Mime\Address, bool|float|int|string|null given.                                       
+         ­ƒ¬¬  argument.type                                                                                              
+  82     Parameter #2 $plainPassword of method                                                                          
+         Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface::hashPassword() expects string, float|int  
+         <min, -1>|int<1, max>|string|true given.                                                                       
+         ­ƒ¬¬  argument.type                                                                                              
+  88     Parameter #2 $plainPassword of method                                                                          
+         Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface::hashPassword() expects string, float|int  
+         <min, -1>|int<1, max>|string|true given.                                                                       
+         ­ƒ¬¬  argument.type                                                                                              
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------------------ 
+  Line   Controller\PatientDashboardController.php                                                             
+ ------ ------------------------------------------------------------------------------------------------------ 
+  23     Parameter #1 $searchQuery of method App\Repository\TherapistRepository::searchAndSortQuery() expects  
+         string|null, bool|float|int|string|null given.                                                        
+         ­ƒ¬¬  argument.type                                                                                     
+  23     Parameter #2 $specialty of method App\Repository\TherapistRepository::searchAndSortQuery() expects    
+         string|null, bool|float|int|string|null given.                                                        
+         ­ƒ¬¬  argument.type                                                                                     
+ ------ ------------------------------------------------------------------------------------------------------ 
+
+ ------ -------------------------------------------------------------------------------------------------------- 
+  Line   Controller\ProductCrudController.php                                                                    
+ ------ -------------------------------------------------------------------------------------------------------- 
+  30     Parameter #1 $search of method App\Repository\ProductRepository::findFiltered() expects string|null,    
+         bool|float|int|string|null given.                                                                       
+         ­ƒ¬¬  argument.type                                                                                       
+  30     Parameter #2 $category of method App\Repository\ProductRepository::findFiltered() expects string|null,  
+         bool|float|int|string|null given.                                                                       
+         ­ƒ¬¬  argument.type                                                                                       
+  30     Parameter #3 $sort of method App\Repository\ProductRepository::findFiltered() expects string|null,      
+         bool|float|int|string|null given.                                                                       
+         ­ƒ¬¬  argument.type                                                                                       
+ ------ -------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------------------------- 
+  Line   Controller\ProfileController.php                                                                             
+ ------ ------------------------------------------------------------------------------------------------------------- 
+  43     Binary operation "." between array|bool|float|int|string|UnitEnum|null and '/public/uploadsÔÇª' results in an  
+         error.                                                                                                       
+         ­ƒ¬¬  binaryOp.invalid                                                                                         
+ ------ ------------------------------------------------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------------------------------------------- 
+  Line   Controller\QuizCrudController.php                                                                          
+ ------ ----------------------------------------------------------------------------------------------------------- 
+  92     Parameter #2 $query of method App\Repository\QuizRepository::findByAuthorAndSearchQuery() expects string,  
+         float|int<min, -1>|int<1, max>|string|true given.                                                          
+         ­ƒ¬¬  argument.type                                                                                          
+ ------ ----------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------------------------- 
+  Line   Controller\RegistrationController.php                                                                        
+ ------ ------------------------------------------------------------------------------------------------------------- 
+  37     Parameter #1 $response of method App\Controller\RegistrationController::verifyRecaptcha() expects            
+         string|null, bool|float|int|string|null given.                                                               
+         ­ƒ¬¬  argument.type                                                                                            
+  76     Binary operation "." between array|bool|float|int|string|UnitEnum|null and '/public/uploadsÔÇª' results in an  
+         error.                                                                                                       
+         ­ƒ¬¬  binaryOp.invalid                                                                                         
+  117    Binary operation "." between array|bool|float|int|string|UnitEnum|null and '/public/uploadsÔÇª' results in an  
+         error.                                                                                                       
+         ­ƒ¬¬  binaryOp.invalid                                                                                         
+  184    Parameter #1 $json of function json_decode expects string, string|false given.                               
+         ­ƒ¬¬  argument.type                                                                                            
+ ------ ------------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------------------- 
+  Line   Controller\SupplierCrudController.php                                                                  
+ ------ ------------------------------------------------------------------------------------------------------- 
+  26     Parameter #1 $search of method App\Repository\SupplierRepository::findFiltered() expects string|null,  
+         bool|float|int|string|null given.                                                                      
+         ­ƒ¬¬  argument.type                                                                                      
+  26     Parameter #2 $status of method App\Repository\SupplierRepository::findFiltered() expects string|null,  
+         bool|float|int|string|null given.                                                                      
+         ­ƒ¬¬  argument.type                                                                                      
+  26     Parameter #3 $sort of method App\Repository\SupplierRepository::findFiltered() expects string|null,    
+         bool|float|int|string|null given.                                                                      
+         ­ƒ¬¬  argument.type                                                                                      
+ ------ ------------------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  Line   Service\EmailService.php                                                                                       
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  33     Binary operation "." between array|bool|float|int|string|UnitEnum|null and '/public/logo.jpg' results in an    
+         error.                                                                                                         
+         ­ƒ¬¬  binaryOp.invalid                                                                                           
+  34     Binary operation "." between array|bool|float|int|string|UnitEnum|null and '/public/images/aiÔÇª' results in an  
+         error.                                                                                                         
+         ­ƒ¬¬  binaryOp.invalid                                                                                           
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ [ERROR] Found 46 errors                                                                                               
+

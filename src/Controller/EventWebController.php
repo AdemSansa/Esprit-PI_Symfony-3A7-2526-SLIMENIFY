@@ -27,12 +27,13 @@ class EventWebController extends AbstractController
         $query = $request->query->get('q', '');
         $format = $request->query->get('format', 'all');
         $mine = $request->query->getBoolean('mine', false);
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         
         // Build query
         $qb = $eventRepository->createQueryBuilder('e');
         
-        if ($mine && $user) {
+        if ($mine && $user instanceof \App\Entity\User) {
             // Filter to show only user's events
             $qb->andWhere('e.organizerId = :organizerId')
                ->setParameter('organizerId', $user->getId());
@@ -68,7 +69,7 @@ class EventWebController extends AbstractController
         
         // 🎫 PERSONALIZED REGISTRATION TRACKING
         $userRegistrations = [];
-        if ($user) {
+        if ($user instanceof \App\Entity\User) {
             $registrations = $registrationRepository->findBy(['participantEmail' => $user->getEmail()]);
             foreach ($registrations as $reg) {
                 $userRegistrations[$reg->getEvent()->getId()] = [
@@ -99,7 +100,7 @@ class EventWebController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var UploadedFile $imageFile */
+            /** @var UploadedFile|null $imageFile */
             $imageFile = $form->get('imageFile')->getData();
 
             if ($imageFile) {
@@ -108,8 +109,10 @@ class EventWebController extends AbstractController
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
 
                 try {
+                    $projectDir = $this->getParameter('kernel.project_dir');
+                    assert(is_string($projectDir));
                     $imageFile->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/events',
+                        $projectDir . '/public/uploads/events',
                         $newFilename
                     );
                     $event->setImageUrl('uploads/events/' . $newFilename);
@@ -119,8 +122,11 @@ class EventWebController extends AbstractController
             }
 
             // Set organizer ID
+            /** @var \App\Entity\User|null $user */
             $user = $this->getUser();
-            $event->setOrganizerId($user->getId());
+            if ($user instanceof \App\Entity\User) {
+                $event->setOrganizerId($user->getId());
+            }
 
             $entityManager->persist($event);
             $entityManager->flush();
@@ -138,11 +144,12 @@ class EventWebController extends AbstractController
     #[Route('/{id}', name: 'app_event_show', methods: ['GET'])]
     public function show(Event $event, RegistrationRepository $registrationRepository, EventRepository $eventRepository): Response
     {
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         $userRegistration = null;
 
 
-        if ($user) {
+        if ($user instanceof \App\Entity\User) {
             // Check if the current user is already registered
             $userRegistration = $registrationRepository->findOneBy([
                 'event' => $event,
@@ -171,8 +178,10 @@ class EventWebController extends AbstractController
     #[Route('/{id}/edit', name: 'app_event_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Event $event, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
         // Security: Must be owner or admin
-        if (!$this->isGranted('ROLE_ADMIN') && $event->getOrganizerId() !== $this->getUser()->getId()) {
+        if (!$this->isGranted('ROLE_ADMIN') && (!$user instanceof \App\Entity\User || $event->getOrganizerId() !== $user->getId())) {
             throw $this->createAccessDeniedException('You can only edit your own events.');
         }
 
@@ -180,7 +189,7 @@ class EventWebController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var UploadedFile $imageFile */
+            /** @var UploadedFile|null $imageFile */
             $imageFile = $form->get('imageFile')->getData();
 
             if ($imageFile) {
@@ -189,8 +198,10 @@ class EventWebController extends AbstractController
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
 
                 try {
+                    $projectDir = $this->getParameter('kernel.project_dir');
+                    assert(is_string($projectDir));
                     $imageFile->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/events',
+                        $projectDir . '/public/uploads/events',
                         $newFilename
                     );
                     $event->setImageUrl('uploads/events/' . $newFilename);
@@ -213,12 +224,14 @@ class EventWebController extends AbstractController
     #[Route('/{id}', name: 'app_event_delete', methods: ['POST'])]
     public function delete(Request $request, Event $event, EntityManagerInterface $entityManager): Response
     {
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
         // Security: Must be owner or admin
-        if (!$this->isGranted('ROLE_ADMIN') && $event->getOrganizerId() !== $this->getUser()->getId()) {
+        if (!$this->isGranted('ROLE_ADMIN') && (!$user instanceof \App\Entity\User || $event->getOrganizerId() !== $user->getId())) {
             throw $this->createAccessDeniedException('You can only delete your own events.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$event->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$event->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($event);
             $entityManager->flush();
             $this->addFlash('success', 'Event deleted successfully!');

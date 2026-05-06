@@ -24,6 +24,7 @@ class Conversation
     #[ORM\JoinColumn(name: 'therapist_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?Therapist $therapist = null;
 
+    /** @var Collection<int, Message> */
     #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: Message::class, orphanRemoval: true)]
     private Collection $messages;
 
@@ -65,6 +66,7 @@ class Conversation
         return $this;
     }
 
+    /** @return Collection<int, Message> */
     public function getMessages(): Collection
     {
         return $this->messages;

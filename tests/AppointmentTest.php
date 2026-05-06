@@ -3,6 +3,7 @@
 namespace App\Tests;
 
 use App\Entity\Appointment;
+use App\Entity\Note;
 use App\Entity\Therapist;
 use App\Entity\User;
 use Doctrine\Common\Collections\Collection;
@@ -88,5 +89,37 @@ class AppointmentTest extends TestCase
         $appointment->setPatient($patient);
 
         $this->assertSame($patient, $appointment->getPatient());
+    }
+
+    public function testSetAndGetCreatedAt(): void
+    {
+        $appointment = new Appointment();
+        $created = new \DateTime('2026-05-01 08:00:00');
+        $appointment->setCreatedAt($created);
+
+        $this->assertSame($created, $appointment->getCreatedAt());
+    }
+
+    public function testNoteAssociationInMemory(): void
+    {
+        $therapist = $this->createMock(Therapist::class);
+        $patient = $this->createMock(User::class);
+
+        $appointment = new Appointment();
+        $appointment->setTherapist($therapist);
+        $appointment->setPatient($patient);
+        $appointment->setAppointmentDate(new \DateTime('2026-05-07'));
+        $appointment->setStartTime(new \DateTime('09:00:00'));
+        $appointment->setEndTime(new \DateTime('10:00:00'));
+
+        $note = new Note();
+        $note->setContent('Follow-up scheduled');
+        $note->setTherapist($therapist);
+        $note->setAppointment($appointment);
+        $appointment->getNotes()->add($note);
+
+        $this->assertCount(1, $appointment->getNotes());
+        $this->assertSame($appointment, $note->getAppointment());
+        $this->assertSame($note, $appointment->getNotes()->first());
     }
 }

@@ -6,6 +6,9 @@ use App\Entity\Category;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Category>
+ */
 class CategoryRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -14,7 +17,8 @@ class CategoryRepository extends ServiceEntityRepository
     }
 
     // récupérer toutes les catégories triées
-    public function findAllOrdered()
+    /** @return Category[] */
+    public function findAllOrdered(): array
     {
         return $this->createQueryBuilder('c')
             ->orderBy('c.name', 'ASC')

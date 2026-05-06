@@ -7,8 +7,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class GoogleTTSService
 {
-    private $client;
-    private $apiKey;
+    private HttpClientInterface $client;
+    private string $apiKey;
 
     public function __construct(HttpClientInterface $client, string $googleApiKey)
     {
@@ -16,7 +16,7 @@ class GoogleTTSService
         $this->apiKey = $googleApiKey;
     }
 
-    public function generateAudio($text)
+    public function generateAudio(string $text): string
     {
         $response = $this->client->request(
             'POST',

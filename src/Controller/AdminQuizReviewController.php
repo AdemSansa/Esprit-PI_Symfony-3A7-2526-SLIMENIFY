@@ -31,7 +31,7 @@ class AdminQuizReviewController extends AbstractController
     #[Route('/{id}/approve', name: 'app_admin_quiz_approve', methods: ['POST'])]
     public function approve(Request $request, Quiz $quiz, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('approve_quiz_'.$quiz->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('approve_quiz_'.$quiz->getId(), $request->request->getString('_token'))) {
             $quiz->setActive(Quiz::STATUS_ACTIVE);
             $quiz->setRejectionComment(null);
             $quiz->setUpdatedAt(new \DateTimeImmutable());
@@ -45,7 +45,7 @@ class AdminQuizReviewController extends AbstractController
     #[Route('/{id}/reject', name: 'app_admin_quiz_reject', methods: ['POST'])]
     public function reject(Request $request, Quiz $quiz, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('reject_quiz_'.$quiz->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('reject_quiz_'.$quiz->getId(), $request->request->getString('_token'))) {
             $rejectionComment = trim((string) $request->request->get('rejection_comment', ''));
             if ($rejectionComment === '') {
                 $this->addFlash('error', 'A rejection comment is required so the therapist knows what to fix.');

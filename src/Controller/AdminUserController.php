@@ -20,8 +20,8 @@ class AdminUserController extends AbstractController
     #[Route('', name: 'app_admin_user_index', methods: ['GET'])]
     public function index(Request $request, UserRepository $userRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
-        $searchQuery = $request->query->get('q');
-        $roleFilter = $request->query->get('role');
+        $searchQuery = ($v = $request->query->get('q')) !== null ? (string) $v : null;
+        $roleFilter = ($v = $request->query->get('role')) !== null ? (string) $v : null;
 
         $query = $userRepository->searchAndSortQuery($searchQuery, $roleFilter);
         

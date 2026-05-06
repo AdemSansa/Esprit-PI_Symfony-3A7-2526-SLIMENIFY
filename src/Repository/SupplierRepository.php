@@ -6,6 +6,9 @@ use App\Entity\Supplier;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Supplier>
+ */
 class SupplierRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,6 +19,7 @@ class SupplierRepository extends ServiceEntityRepository
     /**
      * Server-side filtered and sorted supplier query.
      */
+    /** @return \Doctrine\ORM\Query<mixed, mixed> */
     public function findFiltered(
         ?string $search = null,
         ?string $status = null,
