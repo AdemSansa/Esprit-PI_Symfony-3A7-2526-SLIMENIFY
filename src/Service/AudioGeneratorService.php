@@ -37,8 +37,8 @@ class AudioGeneratorService
         return $content;
 
         $response = $this->httpClient->request('POST', 'https://api.voicerss.org/', [
-    'verify_peer' => false,  // ← add this line
-    'verify_host' => false,  // ← and this one
+    'verify_peer' => false,  
+    'verify_host' => false,  
     'body' => [
         'key' => $this->voiceRssApiKey,
         'src' => $text,

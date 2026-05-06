@@ -326,7 +326,7 @@
                     </svg>
                     <span>Favoris</span>
                 </button>
-                <button id="listen-btn" onclick="readBlog()">🔊 Listen to this post</button>
+                <button id="listen-btn" onclick="readBlog()">🔊 </button>
 <button id="stop-btn" onclick="stopAudio()" style="display:none;">⏹ Stop</button>
 <audio id="audio-player" controls style="display:none; width:100%; margin-top:10px;"></audio>
             {% endif %}
@@ -544,11 +544,11 @@ async function readBlog() {
         player.style.display = 'block';
         stop.style.display  = 'inline';
         player.play();
-        btn.textContent = '🔊 Listen again';
+        btn.textContent = 'listen again ';
 
     } catch (e) {
         alert('Error: ' + e.message);
-        btn.textContent = '🔊 Listen to this post';
+        btn.textContent = '🔊 ';
     } finally {
         btn.disabled = false;
     }
