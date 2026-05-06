@@ -6,6 +6,9 @@ use App\Entity\Availability;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Availability>
+ */
 class AvailabilityRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -29,6 +32,9 @@ class AvailabilityRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @return Availability[]
+     */
     public function findByTherapistId(int $therapistId): array
     {
         return $this->createQueryBuilder('a')

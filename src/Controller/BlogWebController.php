@@ -71,13 +71,14 @@ class BlogWebController extends AbstractController
             6
         );
 
-        if ($pagination instanceof SlidingPaginationInterface) {
+        if ($pagination instanceof SlidingPaginationInterface && method_exists($pagination, 'setUsedRoute')) {
             $pagination->setUsedRoute('app_blog_web_index');
         }
 
         $unreadCount = 0;
-        if ($this->getUser()) {
-            $unreadCount = $notificationRepository->countUnread($this->getUser());
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
+            $unreadCount = $notificationRepository->countUnread($user);
         }
 
         $statsData = [];
@@ -244,7 +245,7 @@ class BlogWebController extends AbstractController
                 $notification->setTitle('New Blog Published');
                 $notification->setMessage('Check out the new blog: ' . $blog->getTitle());
                 $notification->setUser($u);
-                $notification->setBlog($blog);
+                $notification->setType('NEW_BLOG');
                 $entityManager->persist($notification);
             }
 
@@ -428,7 +429,7 @@ class BlogWebController extends AbstractController
                     $therapist = $therapistRepository->findOneBy(['email' => $user->getUserIdentifier()]);
                     $newComment->setTherapist($therapist);
                 } else {
-                    $newComment->setUser($user);
+                    $newComment->setUser($user instanceof \App\Entity\User ? $user : null);
                 }
 
                 $entityManager->persist($newComment);
@@ -582,13 +583,8 @@ class BlogWebController extends AbstractController
                 'Cache-Control'       => 'public, max-age=3600',
             ]);
         } catch (\Exception $e) {
-            return $this->render('blog/show.html.twig', [
-    'blog'            => $blog,
-    'commentForm'     => $newForm,
-    'editCommentForm' => $editForm,
-    'editingCommentId'=> $editingComment?->getId(),
-    'voicerss_key'    => $_ENV['VOICERSS_API_KEY'],  // ← add this line
-]);
+            $this->addFlash('error', 'Audio generation failed: ' . $e->getMessage());
+            return $this->redirectToRoute('app_blog_web_show', ['id' => $blog->getId()]);
         }
     }
 

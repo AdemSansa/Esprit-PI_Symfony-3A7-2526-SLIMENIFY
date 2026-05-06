@@ -6,6 +6,9 @@ use App\Entity\Question;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Question>
+ */
 class QuestionRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -29,6 +32,9 @@ class QuestionRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @return Question[]
+     */
     public function findBySearchQuery(string $query): array
     {
         return $this->createQueryBuilder('q')
@@ -39,6 +45,9 @@ class QuestionRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function findForManagement(?string $query, ?string $category, int $page, int $perPage = 8): array
     {
         $qb = $this->createQueryBuilder('q');

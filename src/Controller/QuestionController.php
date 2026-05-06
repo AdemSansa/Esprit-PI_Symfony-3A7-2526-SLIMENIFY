@@ -63,6 +63,7 @@ class QuestionController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    /** @return array<string, mixed> */
     private function serialize(Question $q): array
     {
         return [

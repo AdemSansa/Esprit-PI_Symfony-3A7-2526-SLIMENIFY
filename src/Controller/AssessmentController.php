@@ -19,12 +19,12 @@ class AssessmentController extends AbstractController
     public function index(QuizRepository $quizRepository): Response
     {
         $quizzes = $quizRepository->findBy(['active' => Quiz::STATUS_ACTIVE]);
-        usort($quizzes, static fn (Quiz $a, Quiz $b) => $b->getParticipantCount() <=> $a->getParticipantCount());
+        usort($quizzes, static fn(Quiz $a, Quiz $b) => $b->getParticipantCount() <=> $a->getParticipantCount());
 
         $mostTakenQuiz = $quizzes[0] ?? null;
         $totalAttempts = array_reduce(
             $quizzes,
-            static fn (int $carry, Quiz $quiz): int => $carry + $quiz->getParticipantCount(),
+            static fn(int $carry, Quiz $quiz): int => $carry + $quiz->getParticipantCount(),
             0
         );
 
@@ -68,7 +68,7 @@ class AssessmentController extends AbstractController
             foreach ($questions as $question) {
                 $qId = $question->getId();
                 $answerValue = $request->request->get('question_' . $qId);
-                
+
                 if ($answerValue !== null) {
                     $score += (int) $answerValue;
                     $answeredCount++;
@@ -85,13 +85,17 @@ class AssessmentController extends AbstractController
 
                 $quizResult = new QuizResult();
                 $quizResult->setQuiz($quiz);
-                $quizResult->setUser($this->getUser());
+                $user = $this->getUser();
+                if (!$user instanceof \App\Entity\User) {
+                    throw $this->createAccessDeniedException('Login required.');
+                }
+                $quizResult->setUser($user);
                 $quizResult->setScore($score);
                 // We use result column to store the 0-100 percentage metric for now
                 $quizResult->setResult($percentageResult);
-                
+
                 // Optional mood parameter if we want to expand this later
-                $quizResult->setMood('Neutral'); 
+                $quizResult->setMood('Neutral');
 
                 $entityManager->persist($quizResult);
                 $entityManager->flush();

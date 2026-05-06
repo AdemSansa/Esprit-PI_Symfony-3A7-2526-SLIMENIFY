@@ -16,22 +16,25 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/events')]
 class EventWebController extends AbstractController
 {
     #[Route('/', name: 'app_event_index', methods: ['GET'])]
-    public function index(Request $request, EventRepository $eventRepository, RegistrationRepository $registrationRepository): Response
+    public function index(Request $request, EventRepository $eventRepository, RegistrationRepository $registrationRepository, PaginatorInterface $paginator): Response
     {
         $query = $request->query->get('q', '');
         $format = $request->query->get('format', 'all');
+        $mine = $request->query->getBoolean('mine', false);
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         
-        // Build query based on role
+        // Build query
         $qb = $eventRepository->createQueryBuilder('e');
         
-        if ($this->isGranted('ROLE_THERAPIST') && !$this->isGranted('ROLE_ADMIN')) {
-            // Therapists only see their own events
+        if ($mine && $user instanceof \App\Entity\User) {
+            // Filter to show only user's events
             $qb->andWhere('e.organizerId = :organizerId')
                ->setParameter('organizerId', $user->getId());
         }
@@ -46,9 +49,14 @@ class EventWebController extends AbstractController
                ->setParameter('format', $format);
         }
         
-        $events = $qb->orderBy('e.dateStart', 'ASC')
-                     ->getQuery()
-                     ->getResult();
+        $queryBuilder = $qb->orderBy('e.dateStart', 'ASC')
+                     ->getQuery();
+
+        $events = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            4 // Items per page
+        );
 
         // 🌟 ANTICIPATED EVENTS (Top 5 Imminent)
         $anticipatedEvents = $eventRepository->createQueryBuilder('e')
@@ -61,7 +69,7 @@ class EventWebController extends AbstractController
         
         // 🎫 PERSONALIZED REGISTRATION TRACKING
         $userRegistrations = [];
-        if ($user) {
+        if ($user instanceof \App\Entity\User) {
             $registrations = $registrationRepository->findBy(['participantEmail' => $user->getEmail()]);
             foreach ($registrations as $reg) {
                 $userRegistrations[$reg->getEvent()->getId()] = [
@@ -76,6 +84,7 @@ class EventWebController extends AbstractController
             'anticipatedEvents' => $anticipatedEvents,
             'searchQuery' => $query,
             'currentFormat' => $format,
+            'isMine' => $mine,
             'userRegistrations' => $userRegistrations,
         ]);
     }
@@ -91,7 +100,7 @@ class EventWebController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var UploadedFile $imageFile */
+            /** @var UploadedFile|null $imageFile */
             $imageFile = $form->get('imageFile')->getData();
 
             if ($imageFile) {
@@ -111,8 +120,11 @@ class EventWebController extends AbstractController
             }
 
             // Set organizer ID
+            /** @var \App\Entity\User|null $user */
             $user = $this->getUser();
-            $event->setOrganizerId($user->getId());
+            if ($user instanceof \App\Entity\User) {
+                $event->setOrganizerId($user->getId());
+            }
 
             $entityManager->persist($event);
             $entityManager->flush();
@@ -130,10 +142,12 @@ class EventWebController extends AbstractController
     #[Route('/{id}', name: 'app_event_show', methods: ['GET'])]
     public function show(Event $event, RegistrationRepository $registrationRepository, EventRepository $eventRepository): Response
     {
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         $userRegistration = null;
 
-        if ($user) {
+
+        if ($user instanceof \App\Entity\User) {
             // Check if the current user is already registered
             $userRegistration = $registrationRepository->findOneBy([
                 'event' => $event,
@@ -162,8 +176,10 @@ class EventWebController extends AbstractController
     #[Route('/{id}/edit', name: 'app_event_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Event $event, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
         // Security: Must be owner or admin
-        if (!$this->isGranted('ROLE_ADMIN') && $event->getOrganizerId() !== $this->getUser()->getId()) {
+        if (!$this->isGranted('ROLE_ADMIN') && (!$user instanceof \App\Entity\User || $event->getOrganizerId() !== $user->getId())) {
             throw $this->createAccessDeniedException('You can only edit your own events.');
         }
 
@@ -171,7 +187,7 @@ class EventWebController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var UploadedFile $imageFile */
+            /** @var UploadedFile|null $imageFile */
             $imageFile = $form->get('imageFile')->getData();
 
             if ($imageFile) {
@@ -204,8 +220,10 @@ class EventWebController extends AbstractController
     #[Route('/{id}', name: 'app_event_delete', methods: ['POST'])]
     public function delete(Request $request, Event $event, EntityManagerInterface $entityManager): Response
     {
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
         // Security: Must be owner or admin
-        if (!$this->isGranted('ROLE_ADMIN') && $event->getOrganizerId() !== $this->getUser()->getId()) {
+        if (!$this->isGranted('ROLE_ADMIN') && (!$user instanceof \App\Entity\User || $event->getOrganizerId() !== $user->getId())) {
             throw $this->createAccessDeniedException('You can only delete your own events.');
         }
 

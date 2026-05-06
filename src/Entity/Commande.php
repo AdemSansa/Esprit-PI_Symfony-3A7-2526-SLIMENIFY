@@ -44,6 +44,7 @@ class Commande
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
+    /** @var array<int, array<string, mixed>> */
     #[ORM\Column]
     private array $itemsDetails = [];
 
@@ -141,11 +142,13 @@ class Commande
         return $this;
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getItemsDetails(): array
     {
         return $this->itemsDetails;
     }
 
+    /** @param array<int, array<string, mixed>> $itemsDetails */
     public function setItemsDetails(array $itemsDetails): static
     {
         $this->itemsDetails = $itemsDetails;

@@ -61,6 +61,7 @@ class Quiz
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $updatedAt;
 
+    /** @var Collection<int, Question> */
     #[ORM\ManyToMany(targetEntity: Question::class, inversedBy: 'quizzes')]
     #[ORM\JoinTable(
         name: 'quiz_question',
@@ -70,6 +71,7 @@ class Quiz
     #[Assert\Count(min: 1, minMessage: 'You must select at least one question for this quiz.')]
     private Collection $questions;
 
+    /** @var Collection<int, QuizResult> */
     #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: QuizResult::class)]
     private Collection $results;
 
@@ -85,26 +87,91 @@ class Quiz
         $this->results = new ArrayCollection();
     }
 
-    public function getId(): ?int { return $this->id; }
-    public function getTitle(): string { return $this->title; }
-    public function setTitle(string $v): static { $this->title = $v; return $this; }
-    public function getDescription(): ?string { return $this->description; }
-    public function setDescription(?string $v): static { $this->description = $v; return $this; }
-    public function getCategory(): ?string { return $this->category; }
-    public function setCategory(?string $v): static { $this->category = $v; return $this; }
-    public function getTotalQuestions(): int { return $this->totalQuestions; }
-    public function setTotalQuestions(int $v): static { $this->totalQuestions = $v; return $this; }
-    
-    public function isActive(): bool { return $this->active === self::STATUS_ACTIVE; }
-    public function isUnderReview(): bool { return $this->active === self::STATUS_UNDER_REVIEW; }
-    public function isInactive(): bool { return $this->active === self::STATUS_INACTIVE; }
-    public function setActive(int $v): static { $this->active = $v; return $this; }
-    public function getRejectionComment(): ?string { return $this->rejectionComment; }
-    public function setRejectionComment(?string $comment): static { $this->rejectionComment = $comment; return $this; }
-    public function getMinScore(): int { return $this->minScore; }
-    public function setMinScore(int $v): static { $this->minScore = $v; return $this; }
-    public function getMaxScore(): int { return $this->maxScore; }
-    public function setMaxScore(int $v): static { $this->maxScore = $v; return $this; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+    public function setTitle(string $v): static
+    {
+        $this->title = $v;
+        return $this;
+    }
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+    public function setDescription(?string $v): static
+    {
+        $this->description = $v;
+        return $this;
+    }
+    public function getCategory(): ?string
+    {
+        return $this->category;
+    }
+    public function setCategory(?string $v): static
+    {
+        $this->category = $v;
+        return $this;
+    }
+    public function getTotalQuestions(): int
+    {
+        return $this->totalQuestions;
+    }
+    public function setTotalQuestions(int $v): static
+    {
+        $this->totalQuestions = $v;
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->active === self::STATUS_ACTIVE;
+    }
+    public function isUnderReview(): bool
+    {
+        return $this->active === self::STATUS_UNDER_REVIEW;
+    }
+    public function isInactive(): bool
+    {
+        return $this->active === self::STATUS_INACTIVE;
+    }
+    public function setActive(int $v): static
+    {
+        $this->active = $v;
+        return $this;
+    }
+    public function getRejectionComment(): ?string
+    {
+        return $this->rejectionComment;
+    }
+    public function setRejectionComment(?string $comment): static
+    {
+        $this->rejectionComment = $comment;
+        return $this;
+    }
+    public function getMinScore(): int
+    {
+        return $this->minScore;
+    }
+    public function setMinScore(int $v): static
+    {
+        $this->minScore = $v;
+        return $this;
+    }
+    public function getMaxScore(): int
+    {
+        return $this->maxScore;
+    }
+    public function setMaxScore(int $v): static
+    {
+        $this->maxScore = $v;
+        return $this;
+    }
     public function getEstimatedTime(): int
     {
         return $this->totalQuestions * 45;
@@ -135,18 +202,66 @@ class Quiz
         }
         return count($userIds);
     }
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function setCreatedAt(\DateTimeImmutable $v): static { $this->createdAt = $v; return $this; }
-    public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }
-    public function setUpdatedAt(\DateTimeImmutable $v): static { $this->updatedAt = $v; return $this; }
-    public function getQuestions(): Collection { return $this->questions; }
-    public function addQuestion(Question $q): static { if (!$this->questions->contains($q)) { $this->questions->add($q); } return $this; }
-    public function removeQuestion(Question $q): static { $this->questions->removeElement($q); return $this; }
-    public function getResults(): Collection { return $this->results; }
-    
-    public function getAuthor(): ?User { return $this->author; }
-    public function setStatus(int $v): static { return $this->setActive($v); }
-    public function getStatus(): int { return $this->getActive(); }
-    public function getActive(): int { return $this->active; }
-    public function setAuthor(?User $author): static { $this->author = $author; return $this; }
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+    public function setCreatedAt(\DateTimeImmutable $v): static
+    {
+        $this->createdAt = $v;
+        return $this;
+    }
+    public function getUpdatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+    public function setUpdatedAt(\DateTimeImmutable $v): static
+    {
+        $this->updatedAt = $v;
+        return $this;
+    }
+    /** @return Collection<int, Question> */
+    public function getQuestions(): Collection
+    {
+        return $this->questions;
+    }
+    public function addQuestion(Question $q): static
+    {
+        if (!$this->questions->contains($q)) {
+            $this->questions->add($q);
+        }
+        return $this;
+    }
+    public function removeQuestion(Question $q): static
+    {
+        $this->questions->removeElement($q);
+        return $this;
+    }
+    /** @return Collection<int, QuizResult> */
+    public function getResults(): Collection
+    {
+        return $this->results;
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+    public function setStatus(int $v): static
+    {
+        return $this->setActive($v);
+    }
+    public function getStatus(): int
+    {
+        return $this->getActive();
+    }
+    public function getActive(): int
+    {
+        return $this->active;
+    }
+    public function setAuthor(?User $author): static
+    {
+        $this->author = $author;
+        return $this;
+    }
 }

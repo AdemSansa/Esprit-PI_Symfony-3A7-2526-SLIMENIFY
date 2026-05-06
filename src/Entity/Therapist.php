@@ -61,12 +61,15 @@ class Therapist
     #[ORM\Column(type: 'string', length: 45, nullable: true)]
     private ?string $longitude = null;
 
+    /** @var Collection<int, Appointment> */
     #[ORM\OneToMany(mappedBy: 'therapist', targetEntity: Appointment::class)]
     private Collection $appointments;
 
+    /** @var Collection<int, Availability> */
     #[ORM\OneToMany(mappedBy: 'therapist', targetEntity: Availability::class)]
     private Collection $availabilities;
 
+    /** @var Collection<int, Note> */
     #[ORM\OneToMany(mappedBy: 'therapist', targetEntity: Note::class)]
     private Collection $notes;
 
@@ -110,7 +113,10 @@ class Therapist
     public function setLatitude(?float $v): static { $this->latitude = $v; return $this; }
     public function getLongitude(): ?string { return $this->longitude; }
     public function setLongitude(?string $v): static { $this->longitude = $v; return $this; }
+    /** @return Collection<int, Appointment> */
     public function getAppointments(): Collection { return $this->appointments; }
+    /** @return Collection<int, Availability> */
     public function getAvailabilities(): Collection { return $this->availabilities; }
+    /** @return Collection<int, Note> */
     public function getNotes(): Collection { return $this->notes; }
 }

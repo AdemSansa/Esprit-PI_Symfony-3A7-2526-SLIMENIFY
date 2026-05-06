@@ -37,6 +37,7 @@ class Question
     #[Assert\Length(max: 100, maxMessage: 'The category cannot be longer than {{ limit }} characters.')]
     private ?string $category = null;
 
+    /** @var Collection<int, Quiz> */
     #[ORM\ManyToMany(targetEntity: Quiz::class, mappedBy: 'questions')]
     private Collection $quizzes;
 
@@ -57,5 +58,6 @@ class Question
     public function setImagePath(string $v): static { $this->imagePath = $v; return $this; }
     public function getCategory(): ?string { return $this->category; }
     public function setCategory(?string $v): static { $this->category = $v; return $this; }
+    /** @return Collection<int, Quiz> */
     public function getQuizzes(): Collection { return $this->quizzes; }
 }

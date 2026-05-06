@@ -190,28 +190,36 @@
         border-radius: 8px;
     }
 
-    .form-error {
-        color: var(--danger);
-        font-size: 0.8rem;
-        margin-top: 0.25rem;
-        font-weight: 500;
+    .form-group ul, 
+    .form-group ul li,
+    .form-error, 
+    .form-error ul {
+        color: #ef4444 !important;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        font-weight: 600;
+        list-style: none;
+        padding: 0;
+        margin-bottom: 0;
     }
 </style>
 
-{{ form_start(form, {'attr': {'id': 'event-form'}}) }}
+{{ form_start(form, {'attr': {'id': 'event-form', 'novalidate': 'novalidate'}}) }}
     <!-- Basic Info -->
     <div class="form-section">
         <h2 class="section-title">📝 Basic Information</h2>
         <div class="form-group">
-            {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'Enter event title...'}}) }}
-            <div class="form-error">{{ form_errors(form.title) }}</div>
+            {{ form_row(form.title, {
+                'label_attr': {'class': 'form-label'},
+                'attr': {'class': 'form-control', 'placeholder': 'Enter event title...'}
+            }) }}
         </div>
 
         <div class="form-group">
-            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '6', 'placeholder': 'Tell us about the event...'}}) }}
-            <div class="form-error">{{ form_errors(form.description) }}</div>
+            {{ form_row(form.description, {
+                'label_attr': {'class': 'form-label'},
+                'attr': {'class': 'form-control', 'rows': '6', 'placeholder': 'Tell us about the event...'}
+            }) }}
             
             <div class="ai-generate-wrapper">
                 <button type="button" class="btn btn-ai" id="generate-ai-btn">
@@ -227,51 +235,60 @@
         <h2 class="section-title">⏰ Schedule & Capacity</h2>
         <div class="grid-cols-2">
             <div class="form-group">
-                {{ form_label(form.dateStart, null, {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.dateStart, {'attr': {'class': 'form-control'}}) }}
-                <div class="form-error">{{ form_errors(form.dateStart) }}</div>
+                {{ form_row(form.dateStart, {
+                    'label_attr': {'class': 'form-label'},
+                    'attr': {'class': 'form-control'}
+                }) }}
             </div>
             <div class="form-group">
-                {{ form_label(form.dateEnd, null, {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.dateEnd, {'attr': {'class': 'form-control'}}) }}
-                <div class="form-error">{{ form_errors(form.dateEnd) }}</div>
+                {{ form_row(form.dateEnd, {
+                    'label_attr': {'class': 'form-label'},
+                    'attr': {'class': 'form-control'}
+                }) }}
             </div>
         </div>
 
         <div class="grid-cols-2">
             <div class="form-group">
-                {{ form_label(form.type, null, {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
-                <div class="form-error">{{ form_errors(form.type) }}</div>
+                {{ form_row(form.type, {
+                    'label_attr': {'class': 'form-label'},
+                    'attr': {'class': 'form-control'}
+                }) }}
             </div>
             <div class="form-group">
-                {{ form_label(form.maxParticipants, null, {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.maxParticipants, {'attr': {'class': 'form-control', 'placeholder': 'e.g. 50'}}) }}
-                <div class="form-error">{{ form_errors(form.maxParticipants) }}</div>
+                {{ form_row(form.maxParticipants, {
+                    'label_attr': {'class': 'form-label'},
+                    'attr': {'class': 'form-control', 'placeholder': 'e.g. 50'}
+                }) }}
             </div>
         </div>
     </div>
 
     <!-- Location & Media -->
     <div class="form-section">
-        <h2 class="section-title">📍 Location & Cover Image</h2>
-        <div class="form-group">
-            {{ form_label(form.location, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.location, {'attr': {'class': 'form-control', 'placeholder': 'Select address on map or type here...'}}) }}
-            
-            {# 📍 Rendering Hidden Coordinate Fields #}
-            {{ form_widget(form.latitude) }}
-            {{ form_widget(form.longitude) }}
-            
-            <div class="form-error">{{ form_errors(form.location) }}</div>
-            <p class="location-hint"><span>🗺️</span> Click anywhere on the map to set the exact location.</p>
-            <div id="map"></div>
+        <h2 class="section-title" id="location-section-title">📍 Location & Cover Image</h2>
+        
+        <div id="location-fields-wrapper">
+            <div class="form-group">
+                {{ form_row(form.location, {
+                    'label_attr': {'class': 'form-label'},
+                    'attr': {'class': 'form-control', 'placeholder': 'Select address on map or type here...'}
+                }) }}
+                
+                {# 📍 Rendering Hidden Coordinate Fields #}
+                {{ form_widget(form.latitude) }}
+                {{ form_widget(form.longitude) }}
+                
+                <p class="location-hint"><span>🗺️</span> Click anywhere on the map to set the exact location.</p>
+                <div id="map"></div>
+            </div>
         </div>
 
         <div class="form-group">
-            {{ form_label(form.imageFile, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
-            <div class="form-error">{{ form_errors(form.imageFile) }}</div>
+            {{ form_row(form.imageFile, {
+                'label_attr': {'class': 'form-label'},
+                'attr': {'class': 'form-control'}
+            }) }}
             
             {% if event.imageUrl %}
                 <div class="image-preview-container">
@@ -308,102 +325,89 @@
             const titleInput = document.getElementById('{{ form.title.vars.id }}');
             const descInput = document.getElementById('{{ form.description.vars.id }}');
             
-            console.log('Title Input Found:', !!titleInput);
-            console.log('Desc Input Found:', !!descInput);
+            const typeSelect = document.getElementById('{{ form.type.vars.id }}');
+            const locationWrapper = document.getElementById('location-fields-wrapper');
+            const sectionTitle = document.getElementById('location-section-title');
 
+            const mapEl = document.getElementById('map');
+            const locInput = document.getElementById('{{ form.location.vars.id }}');
+            const latInput = document.getElementById('{{ form.latitude.vars.id }}');
+            const lonInput = document.getElementById('{{ form.longitude.vars.id }}');
+
+            // --- ✨ AI Generation ---
             if(generateBtn && titleInput && descInput) {
-                // Remove existing to avoid double binding
                 generateBtn.onclick = null; 
                 generateBtn.addEventListener('click', async () => {
                     const title = titleInput.value.trim();
-                    console.log('Generating AI description for:', title);
                     if(!title) {
                         alert('Veuillez saisir un titre d\'abord.');
                         return;
                     }
-                    
                     generateBtn.disabled = true;
                     aiLoader.style.display = 'inline';
-                    
                     try {
                         const response = await fetch('{{ path('app_event_generate_ai') }}', {
                             method: 'POST',
                             headers:{ 'Content-Type': 'application/json' },
                             body: JSON.stringify({title: title})
                         });
-                        
-                        console.log('AI Response Status:', response.status);
-                        if (!response.ok) throw new Error('API Error: ' + response.status);
-                        
+                        if (!response.ok) throw new Error('API Error');
                         const data = await response.json();
-                        console.log('AI Data Received:', data);
-                        if(data.description) {
-                            descInput.value = data.description;
-                        } else if (data.error) {
-                            alert('Erreur: ' + data.error);
-                        }
+                        if(data.description) descInput.value = data.description;
+                        else if (data.error) alert('Erreur: ' + data.error);
                     } catch(e) {
-                        console.error('AI Generation Error:', e);
-                        alert('Échec de la génération AI. Détails: ' + e.message);
+                        alert('Échec de la génération AI.');
                     } finally {
                         generateBtn.disabled = false;
                         aiLoader.style.display = 'none';
                     }
                 });
             }
-            
-            // Map logic
-            const mapEl = document.getElementById('map');
-            const locInput = document.getElementById('{{ form.location.vars.id }}');
-            const latInput = document.getElementById('{{ form.latitude.vars.id }}');
-            const lonInput = document.getElementById('{{ form.longitude.vars.id }}');
-            
-            if(mapEl && locInput) {
-                console.log('Initializing Map...');
-                // Avoid double init
-                if (mapEl._leaflet_id) return;
 
+            // --- 🗺️ Map Logic ---
+            function initMap() {
+                if (!mapEl || !locInput) return;
+                if (mapEl._leaflet_id) {
+                    console.log('Map already initialized.');
+                    return;
+                }
+                console.log('Initializing Map...');
                 let initialLat = latInput.value || 36.8;
                 let initialLon = lonInput.value || 10.2;
-                let map = L.map('map').setView([initialLat, initialLon], 6);
-                
+                window.eventMap = L.map('map').setView([initialLat, initialLon], 6);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                }).addTo(map);
-                
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(window.eventMap);
                 let marker = null;
-                
                 function updateLocation(lat, lon, addr) {
-                    console.log('Updating Location:', addr, 'LAT:', lat, 'LON:', lon);
-                    if(marker) map.removeLayer(marker);
-                    marker = L.marker([lat, lon]).addTo(map);
+                    if (marker) window.eventMap.removeLayer(marker);
+                    marker = L.marker([lat, lon]).addTo(window.eventMap);
                     locInput.value = addr;
-                    
-                    // 📍 Save Coordinates
-                    if(latInput) latInput.value = lat;
-                    if(lonInput) lonInput.value = lon;
+                    if (latInput) latInput.value = lat;
+                    if (lonInput) lonInput.value = lon;
                 }
-
-                // Initial Load
-                if(locInput.value && latInput.value && lonInput.value) {
-                    map.setView([latInput.value, lonInput.value], 13);
+                // If we have both lat/lon, set view and marker
+                if (locInput.value && latInput.value && lonInput.value) {
+                    window.eventMap.setView([latInput.value, lonInput.value], 13);
                     updateLocation(latInput.value, lonInput.value, locInput.value);
-                } else if(locInput.value) {
-                    console.log('Geocoding existing location string...');
+                } else if (locInput.value) {
+                    // Geocode address to obtain coordinates
+                    console.log('Geocoding address for map...');
                     fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locInput.value)}`)
                         .then(r => r.json())
                         .then(data => {
-                            if(data.length > 0) {
-                                map.setView([data[0].lat, data[0].lon], 13);
-                                updateLocation(data[0].lat, data[0].lon, locInput.value);
+                            if (data.length > 0) {
+                                const lat = data[0].lat;
+                                const lon = data[0].lon;
+                                window.eventMap.setView([lat, lon], 13);
+                                updateLocation(lat, lon, locInput.value);
                             }
                         }).catch(e => console.error('Geocoding error:', e));
                 }
-
-                map.on('click', function(e) {
-                    const {lat, lng} = e.latlng;
-                    console.log('Map Clicked:', lat, lng);
+                // Click handler for reverse geocoding
+                window.eventMap.on('click', function(e) {
+                    const { lat, lng } = e.latlng;
                     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
                         .then(r => r.json())
                         .then(data => {
@@ -411,12 +415,34 @@
                             updateLocation(lat, lng, addr);
                         }).catch(e => console.error('Reverse Geocoding error:', e));
                 });
+                // Ensure map renders correctly after container layout
+                setTimeout(() => window.eventMap.invalidateSize(), 500);
+            }
+
+            // --- 🔄 Dynamic Location Toggle ---
+            function toggleLocationDisplay() {
+                if (!typeSelect || !locationWrapper) return;
                 
-                // Force redraw after container is sure to be ready
-                setTimeout(() => {
-                    map.invalidateSize();
-                    console.log('Map Redrawn.');
-                }, 800);
+                if (typeSelect.value === 'online') {
+                    locationWrapper.style.display = 'none';
+                    if (sectionTitle) sectionTitle.innerHTML = '🖼️ Cover Image';
+                } else {
+                    locationWrapper.style.display = 'block';
+                    if (sectionTitle) sectionTitle.innerHTML = '📍 Location & Cover Image';
+                    
+                    // Initialize map if not done yet
+                    initMap();
+                    
+                    // Refresh layout
+                    if (window.eventMap) {
+                        setTimeout(() => window.eventMap.invalidateSize(), 100);
+                    }
+                }
+            }
+            
+            if (typeSelect) {
+                typeSelect.addEventListener('change', toggleLocationDisplay);
+                toggleLocationDisplay(); // Initial state
             }
         }
     })();

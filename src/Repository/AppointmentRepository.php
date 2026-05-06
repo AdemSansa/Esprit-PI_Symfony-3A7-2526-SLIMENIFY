@@ -6,6 +6,9 @@ use App\Entity\Appointment;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Appointment>
+ */
 class AppointmentRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -25,6 +28,9 @@ class AppointmentRepository extends ServiceEntityRepository
         if ($flush) $this->getEntityManager()->flush();
     }
 
+    /**
+     * @return Appointment[]
+     */
     public function findByDate(\DateTimeInterface $date): array
     {
         return $this->createQueryBuilder('a')
@@ -36,6 +42,9 @@ class AppointmentRepository extends ServiceEntityRepository
             ->getQuery()->getResult();
     }
 
+    /**
+     * @return Appointment[]
+     */
     public function findByTherapist(int $therapistId): array
     {
         return $this->createQueryBuilder('a')
@@ -43,6 +52,9 @@ class AppointmentRepository extends ServiceEntityRepository
             ->orderBy('a.appointmentDate', 'DESC')->getQuery()->getResult();
     }
 
+    /**
+     * @return Appointment[]
+     */
     public function findByPatient(int $patientId): array
     {
         return $this->createQueryBuilder('a')
@@ -50,6 +62,9 @@ class AppointmentRepository extends ServiceEntityRepository
             ->orderBy('a.appointmentDate', 'DESC')->getQuery()->getResult();
     }
 
+    /**
+     * @return Appointment[]
+     */
     public function findByStatus(string $status): array
     {
         return $this->createQueryBuilder('a')
@@ -57,6 +72,9 @@ class AppointmentRepository extends ServiceEntityRepository
             ->orderBy('a.appointmentDate', 'DESC')->getQuery()->getResult();
     }
 
+    /**
+     * @return Appointment[]
+     */
     public function findUpcoming(): array
     {
         return $this->createQueryBuilder('a')
@@ -80,6 +98,33 @@ class AppointmentRepository extends ServiceEntityRepository
             ->andWhere('a.startTime < :endTime')
             ->andWhere('a.endTime > :startTime')
             ->setParameter('therapistId', $therapistId)
+            ->setParameter('date', $date->format('Y-m-d'))
+            ->setParameter('cancelled', 'cancelled')
+            ->setParameter('startTime', $startTime->format('H:i:s'))
+            ->setParameter('endTime', $endTime->format('H:i:s'));
+
+        if ($excludeAppointmentId !== null) {
+            $qb->andWhere('a.id != :excludeId')->setParameter('excludeId', $excludeAppointmentId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult() > 0;
+    }
+
+    public function hasOverlapForPatient(
+        int $patientId,
+        \DateTimeInterface $date,
+        \DateTimeInterface $startTime,
+        \DateTimeInterface $endTime,
+        ?int $excludeAppointmentId = null
+    ): bool {
+        $qb = $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.patient = :patientId')
+            ->andWhere('a.appointmentDate = :date')
+            ->andWhere('a.status != :cancelled')
+            ->andWhere('a.startTime < :endTime')
+            ->andWhere('a.endTime > :startTime')
+            ->setParameter('patientId', $patientId)
             ->setParameter('date', $date->format('Y-m-d'))
             ->setParameter('cancelled', 'cancelled')
             ->setParameter('startTime', $startTime->format('H:i:s'))

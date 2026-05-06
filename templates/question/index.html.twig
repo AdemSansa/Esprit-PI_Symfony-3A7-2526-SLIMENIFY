@@ -66,7 +66,7 @@
             </div>
 
             <form method="get" action="{{ path('app_question_index') }}" class="search-form">
-                <input type="text" name="q" value="{{ searchQuery ?? '' }}" placeholder="Search question text..." class="search-input">
+                <input type="text" name="q" value="{{ searchQuery ?? '' }}" placeholder="Search question text..." class="search-input" autocomplete="off">
                 <select name="category" class="category-filter">
                     <option value="">All categories</option>
                     {% for label, value in categoryOptions %}

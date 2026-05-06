@@ -62,6 +62,7 @@ class Supplier
     #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeInterface $updatedAt = null;
 
+    /** @var Collection<int, Product> */
     #[ORM\OneToMany(mappedBy: 'supplier', targetEntity: Product::class)]
     private Collection $products;
 
@@ -185,6 +186,7 @@ class Supplier
         return $this;
     }
 
+    /** @return Collection<int, Product> */
     public function getProducts(): Collection
     {
         return $this->products;

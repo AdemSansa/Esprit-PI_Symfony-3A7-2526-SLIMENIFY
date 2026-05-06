@@ -33,6 +33,7 @@ services:
             $projectDir: '%kernel.project_dir%'
             $elevenApiKey: '%env(ELEVENLABS_API_KEY)%'
             $openai_api_key: '%env(OPENAI_API_KEY)%'
+            $hfApiKey: '%env(default::HUGGINGFACE_API_KEY)%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -56,6 +57,9 @@ services:
         arguments:
             $profanityCheck: '@profanity.checker'
             $profanityCheckEnabled: '%env(bool:PROFANITY_CHECK_ENABLED)%'
+
+    App\Service\GeolocationService: ~
+
     
 
     App\Service\ImageGenerator:

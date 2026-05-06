@@ -2,11 +2,10 @@
 
 namespace App\Entity;
 
-use App\Repository\NotificationRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: NotificationRepository::class)]
-#[ORM\Table(name: 'notification')]
+#[ORM\Entity]
+#[ORM\Table(name: 'notifications')]
 class Notification
 {
     #[ORM\Id]
@@ -14,99 +13,46 @@ class Notification
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private ?string $title = null;
-
-    #[ORM\Column(type: 'text')]
-    private ?string $message = null;
-
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private bool $isRead = false;
-
-    #[ORM\Column(type: 'datetime')]
-    private ?\DateTimeInterface $createdAt = null;
-
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\ManyToOne(targetEntity: Blog::class)]
-    #[ORM\JoinColumn(name: 'blog_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private ?Blog $blog = null;
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $title;
+
+    #[ORM\Column(type: 'text')]
+    private string $message;
+
+    #[ORM\Column(type: 'string', length: 50)]
+    private string $type; // STARTING_SOON, STARTED, ENDED
+
+    #[ORM\Column(type: 'datetime_immutable')]
+    private \DateTimeImmutable $createdAt;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isRead = false;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $eventId = null;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
-
-    public function setTitle(string $title): self
-    {
-        $this->title = $title;
-        return $this;
-    }
-
-    public function getMessage(): ?string
-    {
-        return $this->message;
-    }
-
-    public function setMessage(string $message): self
-    {
-        $this->message = $message;
-        return $this;
-    }
-
-    public function isRead(): bool
-    {
-        return $this->isRead;
-    }
-
-    public function setIsRead(bool $isRead): self
-    {
-        $this->isRead = $isRead;
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeInterface $createdAt): self
-    {
-        $this->createdAt = $createdAt;
-        return $this;
-    }
-
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): self
-    {
-        $this->user = $user;
-        return $this;
-    }
-
-    public function getBlog(): ?Blog
-    {
-        return $this->blog;
-    }
-
-    public function setBlog(?Blog $blog): self
-    {
-        $this->blog = $blog;
-        return $this;
-    }
+    public function getId(): ?int { return $this->id; }
+    public function getUser(): ?User { return $this->user; }
+    public function setUser(?User $user): static { $this->user = $user; return $this; }
+    public function getTitle(): string { return $this->title; }
+    public function setTitle(string $title): static { $this->title = $title; return $this; }
+    public function getMessage(): string { return $this->message; }
+    public function setMessage(string $message): static { $this->message = $message; return $this; }
+    public function getType(): string { return $this->type; }
+    public function setType(string $type): static { $this->type = $type; return $this; }
+    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
+    public function isRead(): bool { return $this->isRead; }
+    public function setIsRead(bool $isRead): static { $this->isRead = $isRead; return $this; }
+    public function getEventId(): ?int { return $this->eventId; }
+    public function setEventId(?int $eventId): static { $this->eventId = $eventId; return $this; }
 }
