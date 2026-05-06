@@ -23,17 +23,18 @@ class Comment
 
     #[ORM\ManyToOne(targetEntity: Blog::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private $blog;
+    private ?Blog $blog = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    private $user;
+    private ?User $user = null;
 
     #[ORM\ManyToOne(targetEntity: Therapist::class)]
-    private $therapist;
+    private ?Therapist $therapist = null;
 
     #[ORM\ManyToOne(targetEntity: self::class)]
-    private $parent;
+    private ?self $parent = null;
 
+    /** @var Collection<int, CommentLike> */
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentLike::class, cascade: ['remove'])]
     private Collection $likes;
 
@@ -56,17 +57,17 @@ class Comment
 
     public function getCreatedAt(): ?\DateTime { return $this->createdAt; }
 
-    public function getBlog() { return $this->blog; }
-    public function setBlog($blog): self { $this->blog = $blog; return $this; }
+    public function getBlog(): ?Blog { return $this->blog; }
+    public function setBlog(?Blog $blog): self { $this->blog = $blog; return $this; }
 
-    public function getUser() { return $this->user; }
-    public function setUser($user): self { $this->user = $user; return $this; }
+    public function getUser(): ?User { return $this->user; }
+    public function setUser(?User $user): self { $this->user = $user; return $this; }
 
-    public function getTherapist() { return $this->therapist; }
-    public function setTherapist($therapist): self { $this->therapist = $therapist; return $this; }
+    public function getTherapist(): ?Therapist { return $this->therapist; }
+    public function setTherapist(?Therapist $therapist): self { $this->therapist = $therapist; return $this; }
 
-    public function getParent() { return $this->parent; }
-    public function setParent($parent): self { $this->parent = $parent; return $this; }
+    public function getParent(): ?self { return $this->parent; }
+    public function setParent(?self $parent): self { $this->parent = $parent; return $this; }
 
     public function getRating(): ?int
     {

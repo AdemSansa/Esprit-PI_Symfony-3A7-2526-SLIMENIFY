@@ -25,13 +25,16 @@ class EmailService
             return;
         }
 
+        $projectDir = $this->params->get('kernel.project_dir');
+        assert(is_string($projectDir));
+
         $email = (new TemplatedEmail())
             ->from(new Address('Slimenify.team@gmail.com', 'Slimenify Team'))
             ->to($user->getEmail())
             ->subject('Order Confirmation #' . $commande->getId())
             ->htmlTemplate('emails/order_confirmation.html.twig')
-            ->embedFromPath($this->params->get('kernel.project_dir') . '/public/logo.jpg', 'logo')
-            ->embedFromPath($this->params->get('kernel.project_dir') . '/public/images/ai.png', 'mascot')
+            ->embedFromPath($projectDir . '/public/logo.jpg', 'logo')
+            ->embedFromPath($projectDir . '/public/images/ai.png', 'mascot')
             ->context([
                 'commande' => $commande,
                 'user' => $user,

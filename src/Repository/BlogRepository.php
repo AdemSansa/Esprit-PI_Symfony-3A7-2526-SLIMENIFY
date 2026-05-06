@@ -6,6 +6,9 @@ use App\Entity\Blog;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Blog>
+ */
 class BlogRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -13,13 +16,17 @@ class BlogRepository extends ServiceEntityRepository
         parent::__construct($registry, Blog::class);
     }
 
-    public function findAllOrdered()
+    /** @return Blog[] */
+    public function findAllOrdered(): array
     {
         return $this->createQueryBuilder('b')
             ->orderBy('b.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
     }
+    /**
+     * @return Blog[]
+     */
     public function searchByTitle(?string $query): array
     {
     return $this->createQueryBuilder('b')
@@ -29,7 +36,8 @@ class BlogRepository extends ServiceEntityRepository
         ->getQuery()
         ->getResult();
     }
-    public function findMostLikedQuery()
+    /** @return \Doctrine\ORM\Query<mixed, mixed> */
+    public function findMostLikedQuery(): \Doctrine\ORM\Query
     {
     return $this->createQueryBuilder('b')
         ->leftJoin('b.likes', 'l')
@@ -38,7 +46,8 @@ class BlogRepository extends ServiceEntityRepository
         ->orderBy('likesCount', 'DESC')
         ->getQuery();
     }
-        public function findByCategory($category)
+    /** @return Blog[] */
+    public function findByCategory(\App\Entity\Category $category): array
     {
         return $this->createQueryBuilder('b')
             ->andWhere('b.category = :cat')
@@ -48,6 +57,9 @@ class BlogRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function getBlogsCountByCategory(): array
     {
         return $this->createQueryBuilder('b')
@@ -58,6 +70,9 @@ class BlogRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function getBlogsEvolution(): array
     {
         $data = $this->createQueryBuilder('b')
@@ -83,6 +98,9 @@ class BlogRepository extends ServiceEntityRepository
         return $result;
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function getPopularCategoryByInteractions(): array
     {
         return $this->getEntityManager()->createQueryBuilder()

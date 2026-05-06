@@ -16,6 +16,9 @@ class QuestionTransformerService
         $this->client = $client;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function transformQuestion(string $question): array
     {
         $response = $this->client->request('POST', self::API_URL, [

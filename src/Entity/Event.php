@@ -81,6 +81,7 @@ class Event
     private ?float $longitude = null;
 
 
+    /** @var Collection<int, Registration> */
     #[ORM\OneToMany(mappedBy: 'event', targetEntity: Registration::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $registrations;
 
@@ -117,6 +118,7 @@ class Event
     public function setLatitude(?float $v): static { $this->latitude = $v; return $this; }
     public function getLongitude(): ?float { return $this->longitude; }
     public function setLongitude(?float $v): static { $this->longitude = $v; return $this; }
+    /** @return Collection<int, Registration> */
     public function getRegistrations(): Collection { return $this->registrations; }
 
     /**
@@ -139,7 +141,7 @@ class Event
         }
 
         // Fallback if no end date: assume ended after 3 hours
-        $assumedEnd = (clone $this->dateStart)->modify('+3 hours');
+        $assumedEnd = \DateTimeImmutable::createFromInterface($this->dateStart)->modify('+3 hours');
         if ($now > $assumedEnd) {
             return 'ended';
         }

@@ -184,9 +184,9 @@ class CartController extends AbstractController
         }
 
         // Get form data
-        $address = $request->request->get('address');
-        $phone = $request->request->get('phone');
-        $paymentMethod = $request->request->get('payment_method');
+        $address = (string) $request->request->get('address');
+        $phone = (string) $request->request->get('phone');
+        $paymentMethod = (string) $request->request->get('payment_method');
 
         if (!$address || !$phone || !$paymentMethod) {
             $this->addFlash('error', 'Please fill in all delivery information.');
@@ -194,7 +194,8 @@ class CartController extends AbstractController
         }
 
         $commande = new Commande();
-        $commande->setUser($this->getUser());
+        $user = $this->getUser();
+        $commande->setUser($user instanceof \App\Entity\User ? $user : null);
         $commande->setShippingAddress($address);
         $commande->setContactPhone($phone);
         $commande->setPaymentMethod($paymentMethod);
@@ -241,9 +242,9 @@ class CartController extends AbstractController
                     'price_data' => [
                         'currency' => 'eur',
                         'product_data' => [
-                            'name' => $product->getName(),
+                            'name' => (string) $product->getName(),
                         ],
-                        'unit_amount' => (int) round($price * 100),
+                        'unit_amount' => (int) round((float) $price * 100),
                     ],
                     'quantity' => $quantity,
                 ];
@@ -260,7 +261,9 @@ class CartController extends AbstractController
         $session->set('cart', []);
 
         if ($paymentMethod === 'bank_card') {
-            \Stripe\Stripe::setApiKey($this->getParameter('stripe.secret_key'));
+            $apiKey = $this->getParameter('stripe.secret_key');
+            assert(is_string($apiKey));
+            \Stripe\Stripe::setApiKey($apiKey);
 
             $checkout_session = \Stripe\Checkout\Session::create([
                 'payment_method_types' => ['card'],
@@ -270,7 +273,12 @@ class CartController extends AbstractController
                 'cancel_url' => $this->generateUrl('app_cart_stripe_cancel', ['id' => $commande->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
             ]);
 
-            return $this->redirect($checkout_session->url, 303);
+            $url = $checkout_session->url;
+            if (!$url) {
+                $this->addFlash('error', 'Payment session could not be created.');
+                return $this->redirectToRoute('app_cart_index');
+            }
+            return $this->redirect($url, 303);
         }
 
         $this->addFlash('success', "🎊 Congratulations! Your order (Total: $totalAmount TND) has been confirmed successfully.");

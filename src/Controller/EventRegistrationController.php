@@ -28,6 +28,7 @@ class EventRegistrationController extends AbstractController
     public function index(Request $request, RegistrationRepository $registrationRepository, PaginatorInterface $paginator): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
 
         if ($this->isGranted('ROLE_ADMIN')) {
@@ -38,11 +39,11 @@ class EventRegistrationController extends AbstractController
             $queryBuilder = $registrationRepository->createQueryBuilder('r')
                 ->join('r.event', 'e')
                 ->where('e.organizerId = :organizerId')
-                ->setParameter('organizerId', $user->getId())
+                ->setParameter('organizerId', $user instanceof \App\Entity\User ? $user->getId() : 0)
                 ->orderBy('r.id', 'DESC');
         } else {
              // Filter registrations for the patient
-             $email = method_exists($user, 'getEmail') ? $user->getEmail() : null;
+             $email = $user instanceof \App\Entity\User ? $user->getEmail() : null;
              $queryBuilder = $registrationRepository->createQueryBuilder('r')
                 ->where('r.participantEmail = :email')
                 ->setParameter('email', $email)
@@ -71,25 +72,18 @@ class EventRegistrationController extends AbstractController
         $registration = new Registration();
         $registration->setEvent($event);
         
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
-        if ($user) {
+        if ($user instanceof \App\Entity\User) {
             // Auto fill
-            if (method_exists($user, 'getFirstName') && method_exists($user, 'getLastName')) {
-                $registration->setParticipantName($user->getFirstName() . ' ' . $user->getLastName());
-            } elseif (method_exists($user, 'getUserIdentifier')) {
-                $registration->setParticipantName($user->getUserIdentifier());
-            }
-            if (method_exists($user, 'getEmail')) {
-                $registration->setParticipantEmail($user->getEmail());
-            }
-            if (method_exists($user, 'getPhone')) {
-                $registration->setParticipantPhone($user->getPhone());
-            }
+            $registration->setParticipantName($user->getFirstName() . ' ' . $user->getLastName());
+            $registration->setParticipantEmail((string) $user->getEmail());
+            $registration->setParticipantPhone((string) $user->getPhone());
         }
 
         // 📍 Geolocation: Detect Participant Location from IP
         $clientIp = $request->getClientIp();
-        $location = $geoService->getLocation($clientIp);
+        $location = $geoService->getLocation((string) $clientIp);
         $registration->setParticipantLocation($location);
 
         $form = $this->createForm(EventRegistrationType::class, $registration);
@@ -162,8 +156,8 @@ class EventRegistrationController extends AbstractController
             'name' => $registration->getParticipantName(),
             'event' => $registration->getEvent()->getTitle(),
             'id' => $registration->getId(),
-            'date' => $registration->getEvent()->getDateStart()->format('d.m.Y'),
-            'time' => $registration->getEvent()->getDateStart()->format('H:i')
+            'date' => $registration->getEvent()->getDateStart() ? $registration->getEvent()->getDateStart()->format('d.m.Y') : '',
+            'time' => $registration->getEvent()->getDateStart() ? $registration->getEvent()->getDateStart()->format('H:i') : ''
         ];
         
         // ✨ CUSTOM QR CONTENT: Text message instead of URL
@@ -192,15 +186,20 @@ class EventRegistrationController extends AbstractController
     public function updateStatus(Request $request, Registration $registration, string $status, EntityManagerInterface $entityManager, NotificationService $ns): Response
     {
         // 🔐 Security: Only ROLE_ADMIN, the Event Organizer, OR the Participant themselves can modify status!
-        $isParticipant = ($registration->getParticipantEmail() === $this->getUser()->getEmail());
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException('Login required.');
+        }
+        $isParticipant = ($registration->getParticipantEmail() === $user->getEmail());
         
         if (!$this->isGranted('ROLE_ADMIN') && 
-            $registration->getEvent()->getOrganizerId() !== $this->getUser()->getId() &&
+            $registration->getEvent()->getOrganizerId() !== $user->getId() &&
             !$isParticipant) {
             throw $this->createAccessDeniedException('You can only manage your own registrations.');
         }
 
-        if ($this->isCsrfTokenValid('status'.$registration->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('status'.$registration->getId(), (string) $request->request->get('_token'))) {
             if (in_array($status, ['registered', 'attended', 'cancelled'])) {
                 $oldStatus = $registration->getStatus();
                 $registration->setStatus($status);
@@ -209,8 +208,8 @@ class EventRegistrationController extends AbstractController
                 // 🔔 Notify on Cancellation
                 if ($status === 'cancelled' && $oldStatus !== 'cancelled') {
                     $event = $registration->getEvent();
-                    $ns->notifyUserByEmail($registration->getParticipantEmail(), $event, 'REG_CANCELLED', 'Registration Cancelled', "Your registration for '{$event->getTitle()}' has been cancelled.");
-                    $ns->notifyUserById($event->getOrganizerId(), $event, 'REG_CANCELLED_ORG', 'Attendee Cancelled', "{$registration->getParticipantName()} cancelled their registration for '{$event->getTitle()}'.");
+                    $ns->notifyUserByEmail((string) $registration->getParticipantEmail(), $event, 'REG_CANCELLED', 'Registration Cancelled', "Your registration for '{$event->getTitle()}' has been cancelled.");
+                    $ns->notifyUserById((int) $event->getOrganizerId(), $event, 'REG_CANCELLED_ORG', 'Attendee Cancelled', "{$registration->getParticipantName()} cancelled their registration for '{$event->getTitle()}'.");
                     $entityManager->flush();
                 }
 
@@ -225,23 +224,28 @@ class EventRegistrationController extends AbstractController
     public function delete(Request $request, Registration $registration, EntityManagerInterface $entityManager, NotificationService $ns): Response
     {
         // 🔐 Security: Only ROLE_ADMIN, the Event Organizer, OR the Participant themselves can delete!
-        $isParticipant = ($registration->getParticipantEmail() === $this->getUser()->getEmail());
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException('Login required.');
+        }
+        $isParticipant = ($registration->getParticipantEmail() === $user->getEmail());
 
         if (!$this->isGranted('ROLE_ADMIN') && 
-            $registration->getEvent()->getOrganizerId() !== $this->getUser()->getId() &&
+            $registration->getEvent()->getOrganizerId() !== $user->getId() &&
             !$isParticipant) {
             throw $this->createAccessDeniedException('You can only delete your own registrations.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$registration->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$registration->getId(), (string) $request->request->get('_token'))) {
             $event = $registration->getEvent();
             $participantEmail = $registration->getParticipantEmail();
             $participantName = $registration->getParticipantName();
             $organizerId = $event->getOrganizerId();
 
             // 🔔 Notify BEFORE deleting (record needs to exist for event relation)
-            $ns->notifyUserByEmail($participantEmail, $event, 'REG_DELETED', 'Registration Deleted', "Your registration for '{$event->getTitle()}' has been removed.");
-            $ns->notifyUserById($organizerId, $event, 'REG_DELETED_ORG', 'Registration Removed', "{$participantName} removed their registration for '{$event->getTitle()}'.");
+            $ns->notifyUserByEmail((string) $participantEmail, $event, 'REG_DELETED', 'Registration Deleted', "Your registration for '{$event->getTitle()}' has been removed.");
+            $ns->notifyUserById((int) $organizerId, $event, 'REG_DELETED_ORG', 'Registration Removed', "{$participantName} removed their registration for '{$event->getTitle()}'.");
             
             $entityManager->remove($registration);
             $entityManager->flush();
@@ -255,7 +259,11 @@ class EventRegistrationController extends AbstractController
     public function exportExcel(RegistrationRepository $registrationRepository): StreamedResponse
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            throw $this->createAccessDeniedException('You are not authorized to export registrations.');
+        }
 
         // 🔍 Fetch data based on roles
         if ($this->isGranted('ROLE_ADMIN')) {

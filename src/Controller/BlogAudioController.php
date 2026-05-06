@@ -23,7 +23,7 @@ class BlogAudioController extends AbstractController
             return new JsonResponse(['error' => 'Blog not found'], 404);
         }
 
-        $text = strip_tags($blog->getContent()); // important: clean HTML
+        $text = strip_tags((string) $blog->getContent()); // important: clean HTML
         
         try {
             $fileName = $audioService->textToSpeech($text);

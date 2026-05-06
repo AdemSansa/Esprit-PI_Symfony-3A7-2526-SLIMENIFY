@@ -16,6 +16,7 @@ class TherapistDashboardController extends AbstractController
     #[Route('/dashboard', name: 'dashboard')]
     public function index(TherapistRepository $therapistRepo): Response
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $therapist = $therapistRepo->findOneBy(['email' => $user->getEmail()]);
         

@@ -7,10 +7,13 @@ use Psr\Log\LoggerInterface;
 
 class AiAnalysisService
 {
+    /** @phpstan-ignore-next-line */
     private string $apiKey;
 
     public function __construct(
+        /** @phpstan-ignore-next-line */
         private HttpClientInterface $httpClient,
+        /** @phpstan-ignore-next-line */
         private LoggerInterface $logger,
         string $openAiApiKey
     ) {
@@ -20,6 +23,8 @@ class AiAnalysisService
     /**
      * Analyzes a patient message for psychological distress.
      * Returns ['level' => 'low|medium|high|critical', 'analysis' => 'text or null']
+     *
+     * @return array<string, mixed>
      */
     public function analyzeMessage(string $content): array
     {

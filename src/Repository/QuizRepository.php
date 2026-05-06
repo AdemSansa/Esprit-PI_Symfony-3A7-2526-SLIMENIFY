@@ -6,6 +6,9 @@ use App\Entity\Quiz;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Quiz>
+ */
 class QuizRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -27,16 +30,25 @@ class QuizRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
     }
 
+    /**
+     * @return Quiz[]
+     */
     public function findActive(): array
     {
         return $this->findBy(['active' => Quiz::STATUS_ACTIVE]);
     }
 
+    /**
+     * @return Quiz[]
+     */
     public function findByCategory(string $category): array
     {
         return $this->findBy(['category' => $category]);
     }
 
+    /**
+     * @return Quiz[]
+     */
     public function findBySearchQuery(string $query): array
     {
         return $this->createQueryBuilder('q')
@@ -47,6 +59,9 @@ class QuizRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    /**
+     * @return Quiz[]
+     */
     public function findByAuthor(int $author): array
     {
         return $this->createQueryBuilder('q')
@@ -56,6 +71,9 @@ class QuizRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return Quiz[]
+     */
     public function findByAuthorAndSearchQuery(int $author, string $query): array
     {
         return $this->createQueryBuilder('q')

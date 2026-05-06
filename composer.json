@@ -12,6 +12,7 @@
         "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^3.6",
         "dompdf/dompdf": "^3.1",
+        "dragonmantank/cron-expression": "^3.6",
         "knplabs/knp-paginator-bundle": "^6.10",
         "knpuniversity/oauth2-client-bundle": "^2.10",
         "league/oauth2-google": "^4.0",
@@ -105,13 +106,15 @@
     },
     "extra": {
         "symfony": {
-            "allow-contrib": false,
+            "allow-contrib": true,
             "require": "6.4.*"
         }
     },
     "require-dev": {
         "ahmed-bhs/doctrine-doctor": "1.0",
+        "maennchen/zipstream-php": "3.1.0",
         "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-doctrine": "^2.0",
         "phpunit/phpunit": "^11.5",
         "symfony/browser-kit": "6.4.*",
         "symfony/css-selector": "6.4.*",

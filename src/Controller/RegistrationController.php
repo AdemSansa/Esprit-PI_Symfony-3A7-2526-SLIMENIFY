@@ -34,7 +34,7 @@ class RegistrationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // reCAPTCHA validation
             $recaptchaResponse = $request->request->get('g-recaptcha-response');
-            if (!$this->verifyRecaptcha($recaptchaResponse)) {
+            if (!$this->verifyRecaptcha($recaptchaResponse !== null ? (string) $recaptchaResponse : null)) {
                 $this->addFlash('error', 'Please complete the CAPTCHA correctly.');
                 return $this->render('registration/register.html.twig', [
                     'registrationForm' => $form,
@@ -67,13 +67,15 @@ class RegistrationController extends AbstractController
             // encode the plain password
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
 
-            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $photoFile */
+            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $photoFile */
             $photoFile = $form->get('photoUrl')->getData();
             if ($photoFile) {
                 $newFilename = uniqid().'.'.$photoFile->guessExtension();
                 try {
+                    $projectDir = $this->getParameter('kernel.project_dir');
+                    assert(is_string($projectDir));
                     $photoFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/photos',
+                        $projectDir.'/public/uploads/photos',
                         $newFilename
                     );
                     $user->setPhotoUrl('/uploads/photos/'.$newFilename);
@@ -108,13 +110,15 @@ class RegistrationController extends AbstractController
                     $therapist->setConsultationType((string)$consulValue);
                 }
                 
-                /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $diplomaFile */
+                /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $diplomaFile */
                 $diplomaFile = $form->get('diplomaPath')->getData();
                 if ($diplomaFile) {
                     $newFilename = uniqid().'.'.$diplomaFile->guessExtension();
                     try {
+                        $projectDir = $this->getParameter('kernel.project_dir');
+                        assert(is_string($projectDir));
                         $diplomaFile->move(
-                            $this->getParameter('kernel.project_dir').'/public/uploads/diplomas',
+                            $projectDir.'/public/uploads/diplomas',
                             $newFilename
                         );
                         $therapist->setDiplomaPath('/uploads/diplomas/'.$newFilename);
@@ -181,7 +185,7 @@ class RegistrationController extends AbstractController
 
         $context  = stream_context_create($options);
         $result = file_get_contents($verifyUrl, false, $context);
-        $resultJson = json_decode($result);
+        $resultJson = json_decode($result !== false ? $result : '{}');
 
         return $resultJson->success ?? false;
     }

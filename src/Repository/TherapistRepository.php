@@ -6,6 +6,9 @@ use App\Entity\Therapist;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Therapist>
+ */
 class TherapistRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -25,11 +28,17 @@ class TherapistRepository extends ServiceEntityRepository
         if ($flush) $this->getEntityManager()->flush();
     }
 
+    /**
+     * @return Therapist[]
+     */
     public function findActive(): array
     {
         return $this->findBy(['status' => 'ACTIVE']);
     }
 
+    /**
+     * @return Therapist[]
+     */
     public function findBySpecialization(string $specialization): array
     {
         return $this->createQueryBuilder('t')
@@ -38,13 +47,16 @@ class TherapistRepository extends ServiceEntityRepository
             ->getQuery()->getResult();
     }
 
+    /**
+     * @return Therapist[]
+     */
     public function findByConsultationType(string $type): array
     {
         return $this->findBy(['consultationType' => $type, 'status' => 'ACTIVE']);
     }
 
     /**
-     * @return \Doctrine\ORM\Query
+     * @return \Doctrine\ORM\Query<mixed, mixed>
      */
     public function searchAndSortQuery(?string $searchQuery, ?string $specialty, ?string $modeFilter = null): \Doctrine\ORM\Query
     {
