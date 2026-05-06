@@ -83,7 +83,7 @@ class EventRegistrationController extends AbstractController
 
         // 📍 Geolocation: Detect Participant Location from IP
         $clientIp = $request->getClientIp();
-        $location = $geoService->getLocation($clientIp);
+        $location = $geoService->getLocation((string) $clientIp);
         $registration->setParticipantLocation($location);
 
         $form = $this->createForm(EventRegistrationType::class, $registration);
@@ -156,8 +156,8 @@ class EventRegistrationController extends AbstractController
             'name' => $registration->getParticipantName(),
             'event' => $registration->getEvent()->getTitle(),
             'id' => $registration->getId(),
-            'date' => $registration->getEvent()->getDateStart()->format('d.m.Y'),
-            'time' => $registration->getEvent()->getDateStart()->format('H:i')
+            'date' => $registration->getEvent()->getDateStart() ? $registration->getEvent()->getDateStart()->format('d.m.Y') : '',
+            'time' => $registration->getEvent()->getDateStart() ? $registration->getEvent()->getDateStart()->format('H:i') : ''
         ];
         
         // ✨ CUSTOM QR CONTENT: Text message instead of URL
@@ -199,7 +199,7 @@ class EventRegistrationController extends AbstractController
             throw $this->createAccessDeniedException('You can only manage your own registrations.');
         }
 
-        if ($this->isCsrfTokenValid('status'.$registration->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('status'.$registration->getId(), (string) $request->request->get('_token'))) {
             if (in_array($status, ['registered', 'attended', 'cancelled'])) {
                 $oldStatus = $registration->getStatus();
                 $registration->setStatus($status);
@@ -208,8 +208,8 @@ class EventRegistrationController extends AbstractController
                 // 🔔 Notify on Cancellation
                 if ($status === 'cancelled' && $oldStatus !== 'cancelled') {
                     $event = $registration->getEvent();
-                    $ns->notifyUserByEmail($registration->getParticipantEmail(), $event, 'REG_CANCELLED', 'Registration Cancelled', "Your registration for '{$event->getTitle()}' has been cancelled.");
-                    $ns->notifyUserById($event->getOrganizerId(), $event, 'REG_CANCELLED_ORG', 'Attendee Cancelled', "{$registration->getParticipantName()} cancelled their registration for '{$event->getTitle()}'.");
+                    $ns->notifyUserByEmail((string) $registration->getParticipantEmail(), $event, 'REG_CANCELLED', 'Registration Cancelled', "Your registration for '{$event->getTitle()}' has been cancelled.");
+                    $ns->notifyUserById((int) $event->getOrganizerId(), $event, 'REG_CANCELLED_ORG', 'Attendee Cancelled', "{$registration->getParticipantName()} cancelled their registration for '{$event->getTitle()}'.");
                     $entityManager->flush();
                 }
 
@@ -237,15 +237,15 @@ class EventRegistrationController extends AbstractController
             throw $this->createAccessDeniedException('You can only delete your own registrations.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$registration->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$registration->getId(), (string) $request->request->get('_token'))) {
             $event = $registration->getEvent();
             $participantEmail = $registration->getParticipantEmail();
             $participantName = $registration->getParticipantName();
             $organizerId = $event->getOrganizerId();
 
             // 🔔 Notify BEFORE deleting (record needs to exist for event relation)
-            $ns->notifyUserByEmail($participantEmail, $event, 'REG_DELETED', 'Registration Deleted', "Your registration for '{$event->getTitle()}' has been removed.");
-            $ns->notifyUserById($organizerId, $event, 'REG_DELETED_ORG', 'Registration Removed', "{$participantName} removed their registration for '{$event->getTitle()}'.");
+            $ns->notifyUserByEmail((string) $participantEmail, $event, 'REG_DELETED', 'Registration Deleted', "Your registration for '{$event->getTitle()}' has been removed.");
+            $ns->notifyUserById((int) $organizerId, $event, 'REG_DELETED_ORG', 'Registration Removed', "{$participantName} removed their registration for '{$event->getTitle()}'.");
             
             $entityManager->remove($registration);
             $entityManager->flush();

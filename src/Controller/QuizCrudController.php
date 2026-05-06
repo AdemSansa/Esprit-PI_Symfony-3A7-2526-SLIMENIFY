@@ -89,7 +89,7 @@ class QuizCrudController extends AbstractController
 
         $query = $request->query->get('q');
         $quizzes = $query
-            ? $quizRepository->findByAuthorAndSearchQuery($user->getId(), $query)
+            ? $quizRepository->findByAuthorAndSearchQuery($user->getId(), (string) $query)
             : $quizRepository->findByAuthor($user->getId());
 
         return $this->render('quiz/index.html.twig', [

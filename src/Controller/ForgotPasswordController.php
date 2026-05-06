@@ -41,7 +41,7 @@ class ForgotPasswordController extends AbstractController
                 // Envoi de l'email
                 $emailMessage = (new TemplatedEmail())
                     ->from(new Address('Slimenify.team@gmail.com', 'Slimenify Team'))
-                    ->to($email)
+                    ->to((string) $email)
                     ->subject('Réinitialisation de votre mot de passe')
                     ->htmlTemplate('forgot_password/email.html.twig')
                     ->context([
@@ -73,19 +73,19 @@ class ForgotPasswordController extends AbstractController
         $email = $item->get();
         
         if ($request->isMethod('POST')) {
-            $password = $request->request->get('password');
+            $password = (string) $request->request->get('password');
             $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
 
             if ($user && $password) {
                 // Hasher et mettre à jour le mot de passe de l'utilisateur
                 $user->setPassword(
-                    $passwordHasher->hashPassword($user, $password)
+                    $passwordHasher->hashPassword($user, (string) $password)
                 );
                 
                 // Si l'utilisateur est aussi un thérapeute, on met à jour l'entité Therapist
                 $therapist = $em->getRepository(Therapist::class)->findOneBy(['email' => $email]);
                 if ($therapist) {
-                    $therapist->setPassword($passwordHasher->hashPassword($user, $password));
+                    $therapist->setPassword($passwordHasher->hashPassword($user, (string) $password));
                 }
 
                 $em->flush();

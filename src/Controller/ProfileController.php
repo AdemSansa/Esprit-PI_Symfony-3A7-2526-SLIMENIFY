@@ -39,8 +39,10 @@ class ProfileController extends AbstractController
             if ($photoFile) {
                 $newFilename = uniqid().'.'.$photoFile->guessExtension();
                 try {
+                    $projectDir = $this->getParameter('kernel.project_dir');
+                    assert(is_string($projectDir));
                     $photoFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/photos',
+                        $projectDir.'/public/uploads/photos',
                         $newFilename
                     );
                     $user->setPhotoUrl('/uploads/photos/'.$newFilename);

@@ -17,8 +17,8 @@ class PatientDashboardController extends AbstractController
     #[Route('/dashboard', name: 'dashboard')]
     public function dashboard(Request $request, TherapistRepository $therapistRepository, PaginatorInterface $paginator): Response
     {
-        $searchQuery = $request->query->get('q');
-        $specialty = $request->query->get('specialty', 'all');
+        $searchQuery = ($v = $request->query->get('q')) !== null ? (string) $v : null;
+        $specialty = ($v = $request->query->get('specialty', 'all')) !== null ? (string) $v : null;
 
         $query = $therapistRepository->searchAndSortQuery($searchQuery, $specialty);
 

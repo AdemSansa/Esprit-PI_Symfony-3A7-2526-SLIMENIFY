@@ -104,8 +104,9 @@ class ChatController extends AbstractController
                 'id'          => $msg->getId(),
                 'senderType'  => $msg->getSenderType(),
                 'content'     => $msg->getContent(),
-                'createdAt'   => $msg->getCreatedAt()->format('H:i'),
+                'createdAt'   => clone $msg->getCreatedAt(), // Format in JS if needed or just output string
             ];
+            $entry['createdAt'] = $msg->getCreatedAt() ? $msg->getCreatedAt()->format('H:i') : '';
 
             // Only expose AI analysis data to therapists
             if ($isTherapist) {
@@ -159,9 +160,10 @@ class ChatController extends AbstractController
         if ($role !== 'therapist' && in_array($analysis['level'] ?? 'low', ['high', 'critical'])) {
             $therapist  = $conversation->getTherapist();
             $levelLabel = ($analysis['level'] === 'critical') ? '🚨 CRITIQUE' : '🔴 ÉLEVÉ';
-            $alertEmail = (new Email())
-                ->from('Slimenify.team@gmail.com')
-                ->to($therapist->getEmail())
+            if ($therapist && $therapist->getEmail()) {
+                $alertEmail = (new Email())
+                    ->from('Slimenify.team@gmail.com')
+                    ->to($therapist->getEmail())
                 ->subject("[Slimenify] {$levelLabel} — Message préoccupant détecté")
                 ->html(
                     "<h2>⚠️ Alerte — Message de détresse détecté</h2>
@@ -171,14 +173,15 @@ class ChatController extends AbstractController
                     <p><strong>Analyse IA :</strong> {$analysis['analysis']}</p>
                     <p>Veuillez répondre rapidement à ce patient.</p>"
                 );
-            try { $mailer->send($alertEmail); } catch (\Throwable $e) { /* silent */ }
+                try { $mailer->send($alertEmail); } catch (\Throwable $e) { /* silent */ }
+            }
         }
 
         return $this->json([
             'id'               => $message->getId(),
             'senderType'       => $message->getSenderType(),
             'content'          => $message->getContent(),
-            'createdAt'        => $message->getCreatedAt()->format('H:i'),
+            'createdAt'        => $message->getCreatedAt() ? $message->getCreatedAt()->format('H:i') : '',
             'sensitivityLevel' => $message->getSensitivityLevel(),
             'aiAnalysis'       => $message->getAiAnalysis(),
         ]);

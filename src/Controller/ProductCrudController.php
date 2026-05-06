@@ -18,9 +18,9 @@ class ProductCrudController extends AbstractController
     #[Route('', name: 'app_product_index', methods: ['GET'])]
     public function index(Request $request, ProductRepository $productRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
-        $search = $request->query->get('search', '');
-        $category = $request->query->get('category', 'all');
-        $sortBy = $request->query->get('sortBy', 'newest');
+        $search = (string) $request->query->get('search', '');
+        $category = (string) $request->query->get('category', 'all');
+        $sortBy = (string) $request->query->get('sortBy', 'newest');
         $priceMin = $request->query->get('priceMin');
         $priceMax = $request->query->get('priceMax');
 

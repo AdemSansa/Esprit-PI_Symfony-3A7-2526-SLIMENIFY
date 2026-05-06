@@ -19,9 +19,9 @@ class SupplierCrudController extends AbstractController
     #[Route('', name: 'app_supplier_index', methods: ['GET'])]
     public function index(Request $request, SupplierRepository $supplierRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
-        $search = $request->query->get('search', '');
-        $status = $request->query->get('status', 'all');
-        $sortBy = $request->query->get('sortBy', 'newest');
+        $search = (string) $request->query->get('search', '');
+        $status = (string) $request->query->get('status', 'all');
+        $sortBy = (string) $request->query->get('sortBy', 'newest');
 
         $suppliersQuery = $supplierRepository->findFiltered($search, $status, $sortBy);
         

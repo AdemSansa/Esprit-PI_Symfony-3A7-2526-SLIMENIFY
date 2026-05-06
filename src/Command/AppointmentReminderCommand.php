@@ -60,9 +60,14 @@ class AppointmentReminderCommand extends Command
                 strtolower((string) $appointment->getType()) === 'video' ? 'Online (check portal for link)' : 'In-person'
             );
 
+            $patientEmail = $patient->getEmail();
+            if (!$patientEmail) {
+                continue;
+            }
+
             $email = (new Email())
                 ->from('slimenify.team@gmail.com')
-                ->to($patient->getEmail())
+                ->to($patientEmail)
                 ->subject('Appointment Reminder: Tomorrow at ' . $appointment->getStartTime()->format('H:i'))
                 ->text($emailBody);
 

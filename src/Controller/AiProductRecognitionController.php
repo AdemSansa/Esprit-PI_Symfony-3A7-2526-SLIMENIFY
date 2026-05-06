@@ -30,7 +30,12 @@ class AiProductRecognitionController extends AbstractController
 
         // Fetch all product names to provide context to Gemini
         $products = $productRepository->findAll();
-        $productNames = array_map(fn($p) => $p->getName(), $products);
+        $productNames = [];
+        foreach ($products as $p) {
+            if ($p->getName() !== null) {
+                $productNames[] = $p->getName();
+            }
+        }
 
         if (empty($productNames)) {
             return new JsonResponse(['error' => 'No products in catalog'], 404);
