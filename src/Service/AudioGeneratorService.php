@@ -35,19 +35,5 @@ class AudioGeneratorService
         }
 
         return $content;
-
-        $response = $this->httpClient->request('POST', 'https://api.voicerss.org/', [
-    'verify_peer' => false,  
-    'verify_host' => false,  
-    'body' => [
-        'key' => $this->voiceRssApiKey,
-        'src' => $text,
-        'hl'  => 'en-us',
-        'v'   => 'Linda',
-        'r'   => '0',
-        'c'   => 'MP3',
-        'f'   => '44khz_16bit_stereo',
-    ],
-]);
     }
 }

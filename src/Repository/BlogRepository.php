@@ -36,7 +36,7 @@ class BlogRepository extends ServiceEntityRepository
         ->getQuery()
         ->getResult();
     }
-    /** @return \Doctrine\ORM\Query<mixed, mixed> */
+    /** @return \Doctrine\ORM\Query */
     public function findMostLikedQuery(): \Doctrine\ORM\Query
     {
     return $this->createQueryBuilder('b')

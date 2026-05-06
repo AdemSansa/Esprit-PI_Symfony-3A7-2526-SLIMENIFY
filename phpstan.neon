@@ -4,3 +4,6 @@ parameters:
         - src/
     ignoreErrors:
         - '#Call to an undefined method#'
+        -
+            identifier: property.unusedType
+            path: src/Entity/*
