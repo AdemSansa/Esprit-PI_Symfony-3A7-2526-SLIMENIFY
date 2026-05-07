@@ -100,9 +100,7 @@ class Event
     public function getType(): ?string { return $this->type; }
     public function setType(?string $v): static { $this->type = $v; return $this; }
     public function getDateStart(): ?\DateTimeInterface { return $this->dateStart; }
-    public function setDateStart(?\DateTimeInterface $v): static { $this->dateStart = $v; return $this; }
     public function getDateEnd(): ?\DateTimeInterface { return $this->dateEnd; }
-    public function setDateEnd(?\DateTimeInterface $v): static { $this->dateEnd = $v; return $this; }
     public function getLocation(): ?string { return $this->location; }
     public function setLocation(?string $v): static { $this->location = $v; return $this; }
     public function getMaxParticipants(): ?int { return $this->maxParticipants; }
@@ -110,7 +108,6 @@ class Event
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $v): static { $this->status = $v; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function setCreatedAt(\DateTimeImmutable $v): static { $this->createdAt = $v; return $this; }
     public function getOrganizerId(): ?int { return $this->organizerId; }
     public function setOrganizerId(?int $v): static { $this->organizerId = $v; return $this; }
     public function getImageUrl(): ?string { return $this->imageUrl; }

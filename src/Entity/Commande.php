@@ -135,13 +135,6 @@ class Commande
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
     /** @return array<int, array<string, mixed>> */
     public function getItemsDetails(): array
     {

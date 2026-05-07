@@ -47,7 +47,7 @@ class QuizResult
     public function getMood(): ?string { return $this->mood; }
     public function setMood(?string $v): static { $this->mood = $v; return $this; }
     public function getTakenAt(): \DateTimeInterface { return $this->takenAt; }
-    public function setTakenAt(\DateTimeInterface $v): static { $this->takenAt = $v; return $this; }
+
     public function getUser(): User { return $this->user; }
     public function setUser(User $v): static { $this->user = $v; return $this; }
     public function getQuiz(): Quiz { return $this->quiz; }

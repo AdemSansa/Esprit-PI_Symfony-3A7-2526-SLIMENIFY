@@ -55,7 +55,7 @@ class Registration
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $v): static { $this->status = $v; return $this; }
     public function getRegistrationDate(): \DateTimeImmutable { return $this->registrationDate; }
-    public function setRegistrationDate(\DateTimeImmutable $v): static { $this->registrationDate = $v; return $this; }
+
     public function getQrCode(): ?string { return $this->qrCode; }
     public function setQrCode(?string $v): static { $this->qrCode = $v; return $this; }
     public function getParticipantName(): ?string { return $this->participantName; }
