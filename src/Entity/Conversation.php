@@ -25,8 +25,9 @@ class Conversation
     private ?Therapist $therapist = null;
 
     /** @var Collection<int, Message> */
-    #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: Message::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: Message::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $messages;
+
 
     #[ORM\Column(type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeInterface $createdAt = null;

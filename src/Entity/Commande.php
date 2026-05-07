@@ -20,8 +20,8 @@ class Commande
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\Column]
-    private ?float $totalAmount = null;
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    private ?string $totalAmount = null;
 
     #[ORM\Column(length: 50)]
     private ?string $status = 'en_attente';
@@ -70,12 +70,12 @@ class Commande
         return $this;
     }
 
-    public function getTotalAmount(): ?float
+    public function getTotalAmount(): ?string
     {
         return $this->totalAmount;
     }
 
-    public function setTotalAmount(float $totalAmount): static
+    public function setTotalAmount(string $totalAmount): static
     {
         $this->totalAmount = $totalAmount;
 

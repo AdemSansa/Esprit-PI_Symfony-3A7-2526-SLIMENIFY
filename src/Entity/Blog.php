@@ -30,8 +30,8 @@ class Blog
     #[ORM\Column(length: 255)]
     private ?string $photo = null;
 
-    #[ORM\Column]
-    private ?\DateTime $createdAt = null;
+    #[ORM\Column(type: 'datetime_immutable')]
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(targetEntity: Therapist::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -39,15 +39,15 @@ class Blog
 
     
     /** @var Collection<int, Comment> */
-    #[ORM\OneToMany(mappedBy: 'blog', targetEntity: Comment::class, cascade: ['remove'])]
+    #[ORM\OneToMany(mappedBy: 'blog', targetEntity: Comment::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $comments;
 
     /** @var Collection<int, BlogLike> */
-    #[ORM\OneToMany(mappedBy: 'blog', targetEntity: BlogLike::class, cascade: ['remove'])]
+    #[ORM\OneToMany(mappedBy: 'blog', targetEntity: BlogLike::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $likes;
 
     /** @var Collection<int, BlogFavorite> */
-    #[ORM\OneToMany(mappedBy: 'blog', targetEntity: BlogFavorite::class, cascade: ['remove'])]
+    #[ORM\OneToMany(mappedBy: 'blog', targetEntity: BlogFavorite::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $favorites;
 
     #[Assert\NotNull(message: "Category is required")]
@@ -57,7 +57,7 @@ class Blog
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
         $this->likes = new ArrayCollection();
         $this->comments = new ArrayCollection();
         $this->favorites = new ArrayCollection();
@@ -103,7 +103,7 @@ class Blog
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }

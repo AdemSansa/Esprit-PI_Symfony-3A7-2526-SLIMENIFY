@@ -22,8 +22,9 @@ class BlogLike
     private ?Therapist $therapist = null;
 
     #[ORM\ManyToOne(targetEntity: Blog::class, inversedBy: 'likes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Blog $blog = null;
+
 
     public function getId(): ?int
     {

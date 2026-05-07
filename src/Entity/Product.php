@@ -9,6 +9,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: \App\Repository\ProductRepository::class)]
 #[ORM\Table(name: 'products')]
+#[ORM\Index(name: 'idx_product_category_name', columns: ['category', 'name'])]
 #[UniqueEntity(fields: ['name'], message: 'A product with this name already exists in the inventory.')]
 class Product
 {

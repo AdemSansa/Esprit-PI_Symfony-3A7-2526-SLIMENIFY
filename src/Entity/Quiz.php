@@ -72,11 +72,11 @@ class Quiz
     private Collection $questions;
 
     /** @var Collection<int, QuizResult> */
-    #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: QuizResult::class)]
+    #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: QuizResult::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $results;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: false)]
     private ?User $author = null;
 
     public function __construct()

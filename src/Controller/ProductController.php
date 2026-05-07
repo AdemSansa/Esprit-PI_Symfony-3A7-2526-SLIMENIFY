@@ -113,10 +113,8 @@ class ProductController extends AbstractController
         }
 
         if (!empty($content['supplier_id'])) {
-            $supplier = $this->supplierRepository->find($content['supplier_id']);
-            if ($supplier) {
-                $product->setSupplier($supplier);
-            }
+            $supplier = $this->entityManager->getReference(\App\Entity\Supplier::class, $content['supplier_id']);
+            $product->setSupplier($supplier);
         }
 
         $product->setPhotoUrl($content['photoUrl'] ?? null);
@@ -163,10 +161,8 @@ class ProductController extends AbstractController
 
         if (array_key_exists('supplier_id', $content)) {
             if ($content['supplier_id']) {
-                $supplier = $this->supplierRepository->find($content['supplier_id']);
-                if ($supplier) {
-                    $product->setSupplier($supplier);
-                }
+                $supplier = $this->entityManager->getReference(\App\Entity\Supplier::class, $content['supplier_id']);
+                $product->setSupplier($supplier);
             } else {
                 $product->setSupplier(null);
             }
