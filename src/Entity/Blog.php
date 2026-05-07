@@ -39,15 +39,15 @@ class Blog
 
     
     /** @var Collection<int, Comment> */
-    #[ORM\OneToMany(mappedBy: 'blog', targetEntity: Comment::class, cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'blog', targetEntity: Comment::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $comments;
 
     /** @var Collection<int, BlogLike> */
-    #[ORM\OneToMany(mappedBy: 'blog', targetEntity: BlogLike::class, cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'blog', targetEntity: BlogLike::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $likes;
 
     /** @var Collection<int, BlogFavorite> */
-    #[ORM\OneToMany(mappedBy: 'blog', targetEntity: BlogFavorite::class, cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'blog', targetEntity: BlogFavorite::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $favorites;
 
     #[Assert\NotNull(message: "Category is required")]

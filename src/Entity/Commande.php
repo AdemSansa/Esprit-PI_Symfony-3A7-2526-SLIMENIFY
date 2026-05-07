@@ -41,8 +41,8 @@ class Commande
     #[Assert\Choice(choices: ["cash_on_delivery", "bank_card"], message: "Invalid payment method selected.")]
     private ?string $paymentMethod = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private ?\DateTimeImmutable $createdAt = null;
 
     /** @var array<int, array<string, mixed>> */
     #[ORM\Column]
@@ -50,7 +50,7 @@ class Commande
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -130,12 +130,12 @@ class Commande
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
 

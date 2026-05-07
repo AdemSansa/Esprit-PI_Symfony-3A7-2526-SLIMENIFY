@@ -35,7 +35,7 @@ class Comment
     private ?self $parent = null;
 
     /** @var Collection<int, CommentLike> */
-    #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentLike::class, cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentLike::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $likes;
 
     #[ORM\Column(type: 'integer', nullable: true)]

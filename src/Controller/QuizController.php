@@ -42,8 +42,13 @@ class QuizController extends AbstractController
     #[Route('', name: 'create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            return $this->json(['error' => 'Login required'], Response::HTTP_UNAUTHORIZED);
+        }
+
         $data = json_decode($request->getContent(), true);
-        $q = new Quiz();
+        $q = new Quiz($user);
         $q->setTitle($data['title']);
         $q->setDescription($data['description'] ?? null);
         $q->setCategory($data['category'] ?? null);
