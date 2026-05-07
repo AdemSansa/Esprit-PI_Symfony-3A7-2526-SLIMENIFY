@@ -93,7 +93,7 @@ class EventController extends AbstractController
             'status'           => $e->getStatus(),
             'organizer_id'     => $e->getOrganizerId(),
             'image_url'        => $e->getImageUrl(),
-            'created_at'       => $e->getCreatedAt() ? $e->getCreatedAt()->format('Y-m-d H:i:s') : null,
+            'created_at'       => $e->getCreatedAt()->format('Y-m-d H:i:s'),
         ];
     }
 }

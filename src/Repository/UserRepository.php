@@ -33,7 +33,7 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return \Doctrine\ORM\Query<mixed, mixed>
+     * @return \Doctrine\ORM\Query
      */
     public function searchAndSortQuery(?string $searchQuery, ?string $roleFilter): \Doctrine\ORM\Query
     {
