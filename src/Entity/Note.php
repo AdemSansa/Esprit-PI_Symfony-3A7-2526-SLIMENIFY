@@ -40,7 +40,6 @@ class Note
     public function getContent(): string { return $this->content; }
     public function setContent(string $v): static { $this->content = $v; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function setCreatedAt(\DateTimeImmutable $v): static { $this->createdAt = $v; return $this; }
     public function getMood(): ?string { return $this->mood; }
     public function setMood(?string $v): static { $this->mood = $v; return $this; }
     public function getAppointment(): Appointment { return $this->appointment; }

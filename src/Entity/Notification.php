@@ -51,7 +51,6 @@ class Notification
     public function getType(): string { return $this->type; }
     public function setType(string $type): static { $this->type = $type; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
     public function isRead(): bool { return $this->isRead; }
     public function setIsRead(bool $isRead): static { $this->isRead = $isRead; return $this; }
     public function getEvent(): ?Event { return $this->event; }

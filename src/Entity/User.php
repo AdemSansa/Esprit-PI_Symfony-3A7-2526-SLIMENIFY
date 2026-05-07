@@ -53,7 +53,7 @@ class User implements UserInterface,PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, QuizResult>
      */
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: QuizResult::class, cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: QuizResult::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $quizResults;
 
 
@@ -82,7 +82,6 @@ class User implements UserInterface,PasswordAuthenticatedUserInterface
     public function getRole(): string { return $this->role; }
     public function setRole(string $role): static { $this->role = $role; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
     public function getLastName(): ?string { return $this->lastName; }
     public function setLastName(?string $lastName): static { $this->lastName = $lastName; return $this; }
     public function getPhone(): ?string { return $this->phone; }

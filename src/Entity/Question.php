@@ -53,7 +53,6 @@ class Question
     public function isRequired(): bool { return $this->required; }
     public function setRequired(bool $v): static { $this->required = $v; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function setCreatedAt(\DateTimeImmutable $v): static { $this->createdAt = $v; return $this; }
     public function getImagePath(): string { return $this->imagePath; }
     public function setImagePath(string $v): static { $this->imagePath = $v; return $this; }
     public function getCategory(): ?string { return $this->category; }

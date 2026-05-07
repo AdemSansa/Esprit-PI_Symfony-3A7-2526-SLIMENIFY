@@ -70,7 +70,7 @@ class Therapist
     private Collection $availabilities;
 
     /** @var Collection<int, Note> */
-    #[ORM\OneToMany(mappedBy: 'therapist', targetEntity: Note::class, cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'therapist', targetEntity: Note::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $notes;
 
 
@@ -101,9 +101,7 @@ class Therapist
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $v): static { $this->status = $v; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function setCreatedAt(\DateTimeImmutable $v): static { $this->createdAt = $v; return $this; }
     public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }
-    public function setUpdatedAt(\DateTimeImmutable $v): static { $this->updatedAt = $v; return $this; }
     public function getPassword(): ?string { return $this->password; }
     public function setPassword(?string $v): static { $this->password = $v; return $this; }
     public function getPhotoUrl(): string { return $this->photoUrl; }

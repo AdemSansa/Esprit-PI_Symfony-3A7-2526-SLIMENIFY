@@ -66,7 +66,6 @@ class Appointment
     public function getStatus(): ?string { return $this->status; }
     public function setStatus(?string $v): static { $this->status = $v; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function setCreatedAt(\DateTimeImmutable $v): static { $this->createdAt = $v; return $this; }
     public function getType(): ?string { return $this->type; }
     public function setType(?string $v): static { $this->type = $v; return $this; }
     public function getTherapist(): Therapist { return $this->therapist; }
