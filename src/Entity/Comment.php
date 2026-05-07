@@ -18,11 +18,11 @@ class Comment
     #[ORM\Column(type: "text", )]
     private ?string $content = "";
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\ManyToOne(targetEntity: Blog::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Blog::class, inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Blog $blog = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]

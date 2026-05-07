@@ -70,8 +70,9 @@ class Therapist
     private Collection $availabilities;
 
     /** @var Collection<int, Note> */
-    #[ORM\OneToMany(mappedBy: 'therapist', targetEntity: Note::class)]
+    #[ORM\OneToMany(mappedBy: 'therapist', targetEntity: Note::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $notes;
+
 
     public function __construct()
     {

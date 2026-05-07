@@ -85,6 +85,7 @@ class Event
     #[ORM\OneToMany(mappedBy: 'event', targetEntity: Registration::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $registrations;
 
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();

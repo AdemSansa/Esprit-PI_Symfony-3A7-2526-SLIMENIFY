@@ -30,7 +30,7 @@ class Blog
     #[ORM\Column(length: 255)]
     private ?string $photo = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(targetEntity: Therapist::class)]

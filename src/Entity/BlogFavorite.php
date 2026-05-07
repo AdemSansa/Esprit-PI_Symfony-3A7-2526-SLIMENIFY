@@ -18,8 +18,9 @@ class BlogFavorite
     private ?User $user = null;
 
     #[ORM\ManyToOne(targetEntity: Blog::class, inversedBy: 'favorites')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Blog $blog = null;
+
 
     public function getId(): ?int
     {

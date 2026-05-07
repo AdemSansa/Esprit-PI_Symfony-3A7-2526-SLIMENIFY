@@ -46,6 +46,7 @@ class Appointment
     #[ORM\OneToMany(mappedBy: 'appointment', targetEntity: Note::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $notes;
 
+
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $patientMood = null;
 
