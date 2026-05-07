@@ -53,8 +53,9 @@ class User implements UserInterface,PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, QuizResult>
      */
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: QuizResult::class)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: QuizResult::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $quizResults;
+
 
     #[ORM\Column]
     private bool $isVerified = false;

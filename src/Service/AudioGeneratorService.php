@@ -9,7 +9,8 @@ class AudioGeneratorService
     public function __construct(
         private HttpClientInterface $httpClient,
         private string $voiceRssApiKey
-    ) {}
+    ) {
+    }
 
     public function textToSpeech(string $text): string
     {
@@ -19,11 +20,11 @@ class AudioGeneratorService
             'body' => [
                 'key' => $this->voiceRssApiKey,
                 'src' => $text,
-                'hl'  => 'en-us',
-                'v'   => 'Linda',
-                'r'   => '0',
-                'c'   => 'MP3',
-                'f'   => '44khz_16bit_stereo',
+                'hl' => 'en-us',
+                'v' => 'Linda',
+                'r' => '0',
+                'c' => 'MP3',
+                'f' => '44khz_16bit_stereo',
             ],
         ]);
 
@@ -37,17 +38,17 @@ class AudioGeneratorService
         return $content;
 
         $response = $this->httpClient->request('POST', 'https://api.voicerss.org/', [
-    'verify_peer' => false,  
-    'verify_host' => false,  
-    'body' => [
-        'key' => $this->voiceRssApiKey,
-        'src' => $text,
-        'hl'  => 'en-us',
-        'v'   => 'Linda',
-        'r'   => '0',
-        'c'   => 'MP3',
-        'f'   => '44khz_16bit_stereo',
-    ],
-]);
+            'verify_peer' => false,
+            'verify_host' => false,
+            'body' => [
+                'key' => $this->voiceRssApiKey,
+                'src' => $text,
+                'hl' => 'en-us',
+                'v' => 'Linda',
+                'r' => '0',
+                'c' => 'MP3',
+                'f' => '44khz_16bit_stereo',
+            ],
+        ]);
     }
 }

@@ -29,7 +29,8 @@ class AuthAuthenticator extends AbstractLoginFormAuthenticator
     public function __construct(
         private UrlGeneratorInterface $urlGenerator,
         private MailerInterface $mailer
-    ) {}
+    ) {
+    }
 
     public function authenticate(Request $request): Passport
     {
@@ -50,7 +51,7 @@ class AuthAuthenticator extends AbstractLoginFormAuthenticator
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         $user = $token->getUser();
-        
+
         try {
             $email = (new TemplatedEmail())
                 ->from(new Address('Slimenify.team@gmail.com', 'Slimenify Security'))

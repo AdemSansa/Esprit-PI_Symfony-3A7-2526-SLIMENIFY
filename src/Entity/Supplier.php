@@ -23,8 +23,8 @@ class Supplier
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: "The supplier name cannot be empty.")]
     #[Assert\Length(
-        min: 3, 
-        max: 100, 
+        min: 3,
+        max: 100,
         minMessage: "The supplier name must be at least {{ limit }} characters long.",
         maxMessage: "The supplier name cannot exceed {{ limit }} characters."
     )]
