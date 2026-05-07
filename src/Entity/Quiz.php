@@ -72,19 +72,20 @@ class Quiz
     private Collection $questions;
 
     /** @var Collection<int, QuizResult> */
-    #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: QuizResult::class)]
+    #[ORM\OneToMany(mappedBy: 'quiz', targetEntity: QuizResult::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $results;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: false)]
     private ?User $author = null;
 
-    public function __construct()
+    public function __construct(?User $author = null)
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->questions = new ArrayCollection();
         $this->results = new ArrayCollection();
+        $this->author = $author;
     }
 
     public function getId(): ?int
@@ -258,10 +259,5 @@ class Quiz
     public function getActive(): int
     {
         return $this->active;
-    }
-    public function setAuthor(?User $author): static
-    {
-        $this->author = $author;
-        return $this;
     }
 }

@@ -20,8 +20,8 @@ class Commande
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\Column]
-    private ?float $totalAmount = null;
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    private ?string $totalAmount = null;
 
     #[ORM\Column(length: 50)]
     private ?string $status = 'en_attente';
@@ -41,8 +41,8 @@ class Commande
     #[Assert\Choice(choices: ["cash_on_delivery", "bank_card"], message: "Invalid payment method selected.")]
     private ?string $paymentMethod = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private ?\DateTimeImmutable $createdAt = null;
 
     /** @var array<int, array<string, mixed>> */
     #[ORM\Column]
@@ -50,7 +50,7 @@ class Commande
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -70,12 +70,12 @@ class Commande
         return $this;
     }
 
-    public function getTotalAmount(): ?float
+    public function getTotalAmount(): ?string
     {
         return $this->totalAmount;
     }
 
-    public function setTotalAmount(float $totalAmount): static
+    public function setTotalAmount(string $totalAmount): static
     {
         $this->totalAmount = $totalAmount;
 
@@ -130,12 +130,12 @@ class Commande
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
 

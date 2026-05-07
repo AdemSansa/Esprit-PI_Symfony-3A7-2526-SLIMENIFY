@@ -79,14 +79,14 @@ class NotificationService
         $repo = $this->em->getRepository(Notification::class);
         $existing = $repo->findOneBy([
             'user' => $user,
-            'eventId' => $event->getId(),
+            'event' => $event,
             'type' => $type
         ]);
 
         if (!$existing) {
             $notification = new Notification();
             $notification->setUser($user);
-            $notification->setEventId($event->getId());
+            $notification->setEvent($event);
             $notification->setType($type);
             $notification->setTitle($title);
             $notification->setMessage($message);

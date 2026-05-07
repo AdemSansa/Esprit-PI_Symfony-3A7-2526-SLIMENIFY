@@ -111,8 +111,7 @@ class QuizCrudController extends AbstractController
             throw $this->createAccessDeniedException('Only therapists can create quizzes.');
         }
 
-        $quiz = new Quiz();
-        $quiz->setAuthor($user);
+        $quiz = new Quiz($user);
         $quiz->setActive(Quiz::STATUS_UNDER_REVIEW);
         $quiz->setRejectionComment(null);
         $form = $this->createForm(QuizType::class, $quiz);

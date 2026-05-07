@@ -28,8 +28,8 @@ class Appointment
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $status = null;
 
-    #[ORM\Column(type: 'datetime')]
-    private \DateTimeInterface $createdAt;
+    #[ORM\Column(type: 'datetime_immutable')]
+    private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $type = null;
@@ -43,7 +43,7 @@ class Appointment
     private User $patient;
 
     /** @var Collection<int, Note> */
-    #[ORM\OneToMany(mappedBy: 'appointment', targetEntity: Note::class, cascade: ['remove'])]
+    #[ORM\OneToMany(mappedBy: 'appointment', targetEntity: Note::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $notes;
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
@@ -51,7 +51,7 @@ class Appointment
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
         $this->notes = new ArrayCollection();
     }
 
@@ -64,8 +64,8 @@ class Appointment
     public function setEndTime(\DateTimeInterface $v): static { $this->endTime = $v; return $this; }
     public function getStatus(): ?string { return $this->status; }
     public function setStatus(?string $v): static { $this->status = $v; return $this; }
-    public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
-    public function setCreatedAt(\DateTimeInterface $v): static { $this->createdAt = $v; return $this; }
+    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    public function setCreatedAt(\DateTimeImmutable $v): static { $this->createdAt = $v; return $this; }
     public function getType(): ?string { return $this->type; }
     public function setType(?string $v): static { $this->type = $v; return $this; }
     public function getTherapist(): Therapist { return $this->therapist; }

@@ -32,8 +32,9 @@ class Notification
     #[ORM\Column(type: 'boolean')]
     private bool $isRead = false;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $eventId = null;
+    #[ORM\ManyToOne(targetEntity: Event::class)]
+    #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'id_event', nullable: true, onDelete: 'CASCADE')]
+    private ?Event $event = null;
 
     public function __construct()
     {
@@ -53,6 +54,7 @@ class Notification
     public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
     public function isRead(): bool { return $this->isRead; }
     public function setIsRead(bool $isRead): static { $this->isRead = $isRead; return $this; }
-    public function getEventId(): ?int { return $this->eventId; }
-    public function setEventId(?int $eventId): static { $this->eventId = $eventId; return $this; }
+    public function getEvent(): ?Event { return $this->event; }
+    public function setEvent(?Event $event): static { $this->event = $event; return $this; }
+    public function getEventId(): ?int { return $this->event?->getId(); }
 }

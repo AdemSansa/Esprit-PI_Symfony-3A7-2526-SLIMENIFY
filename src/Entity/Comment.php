@@ -19,7 +19,7 @@ class Comment
     private ?string $content = "";
 
     #[ORM\Column]
-    private ?\DateTime $createdAt = null;
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(targetEntity: Blog::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -35,7 +35,7 @@ class Comment
     private ?self $parent = null;
 
     /** @var Collection<int, CommentLike> */
-    #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentLike::class, cascade: ['remove'])]
+    #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentLike::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $likes;
 
     #[ORM\Column(type: 'integer', nullable: true)]
@@ -43,7 +43,7 @@ class Comment
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
         $this->likes = new ArrayCollection();
     }
 
@@ -55,7 +55,7 @@ class Comment
     public function getContent(): ?string { return $this->content; }
     public function setContent(?string $content): self { $this->content = $content; return $this; }
 
-    public function getCreatedAt(): ?\DateTime { return $this->createdAt; }
+    public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
 
     public function getBlog(): ?Blog { return $this->blog; }
     public function setBlog(?Blog $blog): self { $this->blog = $blog; return $this; }
