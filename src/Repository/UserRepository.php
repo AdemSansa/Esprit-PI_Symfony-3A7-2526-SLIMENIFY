@@ -57,9 +57,11 @@ class UserRepository extends ServiceEntityRepository
     /**
      * @return User[] Returns an array of User objects
      */
-    public function searchAndSort(?string $searchQuery, ?string $roleFilter): array
+    public function searchAndSort(?string $searchQuery, ?string $roleFilter, int $limit = 100): array
     {
-        return $this->searchAndSortQuery($searchQuery, $roleFilter)->getResult();
+        return $this->searchAndSortQuery($searchQuery, $roleFilter)
+            ->setMaxResults($limit)
+            ->getResult();
     }
 
     public function countTotalUsers(): int

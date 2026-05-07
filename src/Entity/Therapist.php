@@ -6,6 +6,8 @@ use App\Repository\TherapistRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use SensitiveParameter;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: TherapistRepository::class)]
 #[ORM\Table(name: 'therapists')]
@@ -47,6 +49,7 @@ class Therapist
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Ignore]
     private ?string $password = null;
 
     #[ORM\Column(type: 'string', length: 1000)]
@@ -103,7 +106,7 @@ class Therapist
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }
     public function getPassword(): ?string { return $this->password; }
-    public function setPassword(?string $v): static { $this->password = $v; return $this; }
+    public function setPassword(#[SensitiveParameter] ?string $v): static { $this->password = $v; return $this; }
     public function getPhotoUrl(): string { return $this->photoUrl; }
     public function setPhotoUrl(string $v): static { $this->photoUrl = $v; return $this; }
     public function getDiplomaPath(): string { return $this->diplomaPath; }

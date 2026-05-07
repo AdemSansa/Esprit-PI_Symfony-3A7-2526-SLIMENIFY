@@ -20,12 +20,13 @@ class PatientDashboardController extends AbstractController
         $searchQuery = ($v = $request->query->get('q')) !== null ? (string) $v : null;
         $specialty = ($v = $request->query->get('specialty', 'all')) !== null ? (string) $v : null;
 
-        $query = $therapistRepository->searchAndSortQuery($searchQuery, $specialty);
+        $query = $therapistRepository->searchAndSort($searchQuery, $specialty, null, 99);
 
         $therapists = $paginator->paginate(
             $query,
             $request->query->getInt('page', 1),
-            4 // Limit per page
+            4, // Limit per page
+            ['distinct' => false]
         );
 
         return $this->render('patient_portal/dashboard.html.twig', [

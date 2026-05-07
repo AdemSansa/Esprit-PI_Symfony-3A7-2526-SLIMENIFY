@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Product;
 use App\Repository\ProductRepository;
-use App\Repository\SupplierRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,16 +16,13 @@ class ProductController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
     private ProductRepository $productRepository;
-    private SupplierRepository $supplierRepository;
 
     public function __construct(
         EntityManagerInterface $entityManager, 
-        ProductRepository $productRepository,
-        SupplierRepository $supplierRepository
+        ProductRepository $productRepository
     ) {
         $this->entityManager = $entityManager;
         $this->productRepository = $productRepository;
-        $this->supplierRepository = $supplierRepository;
     }
 
     #[Route('', name: 'api_product_index', methods: ['GET'])]

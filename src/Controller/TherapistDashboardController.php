@@ -29,12 +29,13 @@ class TherapistDashboardController extends AbstractController
     #[Route('/directory', name: 'directory')]
     public function directory(Request $request, TherapistRepository $therapistRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
-        $query = $therapistRepository->searchAndSortQuery(null, null, null);
+        $query = $therapistRepository->searchAndSort(null, null, null, 99);
 
         $therapists = $paginator->paginate(
             $query,
             $request->query->getInt('page', 1),
-            4 // items per page
+            4, // items per page
+            ['distinct' => false]
         );
 
         // Read-only list of therapists for colleagues!

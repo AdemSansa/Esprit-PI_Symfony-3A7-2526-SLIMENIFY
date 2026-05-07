@@ -34,7 +34,7 @@ class AppointmentManagementController extends AbstractController
     #[Route('/calendar', name: 'calendar', methods: ['GET'])]
     public function calendar(Request $request): Response
     {
-        $therapists = $this->therapistRepository->findActive();
+        $therapists = $this->therapistRepository->findBy(['status' => 'ACTIVE'], ['id' => 'ASC'], 100);
 
         $selectedTherapistId = $request->query->getInt('therapist_id');
         $selectedTherapist = null;
@@ -195,7 +195,7 @@ class AppointmentManagementController extends AbstractController
             }
         }
 
-        $activeTherapists = $this->therapistRepository->findActive();
+        $activeTherapists = $this->therapistRepository->findBy(['status' => 'ACTIVE'], ['id' => 'ASC'], 100);
         $available = [];
 
         foreach ($activeTherapists as $therapist) {
@@ -444,7 +444,7 @@ class AppointmentManagementController extends AbstractController
 
         return $this->render('appointment/detail.html.twig', [
             'appointment' => $appointment,
-            'notes' => $this->noteRepository->findBy(['appointment' => $appointment], ['createdAt' => 'DESC']),
+            'notes' => $this->noteRepository->findBy(['appointment' => $appointment], ['createdAt' => 'DESC'], 50),
             'can_manage_status' => false,
             'can_manage_notes' => false,
             'next_statuses' => [],
@@ -477,7 +477,7 @@ class AppointmentManagementController extends AbstractController
 
         return $this->render('appointment/detail.html.twig', [
             'appointment' => $appointment,
-            'notes' => $this->noteRepository->findBy(['appointment' => $appointment], ['createdAt' => 'DESC']),
+            'notes' => $this->noteRepository->findBy(['appointment' => $appointment], ['createdAt' => 'DESC'], 50),
             'can_manage_status' => $canManageStatus,
             'can_manage_notes' => $this->isGranted('ROLE_THERAPIST') && $currentStatus === 'completed',
             'next_statuses' => $nextStatuses,

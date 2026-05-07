@@ -23,12 +23,13 @@ class AdminTherapistController extends AbstractController
         $specialty = ($v = $request->query->get('specialty')) !== null ? (string) $v : null;
         $mode = ($v = $request->query->get('mode')) !== null ? (string) $v : null;
 
-        $query = $therapistRepository->searchAndSortQuery($searchQuery, $specialty, $mode);
+        $query = $therapistRepository->searchAndSort($searchQuery, $specialty, $mode, 99);
 
         $therapists = $paginator->paginate(
             $query,
             $request->query->getInt('page', 1),
-            4 // items per page
+            4, // items per page
+            ['distinct' => false]
         );
 
         return $this->render('admin_therapist/index.html.twig', [

@@ -55,8 +55,16 @@ class QuizResultController extends AbstractController
     public function create(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        $user = $this->repository->getEntityManager()->getReference(\App\Entity\User::class, $data['user_id']);
-        $quiz = $this->repository->getEntityManager()->getReference(\App\Entity\Quiz::class, $data['quiz_id']);
+        $user = $this->userRepo->find((int) ($data['user_id'] ?? 0));
+        $quiz = $this->quizRepo->find((int) ($data['quiz_id'] ?? 0));
+
+        if (!$user instanceof \App\Entity\User) {
+            return $this->json(['error' => 'User not found'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (!$quiz instanceof \App\Entity\Quiz) {
+            return $this->json(['error' => 'Quiz not found'], Response::HTTP_BAD_REQUEST);
+        }
 
         $r = new QuizResult();
         $r->setUser($user);
