@@ -124,6 +124,7 @@ class AdminDashboardController extends AbstractController
         }
 
         // 2. Monthly Revenue Line Chart (last 6 months, delivered orders only)
+        /** @var array<string, int> $monthlyRevenue */
         $monthlyRevenue = [];
         $monthlyLabels = [];
         for ($i = 5; $i >= 0; $i--) {
@@ -143,6 +144,11 @@ class AdminDashboardController extends AbstractController
             }
         }
 
+        $monthlyRevenueValues = [];
+        foreach ($monthlyRevenue as $amount) {
+            $monthlyRevenueValues[] = $amount;
+        }
+
         return $this->render('admin/dashboard/index.html.twig', [
             'total_products'          => $totalProducts,
             'low_stock_products'      => $lowStockProducts,
@@ -155,7 +161,7 @@ class AdminDashboardController extends AbstractController
             'best_supplier_revenue'   => $bestSupplierRevenue,
             'supplier_revenue_map'    => $supplierRevenueMap,
             'monthly_revenue_labels'  => $monthlyLabels,
-            'monthly_revenue_values'  => array_values($monthlyRevenue),
+            'monthly_revenue_values'  => $monthlyRevenueValues,
         ]);
 
     }

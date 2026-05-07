@@ -61,6 +61,8 @@ class TherapistRepository extends ServiceEntityRepository
     public function searchAndSortQuery(?string $searchQuery, ?string $specialty, ?string $modeFilter = null): \Doctrine\ORM\Query
     {
         $qb = $this->createQueryBuilder('t');
+        $qb->select('partial t.{id, firstName, lastName, email, phoneNumber, specialization, description, consultationType, status, photoUrl}')
+            ->distinct(false);
 
         if ($searchQuery) {
             $qb->andWhere('t.firstName LIKE :query OR t.lastName LIKE :query')
@@ -85,8 +87,10 @@ class TherapistRepository extends ServiceEntityRepository
     /**
      * @return Therapist[]
      */
-    public function searchAndSort(?string $searchQuery, ?string $specialty, ?string $modeFilter = null): array
+    public function searchAndSort(?string $searchQuery, ?string $specialty, ?string $modeFilter = null, int $limit = 99): array
     {
-        return $this->searchAndSortQuery($searchQuery, $specialty, $modeFilter)->getResult();
+        return $this->searchAndSortQuery($searchQuery, $specialty, $modeFilter)
+            ->setMaxResults($limit)
+            ->getResult();
     }
 }

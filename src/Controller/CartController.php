@@ -251,7 +251,7 @@ class CartController extends AbstractController
             }
         }
 
-        $commande->setTotalAmount($totalAmount);
+        $commande->setTotalAmount((string) $totalAmount);
         $commande->setItemsDetails($itemsDetails);
 
         $em->persist($commande);
