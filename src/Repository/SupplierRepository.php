@@ -19,7 +19,7 @@ class SupplierRepository extends ServiceEntityRepository
     /**
      * Server-side filtered and sorted supplier query.
      */
-    /** @return \Doctrine\ORM\Query<mixed, mixed> */
+    /** @return \Doctrine\ORM\Query */
     public function findFiltered(
         ?string $search = null,
         ?string $status = null,

@@ -86,11 +86,15 @@ class QuizCrudController extends AbstractController
         if (!$user instanceof \App\Entity\User || $user->getRole() !== 'therapist') {
             throw $this->createAccessDeniedException('Only therapists can manage quizzes.');
         }
+        $authorId = $user->getId();
+        if ($authorId === null) {
+            throw $this->createAccessDeniedException('Authenticated therapist account is invalid.');
+        }
 
         $query = $request->query->get('q');
         $quizzes = $query
-            ? $quizRepository->findByAuthorAndSearchQuery($user->getId(), (string) $query)
-            : $quizRepository->findByAuthor($user->getId());
+            ? $quizRepository->findByAuthorAndSearchQuery($authorId, (string) $query)
+            : $quizRepository->findByAuthor($authorId);
 
         return $this->render('quiz/index.html.twig', [
             'quizzes' => $quizzes,

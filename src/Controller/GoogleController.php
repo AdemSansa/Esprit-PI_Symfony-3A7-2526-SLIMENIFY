@@ -157,7 +157,7 @@ class GoogleController extends AbstractController
                 $user,
                 $authenticator,
                 $request
-            );
+            ) ?? $this->redirectToRoute('app_home');
 
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur lors de la communication avec Google : ' . $e->getMessage());

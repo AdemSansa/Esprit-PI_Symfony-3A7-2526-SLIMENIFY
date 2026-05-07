@@ -104,7 +104,6 @@ class ChatController extends AbstractController
                 'id'          => $msg->getId(),
                 'senderType'  => $msg->getSenderType(),
                 'content'     => $msg->getContent(),
-                'createdAt'   => clone $msg->getCreatedAt(), // Format in JS if needed or just output string
             ];
             $entry['createdAt'] = $msg->getCreatedAt() ? $msg->getCreatedAt()->format('H:i') : '';
 

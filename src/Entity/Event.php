@@ -129,6 +129,10 @@ class Event
     public function getTimeStatus(): string
     {
         $now = new \DateTime();
+
+        if ($this->dateStart === null) {
+            return 'unknown';
+        }
         
         if ($this->dateStart > $now) {
             return 'upcoming';
