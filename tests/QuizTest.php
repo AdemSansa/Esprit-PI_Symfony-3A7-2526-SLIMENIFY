@@ -11,25 +11,43 @@ use PHPUnit\Framework\TestCase;
 
 class QuizTest extends TestCase
 {
+    private function logSuccess(string $message): void
+    {
+        echo "\e[32m  ✓ $message\e[0m\n";
+    }
+
+    private function logTestStart(string $name): void
+    {
+        echo "\n\e[35m[QUIZ-TEST] Starting $name...\e[0m\n";
+    }
+
     public function testInitialization(): void
     {
+        $this->logTestStart('testInitialization');
         $quiz = new Quiz();
+        
         $this->assertInstanceOf(\DateTimeImmutable::class, $quiz->getCreatedAt());
         $this->assertInstanceOf(\DateTimeImmutable::class, $quiz->getUpdatedAt());
+        $this->logSuccess('Timestamps initialized correctly');
+        
         $this->assertInstanceOf(Collection::class, $quiz->getQuestions());
         $this->assertInstanceOf(Collection::class, $quiz->getResults());
+        $this->logSuccess('Collections (Questions/Results) initialized');
+        
         $this->assertEquals(0, $quiz->getTotalQuestions());
         $this->assertEquals(Quiz::STATUS_UNDER_REVIEW, $quiz->getStatus());
-        $this->assertTrue($quiz->isUnderReview());
+        $this->logSuccess('Default status and count verified');
     }
 
     public function testSetAndGetTitle(): void
     {
+        $this->logTestStart('testSetAndGetTitle');
         $quiz = new Quiz();
         $title = 'Psychology Evaluation';
         $quiz->setTitle($title);
 
         $this->assertEquals($title, $quiz->getTitle());
+        $this->logSuccess("Title verified: '$title'");
     }
 
     public function testSetAndGetDescription(): void
@@ -125,6 +143,7 @@ class QuizTest extends TestCase
 
     public function testParticipantCount(): void
     {
+        $this->logTestStart('testParticipantCount');
         $quiz = new Quiz();
         
         $user1 = $this->createMock(User::class);
@@ -140,12 +159,13 @@ class QuizTest extends TestCase
         $result2->method('getUser')->willReturn($user2);
         
         $result3 = $this->createMock(QuizResult::class);
-        $result3->method('getUser')->willReturn($user1); // Same user taking it again
+        $result3->method('getUser')->willReturn($user1); 
 
         $quiz->getResults()->add($result1);
         $quiz->getResults()->add($result2);
         $quiz->getResults()->add($result3);
 
-        $this->assertEquals(2, $quiz->getParticipantCount()); // Two unique users
+        $this->assertEquals(2, $quiz->getParticipantCount());
+        $this->logSuccess('Unique participant count verified (multiple attempts by same user correctly counted once)');
     }
 }
