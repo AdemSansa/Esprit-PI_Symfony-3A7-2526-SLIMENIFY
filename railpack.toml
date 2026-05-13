@@ -1,0 +1,5 @@
+[build]
+buildCommand = "composer install --no-dev --optimize-autoloader"
+
+[start]
+cmd = "frankenphp run --config /etc/caddy/Caddyfile"
