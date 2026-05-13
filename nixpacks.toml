@@ -1,8 +1,13 @@
 [phases.setup]
-aptPkgs = ["libpng-dev", "libjpeg-dev", "libfreetype6-dev"]
-
-[phases.build]
-cmds = [
-  "docker-php-ext-configure gd --with-freetype --with-jpeg",
-  "docker-php-ext-install gd"
+nixPkgs = [
+  "php82",
+  "php82Extensions.gd",
+  "php82Extensions.zip",
+  "php82Extensions.iconv"
 ]
+
+[phases.install]
+cmds = ["composer install --no-dev --optimize-autoloader"]
+
+[start]
+cmd = "php -S 0.0.0.0:$PORT -t public"
