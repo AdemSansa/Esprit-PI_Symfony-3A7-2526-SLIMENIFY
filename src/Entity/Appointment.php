@@ -50,6 +50,9 @@ class Appointment
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $patientMood = null;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $jitsiUrl = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -76,4 +79,6 @@ class Appointment
     public function getNotes(): Collection { return $this->notes; }
     public function getPatientMood(): ?string { return $this->patientMood; }
     public function setPatientMood(?string $v): static { $this->patientMood = $v; return $this; }
+    public function getJitsiUrl(): ?string { return $this->jitsiUrl; }
+    public function setJitsiUrl(?string $v): static { $this->jitsiUrl = $v; return $this; }
 }

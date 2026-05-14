@@ -272,6 +272,11 @@ class AppointmentManagementController extends AbstractController
         $appointment->setStatus('pending');
         $this->appointmentRepository->save($appointment);
 
+        if ($type === 'video') {
+            $appointment->setJitsiUrl($this->generateJitsiUrl($appointment));
+            $this->appointmentRepository->save($appointment);
+        }
+
         return $this->json(['ok' => true, 'id' => $appointment->getId()], Response::HTTP_CREATED);
     }
 
@@ -472,7 +477,17 @@ class AppointmentManagementController extends AbstractController
 
         $jitsiUrl = null;
         if (strtolower((string) $appointment->getType()) === 'video') {
-            $jitsiUrl = $this->generateJitsiUrl($appointment);
+            $jitsiUrl = $appointment->getJitsiUrl() ?: $this->generateJitsiUrl($appointment); // fallback for existing appointments
+
+            // Check if current time has passed 15 minutes past start time
+            $now = new \DateTime();
+            $appointTimeStr = $appointment->getAppointmentDate()->format('Y-m-d') . ' ' . $appointment->getStartTime()->format('H:i:s');
+            $appointStartDateTime = \DateTime::createFromFormat('Y-m-d H:i:s', $appointTimeStr);
+            $appointStartDateTimePlus15 = (clone $appointStartDateTime)->modify('+15 minutes');
+            
+            if ($now > $appointStartDateTimePlus15) {
+                $jitsiUrl = null;
+            }
         }
 
         return $this->render('appointment/detail.html.twig', [
