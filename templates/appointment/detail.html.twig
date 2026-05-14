@@ -30,7 +30,7 @@
         </div>
 
         {% if jitsi_url %}
-            <div style="margin-top:1.2rem; padding-top:1rem; border-top:1px solid #fdfaf8;">
+            <div id="jitsi-container" style="display:none; margin-top:1.2rem; padding-top:1rem; border-top:1px solid #fdfaf8;">
                 <a href="{{ jitsi_url }}" target="_blank" style="text-decoration:none; background:#748764; color:#fff; border-radius:10px; padding:0.6rem 1.2rem; font-weight:600; display:inline-flex; align-items:center; gap:0.5rem; transition:all 0.2s; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1);">
                     <svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                     Join Video Consultation
@@ -242,6 +242,28 @@
                         }
                     }, 10000);
                 }
+                {% endif %}
+
+                // 3. Jitsi Button Visibility (Show at start time, hide 15 mins after)
+                {% if jitsi_url %}
+                    const aptStartStrBtn = "{{ appointment.appointmentDate|date('Y-m-d') }}T{{ appointment.startTime|date('H:i:s') }}";
+                    const aptStartBtn = new Date(aptStartStrBtn);
+                    const aptEndBtn = new Date(aptStartBtn.getTime() + 15 * 60000); // 15 mins later
+                    
+                    function updateJitsiButton() {
+                        const now = new Date();
+                        const container = document.getElementById('jitsi-container');
+                        if (container) {
+                            if (now >= aptStartBtn && now <= aptEndBtn && "{{ appointment.status }}" !== "completed" && "{{ appointment.status }}" !== "cancelled") {
+                                container.style.display = 'block';
+                            } else {
+                                container.style.display = 'none';
+                            }
+                        }
+                    }
+                    
+                    updateJitsiButton();
+                    setInterval(updateJitsiButton, 1000);
                 {% endif %}
             }
 

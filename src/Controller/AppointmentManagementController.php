@@ -272,6 +272,11 @@ class AppointmentManagementController extends AbstractController
         $appointment->setStatus('pending');
         $this->appointmentRepository->save($appointment);
 
+        if ($type === 'video') {
+            $appointment->setJitsiUrl($this->generateJitsiUrl($appointment));
+            $this->appointmentRepository->save($appointment);
+        }
+
         return $this->json(['ok' => true, 'id' => $appointment->getId()], Response::HTTP_CREATED);
     }
 
@@ -472,7 +477,7 @@ class AppointmentManagementController extends AbstractController
 
         $jitsiUrl = null;
         if (strtolower((string) $appointment->getType()) === 'video') {
-            $jitsiUrl = $this->generateJitsiUrl($appointment);
+            $jitsiUrl = $appointment->getJitsiUrl() ?: $this->generateJitsiUrl($appointment); // fallback for existing appointments
         }
 
         return $this->render('appointment/detail.html.twig', [
