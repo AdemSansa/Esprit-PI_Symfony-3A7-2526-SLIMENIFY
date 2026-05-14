@@ -1,15 +1,12 @@
 [phases.setup]
-nixPkgs = [
-  "php82",
-  "php82Extensions.gd",
-  "php82Extensions.zip",
-  "php82Extensions.iconv"
+aptPkgs = ["git", "unzip", "zip", "libzip-dev", "libpng-dev", "libjpeg-dev", "libfreetype6-dev"]
+
+cmds = [
+  "install-php-extensions gd zip"
 ]
 
 [phases.install]
-cmds = [
-  "composer install --no-dev --optimize-autoloader --no-interaction"
-]
+cmds = ["composer install --no-dev --optimize-autoloader --no-interaction"]
 
 [start]
 cmd = "php -S 0.0.0.0:$PORT -t public"
