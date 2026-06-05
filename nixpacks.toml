@@ -1,9 +1,11 @@
 [phases.setup]
-nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.intl", "php82Extensions.mbstring", "php82Extensions.xml", "php82Extensions.curl", "composer"]
+nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.intl", "php82Extensions.mbstring", "php82Extensions.xml", "php82Extensions.curl", "composer", "git", "unzip"]
+
+[phases.install]
+cmds = ["composer install --no-dev --optimize-autoloader --no-interaction"]
 
 [phases.build]
 cmds = [
-  "composer install --no-dev --optimize-autoloader --no-interaction",
   "php bin/console cache:clear --env=prod --no-warmup",
   "php bin/console cache:warmup --env=prod"
 ]
@@ -14,4 +16,5 @@ cmds = [
 ]
 
 [start]
-cmd = "frankenphp run --config /etc/caddy/Caddyfile"
+cmd = "frankenphp run --config Caddyfile"
+
