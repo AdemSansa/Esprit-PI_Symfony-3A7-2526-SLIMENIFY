@@ -1,12 +1,17 @@
 [phases.setup]
-aptPkgs = ["git", "unzip", "zip", "libzip-dev", "libpng-dev", "libjpeg-dev", "libfreetype6-dev"]
+nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.intl", "php82Extensions.mbstring", "php82Extensions.xml", "php82Extensions.curl", "composer"]
 
+[phases.build]
 cmds = [
-  "install-php-extensions gd zip"
+  "composer install --no-dev --optimize-autoloader --no-interaction",
+  "php bin/console cache:clear --env=prod --no-warmup",
+  "php bin/console cache:warmup --env=prod"
 ]
 
-[phases.install]
-cmds = ["composer install --no-dev --optimize-autoloader --no-interaction"]
+[phases.deploy]
+cmds = [
+  "php bin/console doctrine:migrations:migrate --no-interaction --env=prod"
+]
 
 [start]
-cmd = "php -S 0.0.0.0:$PORT -t public"
+cmd = "frankenphp run --config /etc/caddy/Caddyfile"
