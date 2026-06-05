@@ -48,6 +48,8 @@ class AppointmentRepository extends ServiceEntityRepository
     public function findByTherapist(int $therapistId): array
     {
         return $this->createQueryBuilder('a')
+            ->leftJoin('a.patient', 'p')->addSelect('p')
+            ->leftJoin('a.therapist', 't')->addSelect('t')
             ->where('a.therapist = :id')->setParameter('id', $therapistId)
             ->orderBy('a.appointmentDate', 'DESC')->getQuery()->getResult();
     }
@@ -58,6 +60,8 @@ class AppointmentRepository extends ServiceEntityRepository
     public function findByPatient(int $patientId): array
     {
         return $this->createQueryBuilder('a')
+            ->leftJoin('a.patient', 'p')->addSelect('p')
+            ->leftJoin('a.therapist', 't')->addSelect('t')
             ->where('a.patient = :id')->setParameter('id', $patientId)
             ->orderBy('a.appointmentDate', 'DESC')->getQuery()->getResult();
     }

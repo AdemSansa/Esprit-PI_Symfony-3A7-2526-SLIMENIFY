@@ -16,6 +16,24 @@ class BlogRepository extends ServiceEntityRepository
         parent::__construct($registry, Blog::class);
     }
 
+    public function findWithDetails(int $id): ?Blog
+    {
+        return $this->createQueryBuilder('b')
+            ->leftJoin('b.therapist', 't')->addSelect('t')
+            ->leftJoin('b.category', 'cat')->addSelect('cat')
+            ->leftJoin('b.likes', 'lk')->addSelect('lk')
+            ->leftJoin('lk.user', 'lku')->addSelect('lku')
+            ->leftJoin('lk.therapist', 'lkt')->addSelect('lkt')
+            ->leftJoin('b.comments', 'c')->addSelect('c')
+            ->leftJoin('c.user', 'cu')->addSelect('cu')
+            ->leftJoin('c.therapist', 'ct')->addSelect('ct')
+            ->where('b.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+
     /** @return Blog[] */
     public function findAllOrdered(): array
     {

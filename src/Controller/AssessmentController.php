@@ -18,7 +18,7 @@ class AssessmentController extends AbstractController
     #[Route('/', name: 'app_assessment_index', methods: ['GET'])]
     public function index(QuizRepository $quizRepository): Response
     {
-        $quizzes = $quizRepository->findBy(['active' => Quiz::STATUS_ACTIVE]);
+        $quizzes = $quizRepository->findActiveWithResults();
         usort($quizzes, static fn(Quiz $a, Quiz $b) => $b->getParticipantCount() <=> $a->getParticipantCount());
 
         $mostTakenQuiz = $quizzes[0] ?? null;

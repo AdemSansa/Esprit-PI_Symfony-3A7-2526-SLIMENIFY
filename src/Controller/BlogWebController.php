@@ -53,6 +53,7 @@ class BlogWebController extends AbstractController
 
         $qb = $blogRepository->createQueryBuilder('b')
             ->leftJoin('b.category', 'c')->addSelect('c')
+            ->leftJoin('b.therapist', 't')->addSelect('t')
             ->orderBy('b.createdAt', 'DESC');
 
         if ($search) {
@@ -140,6 +141,7 @@ class BlogWebController extends AbstractController
         $qb = $blogRepository->createQueryBuilder('b')
             ->leftJoin('b.therapist', 't')->addSelect('t')
             ->leftJoin('b.likes', 'lk')->addSelect('lk')
+            ->leftJoin('b.category', 'c')->addSelect('c')
             ->orderBy('b.createdAt', 'DESC')
             ->setMaxResults(80);
 
@@ -355,14 +357,20 @@ class BlogWebController extends AbstractController
 
     #[Route('/{id}', name: 'app_blog_web_show', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function show(
+        int $id,
         Request $request,
-        Blog $blog,
+        BlogRepository $blogRepository,
         EntityManagerInterface $entityManager,
         TherapistRepository $therapistRepository,
         ModerationService $moderationService,
         CommentRepository $commentRepository,
         FormFactoryInterface $formFactory,
     ): Response {
+        $blog = $blogRepository->findWithDetails($id);
+        if (!$blog) {
+            throw $this->createNotFoundException('Blog not found.');
+        }
+
         $newComment = new Comment();
         $newComment->setBlog($blog);
         $newForm = $formFactory->createNamed('comment_new', CommentType::class, $newComment);
