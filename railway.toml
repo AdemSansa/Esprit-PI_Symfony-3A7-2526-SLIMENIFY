@@ -1,6 +1,0 @@
-[build]
-builder = "NIXPACKS"
-
-[deploy]
-preDeployCommand = "php bin/console doctrine:migrations:migrate --no-interaction --env=prod"
-startCommand = "frankenphp run --config Caddyfile"
