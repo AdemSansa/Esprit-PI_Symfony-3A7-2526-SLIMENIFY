@@ -33,11 +33,12 @@ class EventRegistrationController extends AbstractController
 
         if ($this->isGranted('ROLE_ADMIN')) {
             $queryBuilder = $registrationRepository->createQueryBuilder('r')
+                ->leftJoin('r.event', 'e')->addSelect('e')
                 ->orderBy('r.id', 'DESC');
         } elseif ($this->isGranted('ROLE_THERAPIST')) {
             // Filter registrations for events organized by the current therapist
             $queryBuilder = $registrationRepository->createQueryBuilder('r')
-                ->join('r.event', 'e')
+                ->leftJoin('r.event', 'e')->addSelect('e')
                 ->where('e.organizerId = :organizerId')
                 ->setParameter('organizerId', $user instanceof \App\Entity\User ? $user->getId() : 0)
                 ->orderBy('r.id', 'DESC');
@@ -45,6 +46,7 @@ class EventRegistrationController extends AbstractController
              // Filter registrations for the patient
              $email = $user instanceof \App\Entity\User ? $user->getEmail() : null;
              $queryBuilder = $registrationRepository->createQueryBuilder('r')
+                ->leftJoin('r.event', 'e')->addSelect('e')
                 ->where('r.participantEmail = :email')
                 ->setParameter('email', $email)
                 ->orderBy('r.id', 'DESC');

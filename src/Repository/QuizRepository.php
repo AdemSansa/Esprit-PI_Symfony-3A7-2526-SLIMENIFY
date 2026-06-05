@@ -41,6 +41,23 @@ class QuizRepository extends ServiceEntityRepository
     /**
      * @return Quiz[]
      */
+    public function findActiveWithResults(): array
+    {
+        return $this->createQueryBuilder('q')
+            ->leftJoin('q.results', 'r')
+            ->leftJoin('r.user', 'u')
+            ->addSelect('r')
+            ->addSelect('u')
+            ->where('q.active = :active')
+            ->setParameter('active', Quiz::STATUS_ACTIVE)
+            ->getQuery()
+            ->getResult();
+    }
+
+
+    /**
+     * @return Quiz[]
+     */
     public function findByCategory(string $category): array
     {
         return $this->findBy(['category' => $category]);

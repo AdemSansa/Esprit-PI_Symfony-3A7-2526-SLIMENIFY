@@ -70,7 +70,12 @@ class EventWebController extends AbstractController
         // 🎫 PERSONALIZED REGISTRATION TRACKING
         $userRegistrations = [];
         if ($user instanceof \App\Entity\User) {
-            $registrations = $registrationRepository->findBy(['participantEmail' => $user->getEmail()]);
+            $registrations = $registrationRepository->createQueryBuilder('r')
+                ->leftJoin('r.event', 'e')->addSelect('e')
+                ->where('r.participantEmail = :email')
+                ->setParameter('email', $user->getEmail())
+                ->getQuery()
+                ->getResult();
             foreach ($registrations as $reg) {
                 $userRegistrations[$reg->getEvent()->getId()] = [
                     'status' => $reg->getStatus(),
