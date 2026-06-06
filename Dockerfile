@@ -36,6 +36,24 @@ COPY Caddyfile /etc/caddy/Caddyfile
 
 # Set production environment variables
 ENV APP_ENV=prod
+ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV APP_SECRET=build-time-secret
+ENV DEFAULT_URI=http://localhost
+ENV AI_THERAPIST_URL=https://example.invalid
+ENV DATABASE_URL="mysql://user:pass@127.0.0.1:3306/app?serverVersion=8.0"
+ENV MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
+ENV MAILER_DSN=null://null
+ENV OAUTH_GOOGLE_CLIENT_ID=
+ENV OAUTH_GOOGLE_CLIENT_SECRET=
+ENV GEMINI_API_KEY=
+ENV OPENAI_API_KEY=
+ENV HF_TOKEN=
+ENV HUGGINGFACE_API_KEY=
+ENV STRIPE_SECRET_KEY=
+ENV STRIPE_PUBLIC_KEY=
+ENV ELEVENLABS_API_KEY=
+ENV VOICERSS_API_KEY=
+ENV CLOUDINARY_URL=
 
 # Install dependencies (this generates vendor/autoload_runtime.php)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
@@ -49,3 +67,5 @@ RUN chown -R www-data:www-data /app/var
 
 # Expose port
 EXPOSE 8080
+
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
