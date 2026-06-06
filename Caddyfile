@@ -1,6 +1,7 @@
 {
     auto_https off
     admin off
+    order php_server before file_server
 }
 
 :{$PORT:8080} {
