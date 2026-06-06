@@ -1,6 +1,6 @@
 <?php
 
-set_time_limit(300);
+set_time_limit(30);
 
 use App\Kernel;
 
