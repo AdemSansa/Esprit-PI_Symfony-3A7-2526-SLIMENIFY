@@ -5,7 +5,8 @@
 }
 
 :{$PORT:8080} {
-    root * public/
+    root * /app/public
+    respond /health "ok" 200
     php_server
     file_server
     encode zstd gzip

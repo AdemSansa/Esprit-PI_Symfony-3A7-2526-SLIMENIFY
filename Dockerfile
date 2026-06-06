@@ -61,9 +61,8 @@ ENV CLOUDINARY_URL=
 # Install dependencies (this generates vendor/autoload_runtime.php)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Warm up the cache
-RUN php bin/console cache:clear --env=prod --no-warmup \
-    && php bin/console cache:warmup --env=prod
+# Do not bake Symfony's prod cache with build-time placeholder env values.
+RUN rm -rf var/cache/*
 
 # Make sure permissions are correct for Symfony's var directory
 RUN chown -R www-data:www-data /app/var
