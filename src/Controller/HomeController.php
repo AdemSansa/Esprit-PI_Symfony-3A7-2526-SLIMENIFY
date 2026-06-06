@@ -20,9 +20,6 @@ class HomeController extends AbstractController
     #[Route('/', name: 'app_start')]
     public function landing(): Response
     {
-        if ($this->getUser()) {
-            return $this->redirectToRoute('app_home');
-        }
         return $this->render('home/landing.html.twig');
     }
 
