@@ -11,6 +11,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class HomeController extends AbstractController
 {
+    #[Route('/symfony-health', name: 'app_symfony_health')]
+    public function health(): Response
+    {
+        return new Response('ok');
+    }
+
     #[Route('/', name: 'app_start')]
     public function landing(): Response
     {
