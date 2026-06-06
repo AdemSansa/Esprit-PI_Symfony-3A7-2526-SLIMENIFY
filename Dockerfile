@@ -34,6 +34,9 @@ COPY . /app
 # Copy custom Caddyfile to the correct system location for FrankenPHP
 COPY Caddyfile /etc/caddy/Caddyfile
 
+# Symfony Runtime still expects an .env file during Composer auto-scripts.
+RUN cp .env.example .env
+
 # Set production environment variables
 ENV APP_ENV=prod
 ENV COMPOSER_ALLOW_SUPERUSER=1
