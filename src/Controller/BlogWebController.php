@@ -17,6 +17,7 @@ use App\Repository\NotificationRepository;
 use App\Entity\Notification;
 use App\Service\ModerationService;
 use App\Service\TranslationService;
+use App\Service\CloudinaryUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Bundle\PaginatorBundle\Pagination\SlidingPaginationInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -200,7 +201,7 @@ class BlogWebController extends AbstractController
 
     #[Route('/new', name: 'app_blog_web_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_THERAPIST')]
-    public function new(Request $request, EntityManagerInterface $entityManager, TherapistRepository $therapistRepository, UserRepository $userRepository, SluggerInterface $slugger): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, TherapistRepository $therapistRepository, UserRepository $userRepository, SluggerInterface $slugger, CloudinaryUploader $cloudinaryUploader): Response
     {
         $blog = new Blog();
         $form = $this->createForm(BlogType::class, $blog);
@@ -224,18 +225,9 @@ class BlogWebController extends AbstractController
             $generatedPhoto = (string) $request->request->get('generated_photo');
 
             if ($photoFile) {
-                $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$photoFile->guessExtension();
-
                 try {
-                    $projectDir = $this->getParameter('kernel.project_dir');
-                    assert(is_string($projectDir));
-                    $photoFile->move(
-                        $projectDir.'/public/uploads/blogs',
-                        $newFilename
-                    );
-                    $blog->setPhoto($newFilename);
+                    $cloudinaryUrl = $cloudinaryUploader->uploadBlogImage($photoFile);
+                    $blog->setPhoto($cloudinaryUrl);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Could not upload photo.');
                 }
@@ -494,7 +486,7 @@ class BlogWebController extends AbstractController
 
     #[Route('/{id}/edit', name: 'app_blog_web_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_THERAPIST')]
-    public function edit(Request $request, Blog $blog, EntityManagerInterface $entityManager, TherapistRepository $therapistRepository, SluggerInterface $slugger): Response
+    public function edit(Request $request, Blog $blog, EntityManagerInterface $entityManager, TherapistRepository $therapistRepository, SluggerInterface $slugger, CloudinaryUploader $cloudinaryUploader): Response
     {
         $user = $this->getUser();
         if (!$user) {
@@ -514,19 +506,9 @@ class BlogWebController extends AbstractController
             $photoFile = $form->get('photo')->getData();
 
             if ($photoFile) {
-                $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$photoFile->guessExtension();
-
                 try {
-                    $projectDir = $this->getParameter('kernel.project_dir');
-                    assert(is_string($projectDir));
-                    $photoFile->move(
-                        $projectDir.'/public/uploads/blogs',
-                        $newFilename
-                    );
-
-                    $blog->setPhoto($newFilename);
+                    $cloudinaryUrl = $cloudinaryUploader->uploadBlogImage($photoFile);
+                    $blog->setPhoto($cloudinaryUrl);
                 } catch (FileException $e) {
                     // keep existing photo
                 }

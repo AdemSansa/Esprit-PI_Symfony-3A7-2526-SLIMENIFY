@@ -258,7 +258,7 @@
         </header>
 
         {% if blog.photo %}
-            <img src="{{ asset('uploads/blogs/' ~ blog.photo) }}" class="article-image" alt="Article Cover">
+            <img src="{{ blog.photo starts with 'http' ? blog.photo : asset('uploads/blogs/' ~ blog.photo) }}" class="article-image" alt="Article Cover">
         {% else %}
             <div class="article-image" style="background: #f8fafc; border-radius: 8px; margin-bottom: 3rem; height: 300px; display: flex; align-items: center; justify-content: center; color: #94a3b8; border: 1px solid #e2e8f0;">
                 <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>

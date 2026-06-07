@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Security\AuthAuthenticator;
 use App\Security\EmailVerifier;
+use App\Service\CloudinaryUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,7 +26,7 @@ class RegistrationController extends AbstractController
     }
 
     #[Route('/register', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, Security $security, EntityManagerInterface $entityManager): Response
+    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, Security $security, EntityManagerInterface $entityManager, CloudinaryUploader $cloudinaryUploader): Response
     {
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
@@ -70,15 +71,9 @@ class RegistrationController extends AbstractController
             /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $photoFile */
             $photoFile = $form->get('photoUrl')->getData();
             if ($photoFile) {
-                $newFilename = uniqid().'.'.$photoFile->guessExtension();
                 try {
-                    $projectDir = $this->getParameter('kernel.project_dir');
-                    assert(is_string($projectDir));
-                    $photoFile->move(
-                        $projectDir.'/public/uploads/photos',
-                        $newFilename
-                    );
-                    $user->setPhotoUrl('/uploads/photos/'.$newFilename);
+                    $url = $cloudinaryUploader->uploadPhoto($photoFile);
+                    $user->setPhotoUrl($url);
                 } catch (\Exception $e) {
                     $user->setPhotoUrl('/uploads/default.png');
                 }
@@ -113,17 +108,11 @@ class RegistrationController extends AbstractController
                 /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $diplomaFile */
                 $diplomaFile = $form->get('diplomaPath')->getData();
                 if ($diplomaFile) {
-                    $newFilename = uniqid().'.'.$diplomaFile->guessExtension();
                     try {
-                        $projectDir = $this->getParameter('kernel.project_dir');
-                        assert(is_string($projectDir));
-                        $diplomaFile->move(
-                            $projectDir.'/public/uploads/diplomas',
-                            $newFilename
-                        );
-                        $therapist->setDiplomaPath('/uploads/diplomas/'.$newFilename);
+                        $diplomaUrl = $cloudinaryUploader->uploadDiploma($diplomaFile);
+                        $therapist->setDiplomaPath($diplomaUrl);
                     } catch (\Exception $e) {
-                         $therapist->setDiplomaPath('');
+                        $therapist->setDiplomaPath('');
                     }
                 } else {
                     $therapist->setDiplomaPath('');

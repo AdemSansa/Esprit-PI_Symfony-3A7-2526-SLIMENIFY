@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Form\ProfileType;
+use App\Service\CloudinaryUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,7 +24,7 @@ class ProfileController extends AbstractController
     }
 
     #[Route('/edit', name: 'app_profile_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, EntityManagerInterface $entityManager, CloudinaryUploader $cloudinaryUploader): Response
     {
         $user = $this->getUser();
         if (!$user instanceof \App\Entity\User) {
@@ -37,17 +38,11 @@ class ProfileController extends AbstractController
             /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $photoFile */
             $photoFile = $form->get('photoUrl')->getData();
             if ($photoFile) {
-                $newFilename = uniqid().'.'.$photoFile->guessExtension();
                 try {
-                    $projectDir = $this->getParameter('kernel.project_dir');
-                    assert(is_string($projectDir));
-                    $photoFile->move(
-                        $projectDir.'/public/uploads/photos',
-                        $newFilename
-                    );
-                    $user->setPhotoUrl('/uploads/photos/'.$newFilename);
+                    $url = $cloudinaryUploader->uploadPhoto($photoFile);
+                    $user->setPhotoUrl($url);
                 } catch (\Exception $e) {
-                    // Do not overwrite existing photo URL if upload fails, or set fallback
+                    // Do not overwrite existing photo URL if upload fails
                 }
             }
 

@@ -129,7 +129,7 @@
                     </div>
                 </div>
                 <div class="blog-card__visual">
-                    <img src="{{ asset('uploads/blogs/' ~ blog.photo) }}" class="blog-card__image" alt="Article image">
+                    <img src="{{ blog.photo starts with 'http' ? blog.photo : asset('uploads/blogs/' ~ blog.photo) }}" class="blog-card__image" alt="Article image">
                 </div>
             </a>
         </div>

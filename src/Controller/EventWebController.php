@@ -6,6 +6,7 @@ use App\Entity\Event;
 use App\Form\EventType;
 use App\Repository\EventRepository;
 use App\Repository\RegistrationRepository;
+use App\Service\CloudinaryUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -95,7 +96,7 @@ class EventWebController extends AbstractController
     }
 
     #[Route('/new', name: 'app_event_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, CloudinaryUploader $cloudinaryUploader): Response
     {
         // Only therapists and admins can create events
         $this->denyAccessUnlessGranted('ROLE_THERAPIST');
@@ -109,18 +110,9 @@ class EventWebController extends AbstractController
             $imageFile = $form->get('imageFile')->getData();
 
             if ($imageFile) {
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-
                 try {
-                    $projectDir = $this->getParameter('kernel.project_dir');
-                    assert(is_string($projectDir));
-                    $imageFile->move(
-                        $projectDir . '/public/uploads/events',
-                        $newFilename
-                    );
-                    $event->setImageUrl('uploads/events/' . $newFilename);
+                    $cloudinaryUrl = $cloudinaryUploader->uploadEventImage($imageFile);
+                    $event->setImageUrl($cloudinaryUrl);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Error uploading image.');
                 }
@@ -181,7 +173,7 @@ class EventWebController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_event_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Event $event, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function edit(Request $request, Event $event, EntityManagerInterface $entityManager, SluggerInterface $slugger, CloudinaryUploader $cloudinaryUploader): Response
     {
         /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
@@ -198,18 +190,9 @@ class EventWebController extends AbstractController
             $imageFile = $form->get('imageFile')->getData();
 
             if ($imageFile) {
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-
                 try {
-                    $projectDir = $this->getParameter('kernel.project_dir');
-                    assert(is_string($projectDir));
-                    $imageFile->move(
-                        $projectDir . '/public/uploads/events',
-                        $newFilename
-                    );
-                    $event->setImageUrl('uploads/events/' . $newFilename);
+                    $cloudinaryUrl = $cloudinaryUploader->uploadEventImage($imageFile);
+                    $event->setImageUrl($cloudinaryUrl);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Error uploading image.');
                 }

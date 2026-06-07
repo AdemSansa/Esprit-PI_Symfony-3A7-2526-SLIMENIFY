@@ -178,7 +178,7 @@
 
     {# 🚀 ULTRA-PREMIUM PARALLAX HERO #}
     <div class="hero-viewport">
-        <div class="hero-parallax" id="hero-img" style="background-image: url('{{ asset(event.imageUrl ?: 'placeholder.jpg') }}');"></div>
+        <div class="hero-parallax" id="hero-img" style="background-image: url('{{ event.imageUrl ? (event.imageUrl starts with 'http' ? event.imageUrl : asset(event.imageUrl)) : asset('placeholder.jpg') }}');"></div>
         <div class="hero-content-wrap">
             <div class="animate-component" id="hero-meta">
                 <h1 class="hero-title">{{ event.title }}</h1>
@@ -335,7 +335,7 @@
                     <a href="{{ path('app_event_show', {id: re.id}) }}" class="mini-card">
                         <div class="mini-image">
                             {% if re.imageUrl %}
-                                <img src="{{ asset(re.imageUrl) }}" alt="{{ re.title }}">
+                                <img src="{{ re.imageUrl starts with 'http' ? re.imageUrl : asset(re.imageUrl) }}" alt="{{ re.title }}">
                             {% else %}
                                 <div style="height:100%; background: #f1f5f9; display:flex; align-items:center; justify-content:center; font-size:2rem;">📅</div>
                             {% endif %}

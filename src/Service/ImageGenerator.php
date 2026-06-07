@@ -5,6 +5,7 @@ namespace App\Service;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
+use App\Service\CloudinaryUploader;
 
 
 class ImageGenerator
@@ -18,6 +19,7 @@ class ImageGenerator
         private HttpClientInterface $httpClient,
         private LoggerInterface $logger,
         private string $projectDir,
+        private CloudinaryUploader $cloudinaryUploader,
         private string $hfToken = '',
         private string $hfModel = self::DEFAULT_MODEL,
     ) {
@@ -40,25 +42,27 @@ class ImageGenerator
                 return null;
             }
 
-            $filename = 'generated_'.time().'_'.bin2hex(random_bytes(4)).'.png';
-            $dir = $this->projectDir.'/public/uploads/blogs';
-            if (!is_dir($dir) && !@mkdir($dir, 0775, true) && !is_dir($dir)) {
-                $this->logger->error('ImageGenerator: cannot create directory '.$dir);
-
-                return null;
+            // Upload to Cloudinary so the image persists in production
+            try {
+                return $this->cloudinaryUploader->uploadFromBinary($binary, 'slimenify/blogs');
+            } catch (\Throwable $cldEx) {
+                $this->logger->error('ImageGenerator: Cloudinary upload failed: '.$cldEx->getMessage());
+                // Fallback: save locally (works only in dev)
+                $filename = 'generated_'.time().'_'.bin2hex(random_bytes(4)).'.png';
+                $dir = $this->projectDir.'/public/uploads/blogs';
+                if (!is_dir($dir) && !@mkdir($dir, 0775, true) && !is_dir($dir)) {
+                    $this->logger->error('ImageGenerator: cannot create directory '.$dir);
+                    return null;
+                }
+                $path = $dir.'/'.$filename;
+                if (file_put_contents($path, $binary) === false) {
+                    $this->logger->error('ImageGenerator: failed to write '.$path);
+                    return null;
+                }
+                return '/uploads/blogs/'.$filename;
             }
-
-            $path = $dir.'/'.$filename;
-            if (file_put_contents($path, $binary) === false) {
-                $this->logger->error('ImageGenerator: failed to write '.$path);
-
-                return null;
-            }
-
-            return '/uploads/blogs/'.$filename;
         } catch (\Throwable $e) {
             $this->logger->error('ImageGenerator: '.$e->getMessage());
-
             return null;
         }
     }

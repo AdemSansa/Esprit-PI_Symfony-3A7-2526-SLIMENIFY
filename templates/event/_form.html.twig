@@ -292,7 +292,7 @@
             
             {% if event.imageUrl %}
                 <div class="image-preview-container">
-                    <img src="{{ asset(event.imageUrl) }}" class="image-preview" alt="Current Cover">
+                    <img src="{{ event.imageUrl starts with 'http' ? event.imageUrl : asset(event.imageUrl) }}" class="image-preview" alt="Current Cover">
                 </div>
             {% endif %}
         </div>
