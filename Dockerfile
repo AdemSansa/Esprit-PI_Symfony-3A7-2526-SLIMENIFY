@@ -61,6 +61,11 @@ ENV CLOUDINARY_URL=
 # Install dependencies (this generates vendor/autoload_runtime.php)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
+# Warm up the cache and compile assets
+RUN php bin/console cache:clear --env=prod --no-warmup \
+    && php bin/console cache:warmup --env=prod \
+    && php bin/console asset-map:compile
+
 # Do not bake Symfony's prod cache with build-time placeholder env values.
 RUN rm -rf var/cache/*
 
@@ -70,4 +75,4 @@ RUN chown -R www-data:www-data /app/var
 # Expose port
 EXPOSE 8080
 
-CMD php -S 0.0.0.0:${PORT:-8080} -t public
+CMD php -S 0.0.0.0:${PORT:-8080} -t public public/index.php
