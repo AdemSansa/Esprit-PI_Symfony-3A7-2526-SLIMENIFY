@@ -23,10 +23,24 @@
   - **Media**: Cloudinary
   - **Auth**: Google OAuth2 & Symfony Security
   - **Messaging**: Twilio SMS & SendGrid Email
+  - Video Conferencing: Jitsi Meet API
 
 ## 🛠️ Installation & Setup
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/AdemSansa/Psychology_symfony.git
-   cd Slimenify_webapp
+
+
+```bash
+git clone https://github.com/votre-utilisateur/slimenify.git
+cd slimenify
+
+composer install
+
+cp .env .env.local
+
+php bin/console doctrine:database:create
+php bin/console doctrine:migrations:migrate
+
+````
+## Déploiement
+
+https://psychologysymfony-production-7c15.up.railway.app/
