@@ -23,6 +23,7 @@
   - **Media**: Cloudinary
   - **Auth**: Google OAuth2 & Symfony Security
   - **Messaging**: Twilio SMS & SendGrid Email
+  - Video Conferencing: Jitsi Meet API
 
 ## 🛠️ Installation & Setup
 
