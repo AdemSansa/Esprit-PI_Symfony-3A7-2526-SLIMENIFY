@@ -11,6 +11,7 @@ http://0.0.0.0:{$PORT:8080} {
         format console
     }
     respond /health "ok" 200
+    try_files {path} /index.php?{query}
     php_server
     file_server
     encode zstd gzip
