@@ -4,7 +4,7 @@
     order php_server before file_server
 }
 
-:{$PORT:8080} {
+http://0.0.0.0:{$PORT:8080} {
     root * /app/public
     log {
         output stdout
