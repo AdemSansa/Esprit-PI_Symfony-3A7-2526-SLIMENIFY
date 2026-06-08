@@ -38,3 +38,8 @@ cp .env .env.local
 
 php bin/console doctrine:database:create
 php bin/console doctrine:migrations:migrate
+
+````
+## Déploiement
+
+https://psychologysymfony-production-7c15.up.railway.app/
