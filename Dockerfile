@@ -75,4 +75,4 @@ RUN chown -R www-data:www-data /app/var
 # Expose port
 EXPOSE 8080
 
-CMD php -S 0.0.0.0:${PORT:-8080} -t public public/index.php
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

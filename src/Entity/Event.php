@@ -100,7 +100,9 @@ class Event
     public function getType(): ?string { return $this->type; }
     public function setType(?string $v): static { $this->type = $v; return $this; }
     public function getDateStart(): ?\DateTimeInterface { return $this->dateStart; }
+    public function setDateStart(?\DateTimeInterface $dateStart): static { $this->dateStart = $dateStart; return $this; }
     public function getDateEnd(): ?\DateTimeInterface { return $this->dateEnd; }
+    public function setDateEnd(?\DateTimeInterface $dateEnd): static { $this->dateEnd = $dateEnd; return $this; }
     public function getLocation(): ?string { return $this->location; }
     public function setLocation(?string $v): static { $this->location = $v; return $this; }
     public function getMaxParticipants(): ?int { return $this->maxParticipants; }
