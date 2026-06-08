@@ -14,8 +14,17 @@ export default class extends Controller {
         this.renderedIds    = new Set();
         this.isFetching     = false;
 
+        // Track server-rendered messages so polling does not wipe the thread
+        this.messagesContainerTarget.querySelectorAll('[data-message-id]').forEach((el) => {
+            const id = parseInt(el.dataset.messageId, 10);
+            if (!Number.isNaN(id)) {
+                this.renderedIds.add(id);
+            }
+        });
+
         if (this.conversationId) {
             this.scrollToBottom();
+            this.fetchMessages();
             this.startPolling();
         }
     }
@@ -37,7 +46,10 @@ export default class extends Controller {
         if (!this.conversationId || this.isFetching) return;
         this.isFetching = true;
         try {
-            const response = await fetch(`/chat/api/${this.conversationId}/messages`);
+            const response = await fetch(`/chat/api/${this.conversationId}/messages`, {
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin',
+            });
             if (!response.ok) return;
 
             const messages = await response.json();
@@ -67,9 +79,11 @@ export default class extends Controller {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
-                body: JSON.stringify({ content: content })
+                credentials: 'same-origin',
+                body: JSON.stringify({ content: content }),
             });
 
             if (response.ok) {
@@ -84,9 +98,11 @@ export default class extends Controller {
             } else {
                 const err = await response.text();
                 console.error('Send failed, status:', response.status, err);
+                this.showError('Could not send your message. Please try again.');
             }
         } catch (error) {
             console.error('Error sending message:', error);
+            this.showError('Could not send your message. Please check your connection.');
         } finally {
             if (btn) btn.disabled = false;
         }
@@ -95,6 +111,9 @@ export default class extends Controller {
     appendMessage(msg) {
         const wrapper = document.createElement('div');
         wrapper.className = `chat-bubble-wrapper ${msg.senderType === this.currentRole ? 'mine' : 'theirs'}`;
+        if (msg.id) {
+            wrapper.dataset.messageId = String(msg.id);
+        }
 
         const bubble = document.createElement('div');
         bubble.className = 'chat-bubble';
@@ -147,5 +166,20 @@ export default class extends Controller {
         if (this.hasMessagesContainerTarget) {
             this.messagesContainerTarget.scrollTop = this.messagesContainerTarget.scrollHeight;
         }
+    }
+
+    showError(message) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: message,
+                showConfirmButton: false,
+                timer: 3500,
+            });
+            return;
+        }
+        alert(message);
     }
 }

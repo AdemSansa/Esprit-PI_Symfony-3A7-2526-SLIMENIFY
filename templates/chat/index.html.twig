@@ -3,7 +3,7 @@
 {% block title %}Chat - Messages{% endblock %}
 
 {% block app_content %}
-<div class="chat-container" data-controller="chat">
+<div class="chat-container" data-controller="chat" data-turbo="false">
     <div class="chat-sidebar">
         <div class="chat-sidebar-header" style="display: flex; justify-content: space-between; align-items: center;">
             <h3>Messages</h3>
@@ -50,7 +50,7 @@
                 <!-- Messages will be injected here by Stimulus -->
                 {% for message in activeConversation.messages %}
                     {% set isMine = (isTherapist and message.senderType == 'therapist') or (not isTherapist and message.senderType == 'user') %}
-                    <div class="chat-bubble-wrapper {{ isMine ? 'mine' : 'theirs' }}">
+                    <div class="chat-bubble-wrapper {{ isMine ? 'mine' : 'theirs' }}" data-message-id="{{ message.id }}">
                         <div class="chat-bubble">
                             {{ message.content }}
                             <div class="chat-timestamp">{{ message.createdAt|date('H:i') }}</div>
@@ -71,7 +71,7 @@
             </div>
 
             <div class="chat-input-area">
-                <form data-action="submit->chat#send" class="chat-form">
+                <form data-action="submit->chat#send" data-turbo="false" class="chat-form">
                     <input type="text" data-chat-target="input" placeholder="Type a message..." required class="chat-input">
                     <button type="submit" class="chat-send-btn">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>

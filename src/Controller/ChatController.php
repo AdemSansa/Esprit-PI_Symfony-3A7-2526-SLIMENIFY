@@ -19,6 +19,26 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class ChatController extends AbstractController
 {
+    private function assertConversationAccess(Conversation $conversation, EntityManagerInterface $em): void
+    {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $role = $user->getRole();
+
+        if ($role === 'therapist') {
+            $therapist = $em->getRepository(Therapist::class)->findOneBy(['email' => $user->getEmail()]);
+            if (!$therapist || $conversation->getTherapist()?->getId() !== $therapist->getId()) {
+                throw $this->createAccessDeniedException();
+            }
+
+            return;
+        }
+
+        if ($conversation->getUser()?->getId() !== $user->getId()) {
+            throw $this->createAccessDeniedException();
+        }
+    }
+
     #[Route('/', name: 'app_chat_index', methods: ['GET'])]
     public function index(EntityManagerInterface $em): Response
     {
@@ -61,11 +81,11 @@ class ChatController extends AbstractController
 
         if ($role === 'therapist') {
             $therapist = $em->getRepository(Therapist::class)->findOneBy(['email' => $user->getEmail()]);
-            if ($conversation->getTherapist() !== $therapist) {
+            if (!$therapist || $conversation->getTherapist()?->getId() !== $therapist->getId()) {
                 throw $this->createAccessDeniedException();
             }
         } else {
-            if ($conversation->getUser() !== $user) {
+            if ($conversation->getUser()?->getId() !== $user->getId()) {
                 throw $this->createAccessDeniedException();
             }
         }
@@ -91,8 +111,10 @@ class ChatController extends AbstractController
     }
 
     #[Route('/api/{id}/messages', name: 'app_chat_fetch_messages', methods: ['GET'])]
-    public function fetchMessages(Conversation $conversation): Response
+    public function fetchMessages(Conversation $conversation, EntityManagerInterface $em): Response
     {
+        $this->assertConversationAccess($conversation, $em);
+
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $isTherapist = $user->getRole() === 'therapist';
@@ -127,6 +149,8 @@ class ChatController extends AbstractController
         AiAnalysisService $aiService,
         MailerInterface $mailer
     ): Response {
+        $this->assertConversationAccess($conversation, $em);
+
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $role = $user->getRole();
